@@ -22,7 +22,6 @@ defmodule PhoenixKitBilling.I18nTest do
   @moduletag :requires_phoenix_kit_i18n_api
 
   alias PhoenixKit.Dashboard.Tab
-  alias PhoenixKitBilling
   alias PhoenixKitBilling.Gettext, as: BillingGettext
 
   setup do
@@ -31,14 +30,14 @@ defmodule PhoenixKitBilling.I18nTest do
     :ok
   end
 
-  describe "admin_tabs/0 wiring" do
-    test "every tab carries the module's own gettext backend" do
-      for tab <- PhoenixKitBilling.admin_tabs() do
-        assert tab.gettext_backend == BillingGettext,
-               "Tab #{inspect(tab.id)} is missing or wrong gettext_backend " <>
-                 "(got #{inspect(tab.gettext_backend)})"
-
-        assert tab.gettext_domain == "default"
+  describe "tab wiring (admin_tabs/0, settings_tabs/0, user_dashboard_tabs/0)" do
+    test "every registered tab carries the module's own gettext backend" do
+      for fun <- [:admin_tabs, :settings_tabs, :user_dashboard_tabs],
+          tab <- apply(PhoenixKitBilling, fun, []) do
+        assert %{gettext_backend: PhoenixKitBilling.Gettext, gettext_domain: "default"} = tab,
+               "Tab #{inspect(tab.id)} from #{fun}/0 is missing or wrong gettext wiring " <>
+                 "(got backend=#{inspect(tab.gettext_backend)} " <>
+                 "domain=#{inspect(tab.gettext_domain)})"
       end
     end
   end

@@ -48,7 +48,6 @@ defmodule PhoenixKitBilling do
   alias PhoenixKit.Settings
   alias PhoenixKit.Utils.CountryData
   alias PhoenixKit.Utils.Date, as: UtilsDate
-  alias PhoenixKitWeb.Live.Settings.Organization
   alias PhoenixKit.Utils.UUID, as: UUIDUtils
   alias PhoenixKitBilling.BillingProfile
   alias PhoenixKitBilling.Currency
@@ -58,6 +57,7 @@ defmodule PhoenixKitBilling do
   alias PhoenixKitBilling.PaymentOption
   alias PhoenixKitBilling.Providers
   alias PhoenixKitBilling.Transaction
+  alias PhoenixKitWeb.Live.Settings.Organization
 
   # ============================================
   # SYSTEM ENABLE/DISABLE

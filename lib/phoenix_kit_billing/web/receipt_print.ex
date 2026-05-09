@@ -10,9 +10,9 @@ defmodule PhoenixKitBilling.Web.ReceiptPrint do
   use Gettext, backend: PhoenixKitWeb.Gettext
   alias PhoenixKit.Settings
   alias PhoenixKit.Utils.Routes
-  alias PhoenixKitWeb.Live.Settings.Organization
   alias PhoenixKitBilling, as: Billing
   alias PhoenixKitBilling.Invoice
+  alias PhoenixKitWeb.Live.Settings.Organization
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do

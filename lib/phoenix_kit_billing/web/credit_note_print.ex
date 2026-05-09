@@ -14,9 +14,9 @@ defmodule PhoenixKitBilling.Web.CreditNotePrint do
   use Gettext, backend: PhoenixKitWeb.Gettext
   alias PhoenixKit.Settings
   alias PhoenixKit.Utils.Routes
-  alias PhoenixKitWeb.Live.Settings.Organization
   alias PhoenixKitBilling, as: Billing
   alias PhoenixKitBilling.Transaction
+  alias PhoenixKitWeb.Live.Settings.Organization
 
   @impl true
   def mount(%{"id" => invoice_uuid, "transaction_uuid" => transaction_uuid}, _session, socket) do
