@@ -1,13 +1,13 @@
 defmodule PhoenixKit.Modules.Billing do
-  @moduledoc """
-  Temporary compatibility alias for PhoenixKitBilling.
-
-  This module exists to maintain backward compatibility with PhoenixKit core
-  which still references the old `PhoenixKit.Modules.Billing.*` namespace.
-  Will be removed once core is fully migrated to `PhoenixKitBilling.*`.
-
-  All public functions are explicitly delegated to PhoenixKitBilling.
-  """
+  # Temporary compatibility alias for PhoenixKitBilling.
+  #
+  # This module exists to maintain backward compatibility with PhoenixKit core
+  # which still references the old `PhoenixKit.Modules.Billing.*` namespace.
+  # Will be removed once core is fully migrated to `PhoenixKitBilling.*`.
+  #
+  # All public functions are explicitly delegated to PhoenixKitBilling. Hidden
+  # from HexDocs because consumers should target `PhoenixKitBilling.*` directly.
+  @moduledoc false
 
   # Module info and config
   defdelegate enabled?(), to: PhoenixKitBilling
