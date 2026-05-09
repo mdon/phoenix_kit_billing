@@ -98,7 +98,7 @@ defmodule PhoenixKitBilling.MixProject do
   defp docs do
     [
       main: "PhoenixKitBilling",
-      source_ref: "v#{@version}",
+      source_ref: "#{@version}",
       source_url: @source_url
     ]
   end
