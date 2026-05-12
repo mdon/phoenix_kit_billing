@@ -150,9 +150,78 @@ defmodule PhoenixKitBilling.Invoice do
     |> validate_length(:currency, is: 3)
     |> validate_number(:total, greater_than_or_equal_to: 0)
     |> validate_number(:paid_amount, greater_than_or_equal_to: 0)
+    |> validate_line_items()
     |> unique_constraint(:invoice_number)
     |> foreign_key_constraint(:user_uuid)
     |> foreign_key_constraint(:order_uuid)
+  end
+
+  defp validate_line_items(changeset) do
+    case get_change(changeset, :line_items) do
+      nil ->
+        changeset
+
+      items when is_list(items) ->
+        items
+        |> Enum.with_index()
+        |> Enum.reduce(changeset, fn {item, idx}, acc -> validate_line_item(acc, item, idx) end)
+
+      _ ->
+        add_error(changeset, :line_items, "must be a list")
+    end
+  end
+
+  defp validate_line_item(changeset, item, idx) when is_map(item) do
+    name = string_field(item, "name", "name")
+    quantity = numeric_field(item, "quantity", "quantity")
+    total = numeric_field(item, "total", "total")
+
+    cond do
+      is_nil(name) or name == "" ->
+        add_error(changeset, :line_items, "line item #{idx + 1}: name is required")
+
+      is_nil(quantity) or quantity <= 0 ->
+        add_error(changeset, :line_items, "line item #{idx + 1}: quantity must be positive")
+
+      is_nil(total) ->
+        add_error(changeset, :line_items, "line item #{idx + 1}: total is required")
+
+      true ->
+        changeset
+    end
+  end
+
+  defp validate_line_item(changeset, _item, idx) do
+    add_error(changeset, :line_items, "line item #{idx + 1}: must be a map")
+  end
+
+  defp string_field(item, atom_key, string_key) do
+    case Map.get(item, atom_key, Map.get(item, string_key)) do
+      v when is_binary(v) -> v
+      _ -> nil
+    end
+  end
+
+  defp numeric_field(item, atom_key, string_key) do
+    case Map.get(item, atom_key, Map.get(item, string_key)) do
+      v when is_integer(v) ->
+        v
+
+      v when is_float(v) ->
+        v
+
+      v when is_binary(v) ->
+        case Float.parse(v) do
+          {n, _} -> n
+          :error -> nil
+        end
+
+      %Decimal{} = v ->
+        Decimal.to_float(v)
+
+      _ ->
+        nil
+    end
   end
 
   @doc """

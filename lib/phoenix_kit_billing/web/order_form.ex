@@ -17,29 +17,50 @@ defmodule PhoenixKitBilling.Web.OrderForm do
   alias PhoenixKitBilling.Order
 
   @impl true
-  def mount(params, _session, socket) do
+  def mount(_params, _session, socket) do
     if Billing.enabled?() do
-      project_title = Settings.get_project_title()
-      %{users: users} = Auth.list_users_paginated(limit: 100)
-      currencies = Billing.list_currencies(enabled: true)
-      default_currency = Settings.get_setting("billing_default_currency", "EUR")
-
-      socket =
-        socket
-        |> assign(:project_title, project_title)
-        |> assign(:users, users)
-        |> assign(:currencies, currencies)
-        |> assign(:default_currency, default_currency)
-        |> assign(:billing_profiles, [])
-        |> load_order(params["id"])
-
-      {:ok, socket}
+      # Per phoenix-thinking iron law: no DB in mount (called twice on
+      # dead + live render). Defer all reads to handle_params.
+      {:ok,
+       socket
+       |> assign(:project_title, nil)
+       |> assign(:users, [])
+       |> assign(:currencies, [])
+       |> assign(:default_currency, "EUR")
+       |> assign(:billing_profiles, [])
+       |> assign(:order, nil)
+       |> assign(:form, nil)
+       |> assign(:line_items, [])
+       |> assign(:selected_user_uuid, nil)
+       |> assign(:selected_billing_profile_uuid, nil)
+       |> assign(:country_tax_rate, nil)
+       |> assign(:country_name, nil)
+       |> assign(:country_vat_percent, nil)
+       |> assign(:page_title, "Order")}
     else
       {:ok,
        socket
        |> put_flash(:error, "Billing module is not enabled")
        |> push_navigate(to: Routes.path("/admin"))}
     end
+  end
+
+  @impl true
+  def handle_params(params, _url, socket) do
+    project_title = Settings.get_project_title()
+    %{users: users} = Auth.list_users_paginated(limit: 100)
+    currencies = Billing.list_currencies(enabled: true)
+    default_currency = Settings.get_setting("billing_default_currency", "EUR")
+
+    socket =
+      socket
+      |> assign(:project_title, project_title)
+      |> assign(:users, users)
+      |> assign(:currencies, currencies)
+      |> assign(:default_currency, default_currency)
+      |> load_order(params["id"])
+
+    {:noreply, socket}
   end
 
   defp load_order(socket, nil) do
@@ -116,11 +137,6 @@ defmodule PhoenixKitBilling.Web.OrderForm do
         unit_price: item["unit_price"] || "0.00"
       }
     end)
-  end
-
-  @impl true
-  def handle_params(_params, _url, socket) do
-    {:noreply, socket}
   end
 
   @impl true

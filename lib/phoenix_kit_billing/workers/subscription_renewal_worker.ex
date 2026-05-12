@@ -48,7 +48,9 @@ defmodule PhoenixKitBilling.Workers.SubscriptionRenewalWorker do
   use Oban.Worker,
     queue: :billing,
     max_attempts: 3,
-    unique: [period: 3600]
+    unique: [period: 3600, keys: [:subscription_uuid]]
+
+  import Ecto.Query
 
   alias PhoenixKit.RepoHelper
   alias PhoenixKit.Settings
@@ -60,46 +62,43 @@ defmodule PhoenixKitBilling.Workers.SubscriptionRenewalWorker do
   require Logger
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"subscription_uuid" => subscription_uuid}}) do
-    # Process single subscription
-    case get_subscription(subscription_uuid) do
-      nil ->
-        Logger.warning("Subscription #{subscription_uuid} not found for renewal")
-        :ok
-
-      subscription ->
-        process_subscription_renewal(subscription)
-    end
+  def perform(%Oban.Job{args: %{"subscription_uuid" => subscription_uuid}})
+      when is_binary(subscription_uuid) do
+    process_one(subscription_uuid)
   end
 
-  def perform(%Oban.Job{args: %{"subscription_id" => subscription_uuid}}) do
+  def perform(%Oban.Job{args: %{"subscription_id" => subscription_uuid}})
+      when is_binary(subscription_uuid) do
     # Backward compat for in-flight jobs
-    case get_subscription(subscription_uuid) do
-      nil ->
-        Logger.warning("Subscription #{subscription_uuid} not found for renewal")
-        :ok
-
-      subscription ->
-        process_subscription_renewal(subscription)
-    end
+    process_one(subscription_uuid)
   end
 
   def perform(%Oban.Job{args: _args}) do
-    # Process all due subscriptions (daily batch)
+    # Process all due subscriptions (daily batch). Fan out into one job
+    # per subscription so the per-subscription unique key + row lock
+    # apply correctly and a single bad subscription cannot poison the
+    # entire batch run.
     subscriptions = find_subscriptions_due_for_renewal()
     Logger.info("Found #{length(subscriptions)} subscriptions due for renewal")
 
     Enum.each(subscriptions, fn subscription ->
-      case process_subscription_renewal(subscription) do
-        {:ok, _} ->
-          Logger.info("Renewed subscription #{subscription.uuid}")
-
-        {:error, reason} ->
-          Logger.warning("Failed to renew subscription #{subscription.uuid}: #{inspect(reason)}")
-      end
+      %{subscription_uuid: subscription.uuid}
+      |> __MODULE__.new()
+      |> Oban.insert()
     end)
 
     :ok
+  end
+
+  defp process_one(subscription_uuid) do
+    case get_subscription(subscription_uuid) do
+      nil ->
+        Logger.warning("Subscription #{subscription_uuid} not found for renewal")
+        :ok
+
+      subscription ->
+        process_subscription_renewal(subscription)
+    end
   end
 
   # ============================================
@@ -115,18 +114,73 @@ defmodule PhoenixKitBilling.Workers.SubscriptionRenewalWorker do
     |> RepoHelper.repo().update()
   end
 
-  defp process_subscription_renewal(%Subscription{} = subscription) do
+  defp process_subscription_renewal(%Subscription{uuid: uuid}) do
     repo = RepoHelper.repo()
 
-    with {:ok, subscription} <- repo.preload(subscription, [:subscription_type, :payment_method]),
-         {:ok, invoice} <- create_renewal_invoice(subscription),
-         {:ok, _} <- charge_payment_method(subscription, invoice) do
-      # Payment successful - extend period
+    # Take a row lock on the subscription so a concurrent webhook
+    # (`payment.succeeded` for the renewal invoice) or another worker
+    # instance cannot double-extend the period or double-charge.
+    repo.transaction(fn ->
+      case lock_and_load(uuid, repo) do
+        nil ->
+          Logger.warning("Subscription #{uuid} not found inside renewal transaction")
+          :ok
+
+        %Subscription{cancel_at_period_end: true} = subscription ->
+          subscription
+          |> Subscription.cancel_changeset(true)
+          |> repo.update!()
+
+        %Subscription{} = locked ->
+          period_end_at_dispatch = locked.current_period_end
+          do_renew(locked, period_end_at_dispatch, repo)
+      end
+    end)
+    |> unwrap_transaction()
+  end
+
+  defp lock_and_load(uuid, repo) do
+    from(s in Subscription,
+      where: s.uuid == ^uuid,
+      lock: "FOR UPDATE",
+      preload: [:subscription_type, :payment_method]
+    )
+    |> repo.one()
+  end
+
+  defp unwrap_transaction({:ok, result}), do: {:ok, result}
+  defp unwrap_transaction({:error, reason}), do: {:error, reason}
+
+  defp do_renew(%Subscription{} = subscription, period_end_at_dispatch, repo) do
+    cond do
+      subscription.status == "cancelled" ->
+        Logger.info("Subscription #{subscription.uuid} already cancelled — skipping renewal")
+        {:ok, :cancelled}
+
+      DateTime.compare(subscription.current_period_end, period_end_at_dispatch) != :eq ->
+        # Another process (likely a webhook for the same renewal) already
+        # advanced the period. Idempotent skip.
+        Logger.info(
+          "Subscription #{subscription.uuid} already renewed by another path — skipping"
+        )
+
+        {:ok, :already_renewed}
+
+      true ->
+        attempt_renewal(subscription, repo)
+    end
+  end
+
+  defp attempt_renewal(%Subscription{} = subscription, repo) do
+    with {:ok, invoice} <- create_renewal_invoice(subscription),
+         {:ok, _txn} <- charge_payment_method(subscription, invoice) do
       plan = subscription.subscription_type
-      new_period_start = subscription.current_period_end
 
       new_period_end =
-        SubscriptionType.next_billing_date(plan, DateTime.to_date(new_period_start))
+        SubscriptionType.next_billing_date(
+          plan,
+          DateTime.to_date(subscription.current_period_end)
+        )
 
       subscription
       |> Subscription.activate_changeset(datetime_from_date(new_period_end))

@@ -24,10 +24,11 @@ defmodule PhoenixKitBilling.WebhookProcessor do
       WebhookProcessor.process(normalized_event)
   """
 
+  import Ecto.Query
+
   alias PhoenixKit.RepoHelper
-  alias PhoenixKit.Utils.Date, as: UtilsDate
   alias PhoenixKitBilling, as: Billing
-  alias PhoenixKitBilling.WebhookEvent
+  alias PhoenixKitBilling.{PaymentMethod, Transaction, WebhookEvent}
 
   require Logger
 
@@ -42,29 +43,38 @@ defmodule PhoenixKitBilling.WebhookProcessor do
   - `{:error, :duplicate_event}` - Event already processed
   - `{:error, reason}` - Processing failed
   """
-  @spec process(map()) :: {:ok, any()} | {:error, atom()}
-  def process(%{event_id: event_id, provider: provider, type: _type} = event) do
-    # Check idempotency
-    case check_idempotency(provider, event_id) do
-      :new ->
-        # Log event as processing
-        {:ok, webhook_event} = create_webhook_event(event)
+  @spec process(map()) :: {:ok, any()} | {:error, atom() | term()}
+  def process(%{event_id: _event_id, provider: _provider, type: _type} = event) do
+    case upsert_webhook_event(event) do
+      {:new, webhook_event} ->
+        run_and_mark(webhook_event, event)
 
-        # Process the event
-        result = process_event(event)
+      {:retry, webhook_event} ->
+        Logger.info(
+          "Retrying previously-failed webhook event " <>
+            "#{webhook_event.provider}/#{webhook_event.event_id} " <>
+            "(prior attempts: #{webhook_event.retry_count})"
+        )
 
-        # Update event status
-        mark_event_processed(webhook_event, result)
+        run_and_mark(webhook_event, event)
 
-        result
-
-      :duplicate ->
+      {:already_processed, _webhook_event} ->
         {:error, :duplicate_event}
+
+      {:error, reason} ->
+        Logger.error("Failed to log webhook event before processing: #{inspect(reason)}")
+        {:error, :event_log_failed}
     end
   rescue
     e ->
-      Logger.error("Webhook processing error: #{inspect(e)}")
+      Logger.error("Webhook processing error: #{Exception.format(:error, e, __STACKTRACE__)}")
       {:error, :processing_error}
+  end
+
+  defp run_and_mark(webhook_event, event) do
+    result = process_event(event)
+    mark_event_processed(webhook_event, result)
+    result
   end
 
   # ===========================================
@@ -206,117 +216,213 @@ defmodule PhoenixKitBilling.WebhookProcessor do
   end
 
   defp process_refund(data) do
-    # Find the original transaction by charge_id and record a refund
-    # This is handled by Billing.record_refund if we have the invoice
+    charge_id = data[:charge_id] || data[:payment_intent_id]
 
-    case data do
-      %{charge_id: charge_id, amount_refunded: amount_cents} when not is_nil(charge_id) ->
-        Logger.info("Refund recorded: #{charge_id} - #{amount_cents} cents")
-        {:ok, :refund_logged}
+    with {:ok, charge_id} <- ensure_present(charge_id, :no_charge_id),
+         {:ok, original_tx} <- find_transaction_by_provider_id(charge_id),
+         {:ok, invoice} <- get_invoice(original_tx.invoice_uuid),
+         {:ok, amount} <- refund_amount(data, invoice, original_tx) do
+      refund_attrs = %{
+        amount: amount,
+        payment_method: original_tx.payment_method,
+        description: refund_description(data),
+        provider_transaction_id: data[:refund_id] || data[:charge_id],
+        provider_data: data
+      }
 
-      _ ->
+      case Billing.record_refund(invoice, refund_attrs, nil) do
+        {:ok, transaction} ->
+          Logger.info(
+            "Refund recorded for invoice #{invoice.invoice_number}: " <>
+              "#{Decimal.to_string(transaction.amount)} #{transaction.currency}"
+          )
+
+          {:ok, transaction}
+
+        {:error, :exceeds_paid_amount} ->
+          Logger.warning(
+            "Refund webhook amount exceeds paid_amount for invoice #{invoice.invoice_number}; " <>
+              "ignoring as a duplicate or partial-already-applied refund."
+          )
+
+          {:ok, :already_refunded}
+
+        {:error, reason} ->
+          {:error, reason}
+      end
+    else
+      {:error, :no_charge_id} ->
+        Logger.warning("Refund webhook missing charge_id: #{inspect(data)}")
+        {:ok, :ignored}
+
+      {:error, :transaction_not_found} ->
+        Logger.warning("Refund webhook references unknown charge: #{inspect(charge_id)}")
+        {:ok, :ignored}
+
+      {:error, :invoice_not_found} ->
+        Logger.warning("Refund webhook's original transaction has no matching invoice")
         {:ok, :ignored}
     end
   end
 
   defp process_setup_completed(data) do
-    # Save the payment method for the user
-    case data do
-      %{provider_payment_method_id: pm_id, customer_id: _customer_id, user_uuid: user_uuid}
-      when not is_nil(pm_id) ->
-        Logger.info("Payment method saved for user #{user_uuid}: #{pm_id}")
+    user_uuid = data[:user_uuid]
+    pm_id = data[:provider_payment_method_id]
 
-        # Get payment method details from provider and save
-        # This should create a PaymentMethod record
-        {:ok, :payment_method_saved}
-
-      _ ->
+    cond do
+      is_nil(user_uuid) or is_nil(pm_id) ->
+        Logger.debug("setup.completed missing user_uuid or provider_payment_method_id")
         {:ok, :ignored}
+
+      payment_method_exists?(data[:provider] || "stripe", pm_id) ->
+        {:ok, :already_saved}
+
+      true ->
+        attrs = %{
+          provider: to_string(data[:provider] || "stripe"),
+          provider_payment_method_id: pm_id,
+          provider_customer_id: data[:customer_id],
+          user_uuid: user_uuid,
+          type: data[:type] || "card",
+          brand: data[:brand],
+          last4: data[:last4],
+          exp_month: data[:exp_month],
+          exp_year: data[:exp_year],
+          status: "active",
+          metadata: data[:metadata] || %{}
+        }
+
+        case %PaymentMethod{} |> PaymentMethod.changeset(attrs) |> repo().insert() do
+          {:ok, pm} ->
+            Logger.info("Payment method saved for user #{user_uuid}: #{pm.uuid}")
+            {:ok, pm}
+
+          {:error, changeset} ->
+            Logger.error(
+              "Failed to save payment method from setup.completed: #{inspect(changeset.errors)}"
+            )
+
+            {:error, changeset}
+        end
     end
+  end
+
+  defp find_transaction_by_provider_id(charge_id) do
+    case repo().get_by(Transaction, provider_transaction_id: charge_id) do
+      nil -> {:error, :transaction_not_found}
+      tx -> {:ok, tx}
+    end
+  end
+
+  defp refund_amount(data, invoice, original_tx) do
+    cond do
+      is_integer(data[:amount_refunded]) ->
+        {:ok, Decimal.div(Decimal.new(data[:amount_refunded]), 100)}
+
+      is_integer(data[:amount]) ->
+        {:ok, Decimal.div(Decimal.new(data[:amount]), 100)}
+
+      true ->
+        # Default to refunding the full original transaction, capped at
+        # the invoice's currently paid_amount (record_refund will reject
+        # anything larger).
+        original = Decimal.abs(original_tx.amount)
+        cap = invoice.paid_amount || Decimal.new(0)
+        {:ok, if(Decimal.compare(original, cap) == :gt, do: cap, else: original)}
+    end
+  end
+
+  defp refund_description(data) do
+    data[:reason] || data[:description] || "Provider refund webhook"
+  end
+
+  defp ensure_present(nil, error), do: {:error, error}
+  defp ensure_present(value, _error), do: {:ok, value}
+
+  defp payment_method_exists?(provider, provider_pm_id) do
+    repo().exists?(
+      from(pm in PaymentMethod,
+        where:
+          pm.provider == ^to_string(provider) and
+            pm.provider_payment_method_id == ^provider_pm_id
+      )
+    )
   end
 
   # ===========================================
   # Idempotency & Event Logging
   # ===========================================
 
-  defp check_idempotency(provider, event_id) do
-    repo = RepoHelper.repo()
-
-    import Ecto.Query
-
-    query =
-      from(we in WebhookEvent,
-        where: we.provider == ^to_string(provider) and we.event_id == ^event_id,
-        select: we.uuid
-      )
-
-    case repo.one(query) do
-      nil -> :new
-      _uuid -> :duplicate
-    end
-  rescue
-    _ -> :new
-  end
-
-  defp create_webhook_event(%{event_id: event_id, provider: provider, type: type} = event) do
-    repo = RepoHelper.repo()
-
+  defp upsert_webhook_event(%{event_id: event_id, provider: provider, type: type} = event) do
     attrs = %{
       provider: to_string(provider),
       event_id: event_id,
       event_type: type,
-      payload: event.raw_payload || %{},
+      payload: event[:raw_payload] || %{},
       processed: false,
-      retry_count: 0,
-      inserted_at: UtilsDate.utc_now(),
-      updated_at: UtilsDate.utc_now()
+      retry_count: 0
     }
 
-    case repo.insert_all("phoenix_kit_webhook_events", [attrs], returning: [:id]) do
-      {1, [%{id: id}]} -> {:ok, %{id: id}}
-      _ -> {:error, :insert_failed}
+    %WebhookEvent{}
+    |> WebhookEvent.changeset(attrs)
+    |> repo().insert()
+    |> case do
+      {:ok, webhook_event} ->
+        {:new, webhook_event}
+
+      {:error, %Ecto.Changeset{errors: errors}} ->
+        if Keyword.has_key?(errors, :provider) or Keyword.has_key?(errors, :event_id) do
+          existing =
+            repo().one(
+              from(we in WebhookEvent,
+                where: we.provider == ^to_string(provider) and we.event_id == ^event_id
+              )
+            )
+
+          cond do
+            is_nil(existing) -> {:error, :event_log_failed}
+            existing.processed -> {:already_processed, existing}
+            true -> {:retry, existing}
+          end
+        else
+          {:error, {:invalid_event, errors}}
+        end
     end
-  rescue
-    e ->
-      Logger.error("Failed to create webhook event: #{inspect(e)}")
-      {:ok, %{id: nil}}
   end
 
-  defp mark_event_processed(%{id: nil}, _result), do: :ok
+  defp mark_event_processed(%WebhookEvent{} = webhook_event, {:ok, _}) do
+    webhook_event
+    |> WebhookEvent.processed_changeset()
+    |> repo().update()
+    |> case do
+      {:ok, _} ->
+        :ok
 
-  defp mark_event_processed(%{id: id}, result) do
-    repo = RepoHelper.repo()
+      {:error, reason} ->
+        Logger.warning("Could not mark webhook event processed: #{inspect(reason)}")
+        :ok
+    end
+  end
 
-    import Ecto.Query
+  defp mark_event_processed(%WebhookEvent{} = webhook_event, {:error, reason}) do
+    webhook_event
+    |> WebhookEvent.failed_changeset(inspect(reason))
+    |> repo().update()
+    |> case do
+      {:ok, _} ->
+        :ok
 
-    {error_message, processed} =
-      case result do
-        {:ok, _} -> {nil, true}
-        {:error, reason} -> {inspect(reason), false}
-      end
-
-    query =
-      from(we in "phoenix_kit_webhook_events",
-        where: we.id == ^id
-      )
-
-    repo.update_all(query,
-      set: [
-        processed: processed,
-        processed_at: UtilsDate.utc_now(),
-        error_message: error_message,
-        updated_at: UtilsDate.utc_now()
-      ]
-    )
-
-    :ok
-  rescue
-    _ -> :ok
+      {:error, fail_reason} ->
+        Logger.warning("Could not mark webhook event failed: #{inspect(fail_reason)}")
+        :ok
+    end
   end
 
   # ===========================================
   # Helpers
   # ===========================================
+
+  defp repo, do: RepoHelper.repo()
 
   defp get_invoice(invoice_id) do
     case Billing.get_invoice(invoice_id) do

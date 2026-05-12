@@ -21,6 +21,7 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail do
   alias PhoenixKit.Settings
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
+  alias PhoenixKitBilling.Events
   alias PhoenixKitBilling.Invoice
   alias PhoenixKitBilling.Providers
   alias PhoenixKitBilling.Web.InvoiceDetail.Actions
@@ -28,27 +29,47 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail do
   import PhoenixKitBilling.Web.InvoiceDetail.Helpers
 
   @impl true
-  def mount(%{"id" => id}, _session, socket) do
+  def mount(_params, _session, socket) do
     if Billing.enabled?() do
-      case Billing.get_invoice(id, preload: [:order, :transactions, :user]) do
-        nil ->
-          {:ok,
-           socket
-           |> put_flash(:error, "Invoice not found")
-           |> push_navigate(to: Routes.path("/admin/billing/invoices"))}
+      if connected?(socket) do
+        Events.subscribe_invoices()
+        Events.subscribe_transactions()
+      end
 
-        invoice ->
-          project_title = Settings.get_project_title()
-          transactions = Billing.list_invoice_transactions(invoice.uuid)
+      {:ok, assign(socket, loaded?: false)}
+    else
+      {:ok,
+       socket
+       |> put_flash(:error, "Billing module is not enabled")
+       |> push_navigate(to: Routes.path("/admin"))}
+    end
+  end
 
-          available_providers = Providers.list_available_providers()
+  @impl true
+  def handle_params(%{"id" => id}, _url, socket) do
+    case Billing.get_invoice(id, preload: [:order, :transactions, :user]) do
+      nil ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Invoice not found")
+         |> push_navigate(to: Routes.path("/admin/billing/invoices"))}
 
-          socket =
+      invoice ->
+        project_title = Settings.get_project_title()
+        available_providers = Providers.list_available_providers()
+
+        socket =
+          if socket.assigns[:loaded?] do
             socket
+            |> assign(:invoice, invoice)
+            |> assign(:transactions, invoice.transactions)
+          else
+            socket
+            |> assign(:loaded?, true)
             |> assign(:page_title, "Invoice #{invoice.invoice_number}")
             |> assign(:project_title, project_title)
             |> assign(:invoice, invoice)
-            |> assign(:transactions, transactions)
+            |> assign(:transactions, invoice.transactions)
             |> assign(:available_providers, available_providers)
             |> assign(:checkout_loading, nil)
             |> assign(:show_payment_modal, false)
@@ -70,21 +91,47 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail do
             |> assign(:send_credit_note_transaction_uuid, nil)
             |> assign(:send_payment_confirmation_email, get_default_email(invoice))
             |> assign(:send_payment_confirmation_transaction_uuid, nil)
+          end
 
-          {:ok, socket}
-      end
-    else
-      {:ok,
-       socket
-       |> put_flash(:error, "Billing module is not enabled")
-       |> push_navigate(to: Routes.path("/admin"))}
+        {:noreply, socket}
     end
   end
 
+  # PubSub: refresh invoice + transactions when a related event fires.
   @impl true
-  def handle_params(_params, _url, socket) do
-    {:noreply, socket}
+  def handle_info({event, %{uuid: uuid}}, %{assigns: %{invoice: %{uuid: uuid}}} = socket)
+      when event in [:invoice_paid, :invoice_voided, :invoice_sent] do
+    {:noreply, refresh_invoice(socket)}
   end
+
+  def handle_info({:transaction_created, %{invoice_uuid: invoice_uuid}}, socket)
+      when not is_nil(invoice_uuid) do
+    if socket.assigns[:invoice] && socket.assigns.invoice.uuid == invoice_uuid do
+      {:noreply, refresh_invoice(socket)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info({:transaction_refunded, %{invoice_uuid: invoice_uuid}}, socket)
+      when not is_nil(invoice_uuid) do
+    if socket.assigns[:invoice] && socket.assigns.invoice.uuid == invoice_uuid do
+      {:noreply, refresh_invoice(socket)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info(_msg, socket), do: {:noreply, socket}
+
+  defp refresh_invoice(%{assigns: %{invoice: %{uuid: uuid}}} = socket) do
+    case Billing.get_invoice(uuid, preload: [:order, :transactions, :user]) do
+      nil -> socket
+      invoice -> assign(socket, invoice: invoice, transactions: invoice.transactions)
+    end
+  end
+
+  defp refresh_invoice(socket), do: socket
 
   # Modal Controls
 

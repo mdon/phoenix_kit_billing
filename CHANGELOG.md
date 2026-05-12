@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.0] - 2026-05-12
+
+### Added
+- `PhoenixKitBilling.Plugs.CacheBodyReader` — body reader for `Plug.Parsers` that stashes the raw request body on `conn.assigns.raw_body` for `/webhooks/billing/*` paths so provider signatures can be verified. Required for webhook signature verification to function (see install instructions).
+- Live updates on the invoice detail page: subscribes to invoice + transaction PubSub events and refreshes when payments or refunds land.
+- Line-item validation on the `Invoice` changeset (name, positive quantity, total).
+- Per-subscription `unique` key on `SubscriptionRenewalWorker` so concurrent enqueues for the same subscription collapse correctly.
+
+### Changed
+- **Webhook processor:** refunds are now actually recorded via `Billing.record_refund/3` (previously just logged), with handling for `:exceeds_paid_amount`. Idempotency now uses an upsert that distinguishes new / retry / already-processed events, and stack traces are formatted with `Exception.format/3`.
+- **Subscription renewal worker:** batch runs now fan out into one job per subscription instead of processing inline, so a single bad subscription cannot poison the whole daily run and the per-subscription unique key + row lock apply correctly.
+- **Subscription dunning worker:** fixed off-by-one in max-attempts comparison — a subscription is now cancelled when the *next* attempt would exceed the cap, and the next retry is only scheduled when a future attempt is still allowed.
+- **LiveView mount/handle_params split:** moved DB reads out of `mount/3` and into `handle_params/3` for `BillingProfileForm`, `OrderForm`, `Subscriptions`, and `InvoiceDetail` (mount runs twice — once for the dead render and once on connect — so queries belong in `handle_params`).
+- **Webhook controller:** logs an explicit, actionable error when `raw_body` is missing from `conn.assigns` instead of silently failing.
+
+### Required action for host applications
+Wire the new body reader into your `Endpoint`'s `Plug.Parsers` (see `PhoenixKitBilling.Plugs.CacheBodyReader` moduledoc and the updated install task output for the exact snippet). Without it, webhook signature verification cannot run and webhook requests will be rejected.
+
 ## [0.1.5] - 2026-05-08
 
 ### Added

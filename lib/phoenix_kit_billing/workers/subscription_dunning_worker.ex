@@ -82,7 +82,10 @@ defmodule PhoenixKitBilling.Workers.SubscriptionDunningWorker do
     max_attempts = get_max_attempts()
 
     cond do
-      subscription.renewal_attempts >= max_attempts ->
+      # Cancel BEFORE attempting if this attempt would push us past the
+      # configured cap. `renewal_attempts` is the number of completed
+      # failed attempts so far; the next try would be attempt N+1.
+      subscription.renewal_attempts + 1 > max_attempts ->
         Logger.info("Subscription #{subscription.uuid} exceeded max dunning attempts, cancelling")
         cancel_subscription(subscription, "Max payment retry attempts exceeded")
 
@@ -179,8 +182,10 @@ defmodule PhoenixKitBilling.Workers.SubscriptionDunningWorker do
   defp schedule_next_retry(%Subscription{} = subscription) do
     max_attempts = get_max_attempts()
 
-    if subscription.renewal_attempts < max_attempts do
-      # Schedule next retry in 24 hours
+    # The current attempt has already been counted in update_retry_count/1
+    # by the caller. Only schedule another run if a future attempt is
+    # still permitted by max_attempts.
+    if subscription.renewal_attempts + 1 < max_attempts do
       %{subscription_uuid: subscription.uuid}
       |> __MODULE__.new(schedule_in: 86_400)
       |> Oban.insert()

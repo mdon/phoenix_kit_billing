@@ -122,8 +122,13 @@ defmodule PhoenixKitBilling.Web.WebhookController do
   defp get_raw_body(conn) do
     case conn.assigns[:raw_body] do
       nil ->
-        # Try to read from body_params if raw_body not set
-        # This is a fallback - ideally raw_body should be set by a Plug
+        Logger.error("""
+        Webhook received without a cached raw body. The host application must
+        wire PhoenixKitBilling.Plugs.CacheBodyReader into Plug.Parsers in its
+        Endpoint, otherwise signature verification cannot run. See the module
+        docs for the exact config snippet.
+        """)
+
         {:error, :no_raw_body}
 
       raw_body when is_binary(raw_body) ->

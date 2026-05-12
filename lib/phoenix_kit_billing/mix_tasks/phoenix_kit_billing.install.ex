@@ -121,9 +121,19 @@ defmodule Mix.Tasks.PhoenixKitBilling.Install do
     3. Add Oban cron job to config/config.exs:
        {"0 6 * * *", PhoenixKitBilling.Workers.SubscriptionRenewalWorker}
     4. Add PhoenixKitBilling.Supervisor to your application supervision tree
-    5. Configure payment provider API keys in Admin → Settings → Billing → Providers
-    6. Run `mix phoenix_kit.update` to apply billing migrations
-    7. Enable the Billing module in Admin → Modules
+    5. Wire the webhook body reader in your Endpoint's Plug.Parsers so
+       provider signatures can be verified (REQUIRED — webhooks will fail
+       without this):
+
+         plug Plug.Parsers,
+           parsers: [:urlencoded, :multipart, {:json, length: 10_000_000}],
+           pass: ["*/*"],
+           body_reader: {PhoenixKitBilling.Plugs.CacheBodyReader, :read_body, []},
+           json_decoder: Phoenix.json_library()
+
+    6. Configure payment provider API keys in Admin → Settings → Billing → Providers
+    7. Run `mix phoenix_kit.update` to apply billing migrations
+    8. Enable the Billing module in Admin → Modules
     """)
   end
 end

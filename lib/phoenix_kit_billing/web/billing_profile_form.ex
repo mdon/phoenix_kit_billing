@@ -18,21 +18,20 @@ defmodule PhoenixKitBilling.Web.BillingProfileForm do
   alias PhoenixKitBilling.BillingProfile
 
   @impl true
-  def mount(params, _session, socket) do
+  def mount(_params, _session, socket) do
     if Billing.enabled?() do
-      project_title = Settings.get_project_title()
-      %{users: users} = Auth.list_users_paginated(limit: 100)
-      countries = CountryData.countries_for_select()
-
-      socket =
-        socket
-        |> assign(:project_title, project_title)
-        |> assign(:users, users)
-        |> assign(:countries, countries)
-        |> assign(:profile_type, "individual")
-        |> load_profile(params["id"])
-
-      {:ok, socket}
+      # Per phoenix-thinking iron law: defer DB reads to handle_params.
+      {:ok,
+       socket
+       |> assign(:project_title, nil)
+       |> assign(:users, [])
+       |> assign(:countries, [])
+       |> assign(:profile_type, "individual")
+       |> assign(:profile, nil)
+       |> assign(:form, nil)
+       |> assign(:selected_user_uuid, nil)
+       |> assign(:subdivision_label, "Region")
+       |> assign(:page_title, "Billing Profile")}
     else
       {:ok,
        socket
@@ -74,7 +73,18 @@ defmodule PhoenixKitBilling.Web.BillingProfileForm do
   end
 
   @impl true
-  def handle_params(_params, _url, socket) do
+  def handle_params(params, _url, socket) do
+    project_title = Settings.get_project_title()
+    %{users: users} = Auth.list_users_paginated(limit: 100)
+    countries = CountryData.countries_for_select()
+
+    socket =
+      socket
+      |> assign(:project_title, project_title)
+      |> assign(:users, users)
+      |> assign(:countries, countries)
+      |> load_profile(params["id"])
+
     {:noreply, socket}
   end
 

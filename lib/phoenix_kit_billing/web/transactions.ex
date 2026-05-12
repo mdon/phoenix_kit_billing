@@ -20,6 +20,7 @@ defmodule PhoenixKitBilling.Web.Transactions do
   alias PhoenixKit.Settings
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
+  alias PhoenixKitBilling.Events
   alias PhoenixKitBilling.Transaction
 
   @default_per_page 25
@@ -27,12 +28,14 @@ defmodule PhoenixKitBilling.Web.Transactions do
   @impl true
   def mount(_params, _session, socket) do
     if Billing.enabled?() do
-      project_title = Settings.get_project_title()
+      if connected?(socket) do
+        Events.subscribe_transactions()
+      end
 
       socket =
         socket
         |> assign(:page_title, "Transactions")
-        |> assign(:project_title, project_title)
+        |> assign(:project_title, nil)
         |> assign(:transactions, [])
         |> assign(:total_count, 0)
         |> assign(:loading, true)
@@ -52,11 +55,20 @@ defmodule PhoenixKitBilling.Web.Transactions do
   def handle_params(params, _url, socket) do
     socket =
       socket
+      |> assign(:project_title, Settings.get_project_title())
       |> apply_params(params)
       |> load_transactions()
 
     {:noreply, socket}
   end
+
+  @impl true
+  def handle_info({event, _txn}, socket)
+      when event in [:transaction_created, :transaction_refunded] do
+    {:noreply, load_transactions(socket)}
+  end
+
+  def handle_info(_msg, socket), do: {:noreply, socket}
 
   defp assign_filter_defaults(socket) do
     socket

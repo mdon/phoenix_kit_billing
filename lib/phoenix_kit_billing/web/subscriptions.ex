@@ -29,17 +29,17 @@ defmodule PhoenixKitBilling.Web.Subscriptions do
         Events.subscribe_subscriptions()
       end
 
-      project_title = Settings.get_project_title()
-
-      socket =
-        socket
-        |> assign(:page_title, "Subscriptions")
-        |> assign(:project_title, project_title)
-        |> assign(:status_filter, "all")
-        |> assign(:search, "")
-        |> load_subscriptions()
-
-      {:ok, socket}
+      # Per phoenix-thinking iron law: no DB queries in mount. Defer the
+      # subscription list query to handle_params, which fires once per
+      # navigation and where the URL-driven filters live anyway.
+      {:ok,
+       socket
+       |> assign(:page_title, "Subscriptions")
+       |> assign(:project_title, nil)
+       |> assign(:status_filter, "all")
+       |> assign(:search, "")
+       |> assign(:subscriptions, [])
+       |> assign(:stats, empty_stats())}
     else
       {:ok,
        socket
@@ -55,11 +55,16 @@ defmodule PhoenixKitBilling.Web.Subscriptions do
 
     socket =
       socket
+      |> assign(:project_title, Settings.get_project_title())
       |> assign(:status_filter, status)
       |> assign(:search, search)
       |> load_subscriptions()
 
     {:noreply, socket}
+  end
+
+  defp empty_stats do
+    %{total: 0, active: 0, trialing: 0, past_due: 0, cancelled: 0}
   end
 
   defp load_subscriptions(socket) do

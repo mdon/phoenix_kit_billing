@@ -20,32 +20,17 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
   alias PhoenixKit.Settings
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
+  alias PhoenixKitBilling.Events
 
   @impl true
-  def mount(%{"id" => id}, _session, socket) do
+  def mount(_params, _session, socket) do
     if Billing.enabled?() do
-      case Billing.get_order(id, preload: [:billing_profile, :user]) do
-        nil ->
-          {:ok,
-           socket
-           |> put_flash(:error, "Order not found")
-           |> push_navigate(to: Routes.path("/admin/billing/orders"))}
-
-        order ->
-          project_title = Settings.get_project_title()
-          invoices = Billing.list_invoices_for_order(order.uuid)
-
-          socket =
-            socket
-            |> assign(:page_title, "Order #{order.order_number}")
-            |> assign(:project_title, project_title)
-            |> assign(:order, order)
-            |> assign(:invoices, invoices)
-            |> assign(:show_status_modal, false)
-            |> assign(:show_invoice_modal, false)
-
-          {:ok, socket}
+      if connected?(socket) do
+        Events.subscribe_orders()
+        Events.subscribe_invoices()
       end
+
+      {:ok, assign(socket, loaded?: false)}
     else
       {:ok,
        socket
@@ -55,9 +40,61 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
   end
 
   @impl true
-  def handle_params(_params, _url, socket) do
-    {:noreply, socket}
+  def handle_params(%{"id" => id}, _url, socket) do
+    case Billing.get_order(id, preload: [:billing_profile, :user, :invoices]) do
+      nil ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Order not found")
+         |> push_navigate(to: Routes.path("/admin/billing/orders"))}
+
+      order ->
+        socket =
+          if socket.assigns[:loaded?] do
+            socket
+            |> assign(:order, order)
+            |> assign(:invoices, order.invoices)
+          else
+            socket
+            |> assign(:loaded?, true)
+            |> assign(:page_title, "Order #{order.order_number}")
+            |> assign(:project_title, Settings.get_project_title())
+            |> assign(:order, order)
+            |> assign(:invoices, order.invoices)
+            |> assign(:show_status_modal, false)
+            |> assign(:show_invoice_modal, false)
+          end
+
+        {:noreply, socket}
+    end
   end
+
+  @impl true
+  def handle_info({event, %{uuid: uuid}}, %{assigns: %{order: %{uuid: uuid}}} = socket)
+      when event in [:order_updated, :order_confirmed, :order_paid, :order_cancelled] do
+    {:noreply, refresh_order(socket)}
+  end
+
+  def handle_info({event, %{order_uuid: order_uuid}}, socket)
+      when event in [:invoice_created, :invoice_paid, :invoice_voided, :invoice_sent] and
+             not is_nil(order_uuid) do
+    if socket.assigns[:order] && socket.assigns.order.uuid == order_uuid do
+      {:noreply, refresh_order(socket)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info(_msg, socket), do: {:noreply, socket}
+
+  defp refresh_order(%{assigns: %{order: %{uuid: uuid}}} = socket) do
+    case Billing.get_order(uuid, preload: [:billing_profile, :user, :invoices]) do
+      nil -> socket
+      order -> assign(socket, order: order, invoices: order.invoices)
+    end
+  end
+
+  defp refresh_order(socket), do: socket
 
   @impl true
   def handle_event("confirm_order", _params, socket) do
