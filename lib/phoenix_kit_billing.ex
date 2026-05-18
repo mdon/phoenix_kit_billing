@@ -59,6 +59,8 @@ defmodule PhoenixKitBilling do
   alias PhoenixKitBilling.Transaction
   alias PhoenixKitWeb.Live.Settings.Organization
 
+  require Logger
+
   # ============================================
   # SYSTEM ENABLE/DISABLE
   # ============================================
@@ -3213,41 +3215,49 @@ defmodule PhoenixKitBilling do
 
   - `invoice` - The invoice to pay
   - `provider` - Payment provider atom (:stripe, :paypal, :razorpay)
-  - `opts` - Options:
-    - `:success_url` - URL to redirect after success
-    - `:cancel_url` - URL to redirect if cancelled
+  - `opts` - Options forwarded to the provider:
+    - `:success_url` - URL to redirect after success (required)
+    - `:cancel_url` - URL to redirect if cancelled (defaults to `:success_url`)
+    - `:customer_email`, `:save_payment_method`, `:metadata` - optional, provider-dependent
 
   ## Examples
 
       {:ok, url} = Billing.create_checkout_session(invoice, :stripe, success_url: "/success")
   """
   def create_checkout_session(%Invoice{} = invoice, provider, opts \\ []) do
+    # Fail fast with a clear error if the caller forgot success_url, then
+    # default cancel_url to it. The provider derives amount, currency,
+    # line items and metadata directly from the invoice struct, so we
+    # forward the invoice itself — not a hand-built options map.
     success_url = Keyword.fetch!(opts, :success_url)
-    cancel_url = Keyword.get(opts, :cancel_url, success_url)
+    provider_opts = Keyword.put_new(opts, :cancel_url, success_url)
 
-    amount_cents = Decimal.to_integer(Decimal.mult(invoice.total, 100))
-
-    session_opts = %{
-      amount: amount_cents,
-      currency: invoice.currency,
-      description: "Invoice #{invoice.invoice_number}",
-      success_url: success_url,
-      cancel_url: cancel_url,
-      metadata: %{
-        invoice_uuid: invoice.uuid,
-        invoice_number: invoice.invoice_number
-      }
-    }
-
-    case Providers.create_checkout_session(provider, session_opts) do
+    case Providers.create_checkout_session(provider, invoice, provider_opts) do
       {:ok, session} ->
-        # Update invoice with checkout session info
-        invoice
-        |> Ecto.Changeset.change(%{
-          checkout_session_id: session.id,
-          checkout_url: session.url
-        })
-        |> repo().update()
+        # Record checkout session info on the invoice. The invoice schema
+        # has no dedicated checkout columns, so it is stashed under
+        # metadata["checkout"]. Best-effort: a failed update must not lose
+        # the live session URL we already owe the caller.
+        updated_metadata =
+          Map.put(invoice.metadata || %{}, "checkout", %{
+            "provider_session_id" => session.id,
+            "url" => session.url,
+            "provider" => to_string(provider),
+            "created_at" => UtilsDate.utc_now() |> DateTime.to_iso8601()
+          })
+
+        case invoice
+             |> Ecto.Changeset.change(%{metadata: updated_metadata})
+             |> repo().update() do
+          {:ok, _invoice} ->
+            :ok
+
+          {:error, changeset} ->
+            Logger.warning(
+              "Checkout session created but failed to persist to invoice " <>
+                "#{invoice.invoice_number}: #{inspect(changeset.errors)}"
+            )
+        end
 
         {:ok, session.url}
 

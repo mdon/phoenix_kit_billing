@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.1] - 2026-05-18
+
+### Fixed
+- `PhoenixKitBilling.create_checkout_session/3` was unusable — every call crashed:
+  - It called `Providers.create_checkout_session/2` with a hand-built options map in the invoice position, so the provider received an empty `opts` keyword list and raised `KeyError` on `success_url`. It now forwards the real `%Invoice{}` struct and passes `opts` through, with `:cancel_url` defaulting to `:success_url`. The provider already derives amount, currency, line items and metadata from the invoice.
+  - On success it wrote `checkout_session_id` / `checkout_url` via `Ecto.Changeset.change/2`, but neither field exists on the `Invoice` schema, raising `ArgumentError: unknown field`. Checkout session details are now recorded under `invoice.metadata["checkout"]` (`provider_session_id`, `url`, `provider`, `created_at`); persistence is best-effort and a failed update no longer discards the live session URL returned to the caller.
+
 ## [0.3.0] - 2026-05-18
 
 ### Added
