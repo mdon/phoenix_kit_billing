@@ -10,6 +10,7 @@ defmodule PhoenixKitBilling.Providers do
   - `:stripe` - Stripe payments (cards, wallets)
   - `:paypal` - PayPal payments
   - `:razorpay` - Razorpay payments (India)
+  - `:everypay` - EveryPay payments (Baltics)
 
   ## Usage
 
@@ -33,7 +34,8 @@ defmodule PhoenixKitBilling.Providers do
   @providers %{
     stripe: PhoenixKitBilling.Providers.Stripe,
     paypal: PhoenixKitBilling.Providers.PayPal,
-    razorpay: PhoenixKitBilling.Providers.Razorpay
+    razorpay: PhoenixKitBilling.Providers.Razorpay,
+    everypay: PhoenixKitBilling.Providers.EveryPay
   }
 
   @provider_names Map.keys(@providers)
@@ -70,8 +72,8 @@ defmodule PhoenixKitBilling.Providers do
 
   ## Examples
 
-      iex> Providers.all_providers()
-      [:stripe, :paypal, :razorpay]
+      Providers.all_providers()
+      #=> [:stripe, :paypal, :razorpay, :everypay]
   """
   @spec all_providers() :: [atom()]
   def all_providers, do: @provider_names
@@ -347,6 +349,15 @@ defmodule PhoenixKitBilling.Providers do
       icon: "razorpay",
       color: "#072654",
       description: "Popular payment gateway in India"
+    }
+  end
+
+  def provider_info(:everypay) do
+    %ProviderInfo{
+      name: "EveryPay",
+      icon: "credit-card",
+      color: "#0044CC",
+      description: "Card payments via the EveryPay gateway (Baltics)"
     }
   end
 

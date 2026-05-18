@@ -4,7 +4,7 @@ defmodule PhoenixKitBilling.PaymentOption do
 
   Represents available payment methods during checkout, including:
   - Offline methods: Cash on Delivery (COD), Bank Transfer
-  - Online methods: Stripe, PayPal, Razorpay
+  - Online methods: Stripe, PayPal, Razorpay, EveryPay
 
   ## Type
 
@@ -22,7 +22,7 @@ defmodule PhoenixKitBilling.PaymentOption do
   import Ecto.Changeset
 
   @types ~w(offline online)
-  @codes ~w(cod bank_transfer stripe paypal razorpay)
+  @codes ~w(cod bank_transfer stripe paypal razorpay everypay)
 
   @primary_key {:uuid, UUIDv7, autogenerate: true}
 
@@ -113,6 +113,7 @@ defmodule PhoenixKitBilling.PaymentOption do
   def icon_name(%__MODULE__{code: "stripe"}), do: "hero-credit-card"
   def icon_name(%__MODULE__{code: "paypal"}), do: "hero-credit-card"
   def icon_name(%__MODULE__{code: "razorpay"}), do: "hero-credit-card"
+  def icon_name(%__MODULE__{code: "everypay"}), do: "hero-credit-card"
   def icon_name(_), do: "hero-credit-card"
 
   defp validate_provider(changeset) do

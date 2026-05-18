@@ -1,6 +1,6 @@
 defmodule PhoenixKitBilling.Web.WebhookController do
   @moduledoc """
-  Handles webhooks from payment providers (Stripe, PayPal, Razorpay).
+  Handles webhooks from payment providers (Stripe, PayPal, Razorpay, EveryPay).
 
   This controller receives webhook events from payment providers,
   verifies their signatures, and processes them through the WebhookProcessor.
@@ -12,11 +12,17 @@ defmodule PhoenixKitBilling.Web.WebhookController do
   - Stripe: `https://yourdomain.com/phoenix_kit/webhooks/billing/stripe`
   - PayPal: `https://yourdomain.com/phoenix_kit/webhooks/billing/paypal`
   - Razorpay: `https://yourdomain.com/phoenix_kit/webhooks/billing/razorpay`
+  - EveryPay: `https://yourdomain.com/phoenix_kit/webhooks/billing/everypay`
 
   ## Security
 
-  All webhooks verify signatures to ensure they come from legitimate sources.
-  Invalid signatures result in 401 Unauthorized responses.
+  Stripe, PayPal and Razorpay webhooks verify signatures to ensure they come
+  from legitimate sources; invalid signatures result in 401 Unauthorized
+  responses.
+
+  EveryPay v4 callbacks are not signed. The EveryPay handler instead re-fetches
+  the authoritative payment record from the EveryPay API and acts only on that,
+  so a forged callback body cannot change billing state.
 
   ## Idempotency
 
@@ -30,6 +36,7 @@ defmodule PhoenixKitBilling.Web.WebhookController do
 
   alias PhoenixKit.Settings
   alias PhoenixKitBilling.Providers
+  alias PhoenixKitBilling.Providers.EveryPay
   alias PhoenixKitBilling.WebhookProcessor
 
   require Logger
@@ -60,6 +67,57 @@ defmodule PhoenixKitBilling.Web.WebhookController do
   """
   def razorpay(conn, _params) do
     handle_webhook(conn, :razorpay, "x-razorpay-signature")
+  end
+
+  @doc """
+  Handles EveryPay callbacks.
+
+  EveryPay v4 callbacks are not signed. Rather than trust the callback body,
+  this reads the `payment_reference`, re-fetches the authoritative payment
+  record from the EveryPay API, normalizes it, and processes that.
+
+  Always returns 200 for well-formed callbacks (including duplicates and
+  non-final payment states) so EveryPay does not keep retrying.
+  """
+  def everypay(conn, params) do
+    with {:ok, reference} <- fetch_everypay_reference(params),
+         {:ok, payment} <- EveryPay.fetch_payment(reference),
+         {:ok, event} <- Providers.handle_webhook_event(:everypay, payment),
+         {:ok, _result} <- WebhookProcessor.process(event) do
+      Logger.info("Webhook processed successfully: everypay - #{event.type}")
+
+      conn
+      |> put_status(200)
+      |> json(%{status: "ok"})
+    else
+      {:error, :missing_reference} ->
+        Logger.warning("EveryPay callback received without payment_reference")
+
+        conn
+        |> put_status(400)
+        |> json(%{error: "Missing payment_reference"})
+
+      {:error, reason} when reason in [:duplicate_event, :unknown_event] ->
+        Logger.debug("EveryPay callback ignored: #{reason}")
+
+        conn
+        |> put_status(200)
+        |> json(%{status: "ignored"})
+
+      {:error, :not_configured} ->
+        Logger.warning("EveryPay callback received but provider is not configured")
+
+        conn
+        |> put_status(400)
+        |> json(%{error: "Provider not configured"})
+
+      {:error, reason} ->
+        Logger.error("EveryPay callback processing failed: #{inspect(reason)}")
+
+        conn
+        |> put_status(400)
+        |> json(%{error: "Processing failed"})
+    end
   end
 
   # ===========================================
@@ -116,6 +174,13 @@ defmodule PhoenixKitBilling.Web.WebhookController do
         conn
         |> put_status(400)
         |> json(%{error: "Processing failed"})
+    end
+  end
+
+  defp fetch_everypay_reference(params) do
+    case params["payment_reference"] do
+      reference when is_binary(reference) and reference != "" -> {:ok, reference}
+      _ -> {:error, :missing_reference}
     end
   end
 

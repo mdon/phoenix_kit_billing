@@ -17,6 +17,7 @@ defmodule PhoenixKitBilling.Web.Routes do
         post("/webhooks/billing/stripe", unquote(webhook_controller), :stripe)
         post("/webhooks/billing/paypal", unquote(webhook_controller), :paypal)
         post("/webhooks/billing/razorpay", unquote(webhook_controller), :razorpay)
+        post("/webhooks/billing/everypay", unquote(webhook_controller), :everypay)
       end
     end
   end

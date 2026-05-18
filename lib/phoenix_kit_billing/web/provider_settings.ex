@@ -2,7 +2,8 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
   @moduledoc """
   Payment provider settings LiveView for the billing module.
 
-  Provides configuration interface for Stripe, PayPal, and Razorpay payment providers.
+  Provides configuration interface for Stripe, PayPal, Razorpay, and EveryPay
+  payment providers.
   """
 
   use Phoenix.LiveView
@@ -68,6 +69,16 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
       Settings.get_setting("billing_razorpay_webhook_secret", "")
     )
     |> assign(:razorpay_webhook_url, Routes.url("/webhooks/billing/razorpay"))
+    # EveryPay settings
+    |> assign(
+      :everypay_enabled,
+      Settings.get_setting("billing_everypay_enabled", "false") == "true"
+    )
+    |> assign(:everypay_api_username, Settings.get_setting("billing_everypay_api_username", ""))
+    |> assign(:everypay_api_secret, Settings.get_setting("billing_everypay_api_secret", ""))
+    |> assign(:everypay_account_name, Settings.get_setting("billing_everypay_account_name", ""))
+    |> assign(:everypay_mode, Settings.get_setting("billing_everypay_mode", "test"))
+    |> assign(:everypay_webhook_url, Routes.url("/webhooks/billing/everypay"))
     # Provider availability
     |> assign(:available_providers, Providers.list_available_providers())
   end
@@ -161,6 +172,37 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
      socket
      |> load_provider_settings()
      |> put_flash(:info, "Razorpay settings saved")}
+  end
+
+  @impl true
+  def handle_event("toggle_everypay", _params, socket) do
+    new_enabled = !socket.assigns.everypay_enabled
+    Settings.update_setting("billing_everypay_enabled", to_string(new_enabled))
+
+    {:noreply,
+     socket
+     |> assign(:everypay_enabled, new_enabled)
+     |> assign(:available_providers, Providers.list_available_providers())
+     |> put_flash(:info, if(new_enabled, do: "EveryPay enabled", else: "EveryPay disabled"))}
+  end
+
+  @impl true
+  def handle_event("save_everypay", params, socket) do
+    settings = [
+      {"billing_everypay_api_username", params["api_username"] || ""},
+      {"billing_everypay_api_secret", params["api_secret"] || ""},
+      {"billing_everypay_account_name", params["account_name"] || ""},
+      {"billing_everypay_mode", params["mode"] || "test"}
+    ]
+
+    Enum.each(settings, fn {key, value} ->
+      Settings.update_setting(key, value)
+    end)
+
+    {:noreply,
+     socket
+     |> load_provider_settings()
+     |> put_flash(:info, "EveryPay settings saved")}
   end
 
   # Helper to mask sensitive keys

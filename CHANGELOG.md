@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+- **EveryPay payment provider** (`PhoenixKitBilling.Providers.EveryPay`) — EveryPay AS (Baltics) gateway, API v4. Supports one-off hosted-page payments, charging saved card tokens for renewals (MIT), and refunds. Registered as the `:everypay` provider and the `everypay` payment-option code.
+- EveryPay callback endpoint `POST /webhooks/billing/everypay`. EveryPay v4 callbacks are unsigned, so the handler re-fetches the authoritative payment record from the API and acts only on that — a forged callback body cannot change billing state.
+- EveryPay configuration panel on the Payment Providers admin page (API username/secret, processing account name, test/live mode).
+
 ## [0.2.0] - 2026-05-12
 
 ### Added
