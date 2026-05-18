@@ -26,7 +26,7 @@ Add `phoenix_kit_billing` to your dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:phoenix_kit_billing, "~> 0.1.0"}
+    {:phoenix_kit_billing, "~> 0.3"}
   ]
 end
 ```
