@@ -3,12 +3,12 @@
 [![Elixir](https://img.shields.io/badge/Elixir-~%3E_1.18-4B275F)](https://elixir-lang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Billing module for [PhoenixKit](https://github.com/BeamLabEU/phoenix_kit). Drop-in payments, subscriptions, invoices, orders, and multi-currency support with Stripe, PayPal, and Razorpay integration.
+Billing module for [PhoenixKit](https://github.com/BeamLabEU/phoenix_kit). Drop-in payments, subscriptions, invoices, orders, and multi-currency support with Stripe, PayPal, Razorpay, and EveryPay integration.
 
 ## Features
 
 - **Orders & invoices** — full order-to-invoice-to-receipt workflow with status tracking and print views
-- **Multi-provider payments** — Stripe, PayPal, and Razorpay via a unified Provider behaviour with hosted checkout
+- **Multi-provider payments** — Stripe, PayPal, Razorpay, and EveryPay via a unified Provider behaviour with hosted checkout
 - **Internal subscription control** — subscriptions managed in your database, not by providers; automatic renewals and dunning
 - **Multi-currency** — currency definitions with exchange rates
 - **Billing profiles** — individual and company billing details with address, tax ID, and IBAN validation
@@ -96,6 +96,15 @@ alias PhoenixKitBilling
 Subscription renewals and failed-payment retries (dunning) are handled automatically by Oban workers.
 
 ### Payment Providers
+
+Supported payment providers:
+
+| Provider | Code | Notes |
+|----------|------|-------|
+| Stripe | `:stripe` | Cards and wallets; signed webhooks |
+| PayPal | `:paypal` | PayPal and cards; signed webhooks |
+| Razorpay | `:razorpay` | India (UPI, cards); signed webhooks |
+| EveryPay | `:everypay` | EveryPay AS gateway (Baltics), API v4; callbacks verified by server-side status re-fetch |
 
 Providers are configured in admin settings. The system uses hosted checkout — users are redirected to the provider's payment page:
 
@@ -186,7 +195,8 @@ lib/
     │   ├── providers.ex              # Provider registry and routing
     │   ├── stripe.ex                 # Stripe implementation
     │   ├── paypal.ex                 # PayPal implementation
-    │   └── razorpay.ex               # Razorpay implementation
+    │   ├── razorpay.ex               # Razorpay implementation
+    │   └── everypay.ex               # EveryPay implementation
     ├── schemas/
     │   ├── billing_profile.ex        # User billing information
     │   ├── currency.ex               # Currency definitions
