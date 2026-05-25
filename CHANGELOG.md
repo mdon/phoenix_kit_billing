@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.2] - 2026-05-25
+
+### Changed
+- **Internationalized the billing admin UI.** Every user-visible string across the admin pages (dashboard, billing settings, payment providers, currencies, subscription types & subscriptions, billing profiles, orders, invoices, transactions) now routes through the per-module `PhoenixKitBilling.Gettext` backend, with full English, Russian, and Estonian catalogues. Print templates (invoice/receipt/credit-note/payment-confirmation) intentionally remain on `PhoenixKitWeb.Gettext` due to their legal-formatting concerns.
+- Moved page-level filters, search, clear-filters, and refresh controls into the table toolbar row (`:toolbar_title` / `:toolbar_actions`) for Subscriptions, Billing Profiles, Currencies, Transactions, Invoices, and Orders, grouping related controls and freeing vertical space.
+- Upgraded locked dependencies (`ecto`/`ecto_sql` 3.14, `phoenix_kit` 1.7.120, `req` 0.5.18, `etcher`, `fresco`, `ex_doc`, `hammer`). No change to declared version requirements.
+
+### Fixed
+- `SubscriptionHelpers.format_interval/2` returned hardcoded English ("Monthly", "Every 3 months", …) and is rendered on six already-localized subscription pages, so it leaked English under `ru`/`et`. It now uses `gettext`/`ngettext` with complete en/ru/et plural forms. (The catalogue drift test could not catch this because the strings were never `gettext` msgids.)
+
 ## [0.3.1] - 2026-05-18
 
 ### Fixed
