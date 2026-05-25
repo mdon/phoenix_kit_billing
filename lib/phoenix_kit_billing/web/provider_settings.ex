@@ -92,7 +92,10 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
      socket
      |> assign(:stripe_enabled, new_enabled)
      |> assign(:available_providers, Providers.list_available_providers())
-     |> put_flash(:info, if(new_enabled, do: gettext("Stripe enabled"), else: gettext("Stripe disabled")))}
+     |> put_flash(
+       :info,
+       if(new_enabled, do: gettext("Stripe enabled"), else: gettext("Stripe disabled"))
+     )}
   end
 
   @impl true
@@ -122,7 +125,10 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
      socket
      |> assign(:paypal_enabled, new_enabled)
      |> assign(:available_providers, Providers.list_available_providers())
-     |> put_flash(:info, if(new_enabled, do: gettext("PayPal enabled"), else: gettext("PayPal disabled")))}
+     |> put_flash(
+       :info,
+       if(new_enabled, do: gettext("PayPal enabled"), else: gettext("PayPal disabled"))
+     )}
   end
 
   @impl true
@@ -153,7 +159,10 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
      socket
      |> assign(:razorpay_enabled, new_enabled)
      |> assign(:available_providers, Providers.list_available_providers())
-     |> put_flash(:info, if(new_enabled, do: gettext("Razorpay enabled"), else: gettext("Razorpay disabled")))}
+     |> put_flash(
+       :info,
+       if(new_enabled, do: gettext("Razorpay enabled"), else: gettext("Razorpay disabled"))
+     )}
   end
 
   @impl true
@@ -183,7 +192,10 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
      socket
      |> assign(:everypay_enabled, new_enabled)
      |> assign(:available_providers, Providers.list_available_providers())
-     |> put_flash(:info, if(new_enabled, do: gettext("EveryPay enabled"), else: gettext("EveryPay disabled")))}
+     |> put_flash(
+       :info,
+       if(new_enabled, do: gettext("EveryPay enabled"), else: gettext("EveryPay disabled"))
+     )}
   end
 
   @impl true

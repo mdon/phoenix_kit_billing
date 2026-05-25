@@ -195,7 +195,12 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
            |> push_navigate(to: Routes.path("/admin/billing/subscriptions/#{updated.uuid}"))}
 
         {:error, reason} ->
-          {:noreply, assign(socket, :error, gettext("Failed to update subscription: %{reason}", reason: inspect(reason)))}
+          {:noreply,
+           assign(
+             socket,
+             :error,
+             gettext("Failed to update subscription: %{reason}", reason: inspect(reason))
+           )}
       end
     end
   end
@@ -240,7 +245,11 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
 
           {:error, reason} ->
             {:noreply,
-             assign(socket, :error, gettext("Failed to create subscription: %{reason}", reason: inspect(reason)))}
+             assign(
+               socket,
+               :error,
+               gettext("Failed to create subscription: %{reason}", reason: inspect(reason))
+             )}
         end
     end
   end
@@ -257,7 +266,8 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
          )}
 
       {:error, reason} ->
-        {:noreply, assign(socket, :error, gettext("Failed to pause: %{reason}", reason: inspect(reason)))}
+        {:noreply,
+         assign(socket, :error, gettext("Failed to pause: %{reason}", reason: inspect(reason)))}
     end
   end
 
@@ -273,7 +283,8 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
          )}
 
       {:error, reason} ->
-        {:noreply, assign(socket, :error, gettext("Failed to resume: %{reason}", reason: inspect(reason)))}
+        {:noreply,
+         assign(socket, :error, gettext("Failed to resume: %{reason}", reason: inspect(reason)))}
     end
   end
 
@@ -289,7 +300,8 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
          )}
 
       {:error, reason} ->
-        {:noreply, assign(socket, :error, gettext("Failed to cancel: %{reason}", reason: inspect(reason)))}
+        {:noreply,
+         assign(socket, :error, gettext("Failed to cancel: %{reason}", reason: inspect(reason)))}
     end
   end
 
@@ -306,7 +318,8 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
          |> push_navigate(to: Routes.path("/admin/billing/subscriptions/#{sub.uuid}"))}
 
       {:error, reason} ->
-        {:noreply, assign(socket, :error, gettext("Failed to extend: %{reason}", reason: inspect(reason)))}
+        {:noreply,
+         assign(socket, :error, gettext("Failed to extend: %{reason}", reason: inspect(reason)))}
     end
   end
 

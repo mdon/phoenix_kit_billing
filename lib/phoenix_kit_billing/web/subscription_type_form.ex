@@ -110,7 +110,11 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
 
       {:error, reason} ->
         {:noreply,
-         put_flash(socket, :error, gettext("Failed to save subscription type: %{reason}", reason: inspect(reason)))}
+         put_flash(
+           socket,
+           :error,
+           gettext("Failed to save subscription type: %{reason}", reason: inspect(reason))
+         )}
     end
   end
 
@@ -145,13 +149,25 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
 
   @doc false
   def interval_phrase("day", 1), do: ngettext("per day", "per day", 1)
-  def interval_phrase("day", n), do: ngettext("per %{count} days", "per %{count} days", n, count: n)
+
+  def interval_phrase("day", n),
+    do: ngettext("per %{count} days", "per %{count} days", n, count: n)
+
   def interval_phrase("week", 1), do: ngettext("per week", "per week", 1)
-  def interval_phrase("week", n), do: ngettext("per %{count} weeks", "per %{count} weeks", n, count: n)
+
+  def interval_phrase("week", n),
+    do: ngettext("per %{count} weeks", "per %{count} weeks", n, count: n)
+
   def interval_phrase("month", 1), do: ngettext("per month", "per month", 1)
-  def interval_phrase("month", n), do: ngettext("per %{count} months", "per %{count} months", n, count: n)
+
+  def interval_phrase("month", n),
+    do: ngettext("per %{count} months", "per %{count} months", n, count: n)
+
   def interval_phrase("year", 1), do: ngettext("per year", "per year", 1)
-  def interval_phrase("year", n), do: ngettext("per %{count} years", "per %{count} years", n, count: n)
+
+  def interval_phrase("year", n),
+    do: ngettext("per %{count} years", "per %{count} years", n, count: n)
+
   def interval_phrase(other, n), do: "#{n} #{other}(s)"
 
   def error_to_string([]), do: ""

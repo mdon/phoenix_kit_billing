@@ -67,7 +67,12 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
          |> put_flash(:info, gettext("Subscription cancelled immediately"))}
 
       {:error, reason} ->
-        {:noreply, put_flash(socket, :error, gettext("Failed to cancel: %{reason}", reason: inspect(reason)))}
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           gettext("Failed to cancel: %{reason}", reason: inspect(reason))
+         )}
     end
   end
 
@@ -81,7 +86,12 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
          |> put_flash(:info, gettext("Subscription will cancel at period end"))}
 
       {:error, reason} ->
-        {:noreply, put_flash(socket, :error, gettext("Failed to cancel: %{reason}", reason: inspect(reason)))}
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           gettext("Failed to cancel: %{reason}", reason: inspect(reason))
+         )}
     end
   end
 
@@ -95,7 +105,12 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
          |> put_flash(:info, gettext("Subscription resumed"))}
 
       {:error, reason} ->
-        {:noreply, put_flash(socket, :error, gettext("Failed to resume: %{reason}", reason: inspect(reason)))}
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           gettext("Failed to resume: %{reason}", reason: inspect(reason))
+         )}
     end
   end
 
@@ -109,7 +124,8 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
          |> put_flash(:info, gettext("Subscription paused"))}
 
       {:error, reason} ->
-        {:noreply, put_flash(socket, :error, gettext("Failed to pause: %{reason}", reason: inspect(reason)))}
+        {:noreply,
+         put_flash(socket, :error, gettext("Failed to pause: %{reason}", reason: inspect(reason)))}
     end
   end
 
@@ -152,10 +168,15 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
 
         {:error, reason} ->
           {:noreply,
-           put_flash(socket, :error, gettext("Failed to change subscription type: %{reason}", reason: inspect(reason)))}
+           put_flash(
+             socket,
+             :error,
+             gettext("Failed to change subscription type: %{reason}", reason: inspect(reason))
+           )}
       end
     else
-      {:noreply, put_flash(socket, :error, gettext("Please select a different subscription type"))}
+      {:noreply,
+       put_flash(socket, :error, gettext("Please select a different subscription type"))}
     end
   end
 

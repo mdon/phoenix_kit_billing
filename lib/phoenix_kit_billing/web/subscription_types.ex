@@ -67,7 +67,11 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypes do
 
         {:error, reason} ->
           {:noreply,
-           put_flash(socket, :error, gettext("Failed to update subscription type: %{reason}", reason: inspect(reason)))}
+           put_flash(
+             socket,
+             :error,
+             gettext("Failed to update subscription type: %{reason}", reason: inspect(reason))
+           )}
       end
     else
       {:noreply, put_flash(socket, :error, gettext("Subscription type not found"))}
@@ -91,12 +95,18 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypes do
            put_flash(
              socket,
              :error,
-             gettext("Cannot delete subscription type with active subscriptions. Deactivate it instead.")
+             gettext(
+               "Cannot delete subscription type with active subscriptions. Deactivate it instead."
+             )
            )}
 
         {:error, reason} ->
           {:noreply,
-           put_flash(socket, :error, gettext("Failed to delete subscription type: %{reason}", reason: inspect(reason)))}
+           put_flash(
+             socket,
+             :error,
+             gettext("Failed to delete subscription type: %{reason}", reason: inspect(reason))
+           )}
       end
     else
       {:noreply, put_flash(socket, :error, gettext("Subscription type not found"))}

@@ -135,7 +135,12 @@ defmodule PhoenixKitBilling.Web.Subscriptions do
            |> put_flash(:info, gettext("Subscription will be cancelled at period end"))}
 
         {:error, reason} ->
-          {:noreply, put_flash(socket, :error, gettext("Failed to cancel: %{reason}", reason: inspect(reason)))}
+          {:noreply,
+           put_flash(
+             socket,
+             :error,
+             gettext("Failed to cancel: %{reason}", reason: inspect(reason))
+           )}
       end
     else
       {:noreply, put_flash(socket, :error, gettext("Subscription not found"))}

@@ -188,7 +188,11 @@ defmodule PhoenixKitBilling.Web.Currencies do
 
       {:error, :currency_in_use} ->
         {:noreply,
-         put_flash(socket, :error, gettext("Cannot delete currency — it is used by existing orders"))}
+         put_flash(
+           socket,
+           :error,
+           gettext("Cannot delete currency — it is used by existing orders")
+         )}
 
       {:error, _other} ->
         {:noreply, put_flash(socket, :error, gettext("Failed to delete currency"))}

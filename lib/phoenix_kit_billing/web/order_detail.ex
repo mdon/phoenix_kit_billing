@@ -106,7 +106,8 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
          |> put_flash(:info, gettext("Order confirmed successfully"))}
 
       {:error, reason} ->
-        {:noreply, put_flash(socket, :error, gettext("Failed to confirm order: %{reason}", reason: reason))}
+        {:noreply,
+         put_flash(socket, :error, gettext("Failed to confirm order: %{reason}", reason: reason))}
     end
   end
 
@@ -120,7 +121,8 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
          |> put_flash(:info, gettext("Order marked as paid"))}
 
       {:error, reason} ->
-        {:noreply, put_flash(socket, :error, gettext("Failed to mark as paid: %{reason}", reason: reason))}
+        {:noreply,
+         put_flash(socket, :error, gettext("Failed to mark as paid: %{reason}", reason: reason))}
     end
   end
 
@@ -134,7 +136,8 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
          |> put_flash(:info, gettext("Order cancelled"))}
 
       {:error, reason} ->
-        {:noreply, put_flash(socket, :error, gettext("Failed to cancel order: %{reason}", reason: reason))}
+        {:noreply,
+         put_flash(socket, :error, gettext("Failed to cancel order: %{reason}", reason: reason))}
     end
   end
 
@@ -151,7 +154,9 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
 
       {:error, changeset} ->
         errors = format_changeset_errors(changeset)
-        {:noreply, put_flash(socket, :error, gettext("Failed to create invoice: %{errors}", errors: errors))}
+
+        {:noreply,
+         put_flash(socket, :error, gettext("Failed to create invoice: %{errors}", errors: errors))}
     end
   end
 
