@@ -2,8 +2,8 @@
     <%!-- Header --%>
     <.admin_page_header
       back={PhoenixKit.Utils.Routes.path("/admin/billing")}
-      title="Billing Settings"
-      subtitle="Configure billing module options"
+      title={gettext("Billing Settings")}
+      subtitle={gettext("Configure billing module options")}
     />
 
     <%!-- Navigation Tabs --%>
@@ -12,25 +12,25 @@
         navigate={PhoenixKit.Utils.Routes.path("/admin/settings/billing")}
         class="tab tab-active"
       >
-        <.icon name="hero-cog-6-tooth" class="w-4 h-4 mr-2" /> General
+        <.icon name="hero-cog-6-tooth" class="w-4 h-4 mr-2" /> {gettext("General")}
       </.link>
       <.link
         navigate={PhoenixKit.Utils.Routes.path("/admin/settings/billing/providers")}
         class="tab"
       >
-        <.icon name="hero-credit-card" class="w-4 h-4 mr-2" /> Payment Providers
+        <.icon name="hero-credit-card" class="w-4 h-4 mr-2" /> {gettext("Payment Providers")}
       </.link>
       <.link
         navigate={PhoenixKit.Utils.Routes.path("/admin/billing/currencies")}
         class="tab"
       >
-        <.icon name="hero-currency-dollar" class="w-4 h-4 mr-2" /> Currencies
+        <.icon name="hero-currency-dollar" class="w-4 h-4 mr-2" /> {gettext("Currencies")}
       </.link>
       <.link
         navigate={PhoenixKit.Utils.Routes.path("/admin/billing/subscription-types")}
         class="tab"
       >
-        <.icon name="hero-clipboard-document-list" class="w-4 h-4 mr-2" /> Subscription Types
+        <.icon name="hero-clipboard-document-list" class="w-4 h-4 mr-2" /> {gettext("Subscription Types")}
       </.link>
     </div>
 
@@ -38,17 +38,17 @@
       <%!-- General Settings --%>
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-          <h2 class="card-title">General Settings</h2>
+          <h2 class="card-title">{gettext("General Settings")}</h2>
           <form phx-submit="save_general" class="space-y-4 mt-4">
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Default Currency</span>
+                <span class="label-text">{gettext("Default Currency")}</span>
               </label>
               <select name="default_currency" class="select select-bordered">
-                <option value="EUR" selected={@default_currency == "EUR"}>EUR - Euro</option>
-                <option value="USD" selected={@default_currency == "USD"}>USD - US Dollar</option>
+                <option value="EUR" selected={@default_currency == "EUR"}>{gettext("EUR - Euro")}</option>
+                <option value="USD" selected={@default_currency == "USD"}>{gettext("USD - US Dollar")}</option>
                 <option value="GBP" selected={@default_currency == "GBP"}>
-                  GBP - British Pound
+                  {gettext("GBP - British Pound")}
                 </option>
               </select>
             </div>
@@ -56,7 +56,7 @@
             <div class="grid grid-cols-3 gap-4">
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Order Prefix</span>
+                  <span class="label-text">{gettext("Order Prefix")}</span>
                 </label>
                 <input
                   type="text"
@@ -68,7 +68,7 @@
               </div>
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Invoice Prefix</span>
+                  <span class="label-text">{gettext("Invoice Prefix")}</span>
                 </label>
                 <input
                   type="text"
@@ -80,7 +80,7 @@
               </div>
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Receipt Prefix</span>
+                  <span class="label-text">{gettext("Receipt Prefix")}</span>
                 </label>
                 <input
                   type="text"
@@ -94,7 +94,7 @@
 
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Invoice Due Days</span>
+                <span class="label-text">{gettext("Invoice Due Days")}</span>
               </label>
               <input
                 type="number"
@@ -106,7 +106,7 @@
               />
             </div>
 
-            <div class="divider">Tax Settings</div>
+            <div class="divider">{gettext("Tax Settings")}</div>
 
             <div class="grid grid-cols-2 gap-4 items-end">
               <div class="form-control">
@@ -118,12 +118,12 @@
                     checked={@tax_enabled}
                     class="checkbox checkbox-primary checkbox-sm"
                   />
-                  <span class="label-text">Enable Tax</span>
+                  <span class="label-text">{gettext("Enable Tax")}</span>
                 </label>
               </div>
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Default Tax Rate (%)</span>
+                  <span class="label-text">{gettext("Default Tax Rate (%)")}</span>
                 </label>
                 <input
                   type="number"
@@ -143,21 +143,21 @@
                 <div class="flex items-center gap-2">
                   <.icon name="hero-light-bulb" class="w-4 h-4" />
                   <span class="text-sm">
-                    Suggested rate for selected country: <strong>{@suggested_tax_rate}%</strong>
+                    {gettext("Suggested rate for selected country:")} <strong>{@suggested_tax_rate}%</strong>
                   </span>
                   <button
                     type="button"
                     class="btn btn-xs btn-primary"
                     phx-click="apply_suggested_tax"
                   >
-                    Apply
+                    {gettext("Apply")}
                   </button>
                 </div>
               </div>
             <% end %>
 
             <div class="card-actions justify-end mt-4">
-              <button type="submit" class="btn btn-primary btn-sm">Save General Settings</button>
+              <button type="submit" class="btn btn-primary btn-sm">{gettext("Save General Settings")}</button>
             </div>
           </form>
         </div>
@@ -168,21 +168,21 @@
         <div class="card-body">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="card-title">Company & Bank Information</h2>
-              <p class="text-sm text-base-content/60">Shown on invoices and receipts</p>
+              <h2 class="card-title">{gettext("Company & Bank Information")}</h2>
+              <p class="text-sm text-base-content/60">{gettext("Shown on invoices and receipts")}</p>
             </div>
             <.link
               navigate={PhoenixKit.Utils.Routes.path("/admin/settings/organization")}
               class="btn btn-primary btn-sm"
             >
-              <.icon name="hero-pencil-square" class="w-4 h-4" /> Edit in Organization
+              <.icon name="hero-pencil-square" class="w-4 h-4" /> {gettext("Edit in Organization")}
             </.link>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
             <%!-- Company Info Preview (same style as Legal Settings) --%>
             <div>
-              <h3 class="font-semibold text-base-content/80 mb-3">Company</h3>
+              <h3 class="font-semibold text-base-content/80 mb-3">{gettext("Company")}</h3>
               <%= if @company_info["name"] && @company_info["name"] != "" do %>
                 <div class="bg-base-200 rounded-lg p-4 space-y-3">
                   <div class="flex items-start gap-2">
@@ -194,7 +194,7 @@
                       <p class="font-semibold">{@company_info["name"]}</p>
                       <%= if @company_info["registration_number"] && @company_info["registration_number"] != "" do %>
                         <p class="text-xs text-base-content/60">
-                          Reg. No: {@company_info["registration_number"]}
+                          {gettext("Reg. No:")} {@company_info["registration_number"]}
                         </p>
                       <% end %>
                     </div>
@@ -229,7 +229,7 @@
                         class="w-5 h-5 text-primary shrink-0 mt-0.5"
                       />
                       <div class="text-sm">
-                        <span class="text-base-content/60">VAT:</span> {@company_info[
+                        <span class="text-base-content/60">{gettext("VAT:")}</span> {@company_info[
                           "vat_number"
                         ]}
                       </div>
@@ -239,14 +239,14 @@
               <% else %>
                 <div class="alert alert-warning">
                   <.icon name="hero-exclamation-triangle" class="w-5 h-5" />
-                  <span>Company information not configured</span>
+                  <span>{gettext("Company information not configured")}</span>
                 </div>
               <% end %>
             </div>
 
             <%!-- Bank Details Preview --%>
             <div>
-              <h3 class="font-semibold text-base-content/80 mb-3">Bank Details</h3>
+              <h3 class="font-semibold text-base-content/80 mb-3">{gettext("Bank Details")}</h3>
               <%= if @bank_details["bank_name"] && @bank_details["bank_name"] != "" do %>
                 <div class="bg-base-200 rounded-lg p-4 space-y-3">
                   <div class="flex items-start gap-2">
@@ -263,7 +263,7 @@
                         class="w-5 h-5 text-primary shrink-0 mt-0.5"
                       />
                       <div class="text-sm">
-                        <span class="text-base-content/60">IBAN:</span>
+                        <span class="text-base-content/60">{gettext("IBAN:")}</span>
                         <span class="font-mono">{@bank_details["iban"]}</span>
                       </div>
                     </div>
@@ -275,7 +275,7 @@
                         class="w-5 h-5 text-primary shrink-0 mt-0.5"
                       />
                       <div class="text-sm">
-                        <span class="text-base-content/60">SWIFT:</span>
+                        <span class="text-base-content/60">{gettext("SWIFT:")}</span>
                         <span class="font-mono">{@bank_details["swift"]}</span>
                       </div>
                     </div>
@@ -284,7 +284,7 @@
               <% else %>
                 <div class="alert alert-info">
                   <.icon name="hero-information-circle" class="w-5 h-5" />
-                  <span>Bank details not configured (optional)</span>
+                  <span>{gettext("Bank details not configured (optional)")}</span>
                 </div>
               <% end %>
             </div>
@@ -296,28 +296,28 @@
     <%!-- Quick Links --%>
     <div class="card bg-base-100 shadow-xl mt-6">
       <div class="card-body">
-        <h2 class="card-title">Related Settings</h2>
+        <h2 class="card-title">{gettext("Related Settings")}</h2>
         <div class="flex flex-wrap gap-4 mt-4">
           <.link
             navigate={PhoenixKit.Utils.Routes.path("/admin/settings/billing/providers")}
             class="btn btn-primary"
           >
-            <.icon name="hero-credit-card" class="w-5 h-5" /> Payment Providers
+            <.icon name="hero-credit-card" class="w-5 h-5" /> {gettext("Payment Providers")}
           </.link>
           <.link
             navigate={PhoenixKit.Utils.Routes.path("/admin/billing/currencies")}
             class="btn btn-outline"
           >
-            <.icon name="hero-currency-dollar" class="w-5 h-5" /> Manage Currencies
+            <.icon name="hero-currency-dollar" class="w-5 h-5" /> {gettext("Manage Currencies")}
           </.link>
           <.link
             navigate={PhoenixKit.Utils.Routes.path("/admin/billing/subscription-types")}
             class="btn btn-outline"
           >
-            <.icon name="hero-clipboard-document-list" class="w-5 h-5" /> Subscription Types
+            <.icon name="hero-clipboard-document-list" class="w-5 h-5" /> {gettext("Subscription Types")}
           </.link>
           <.link navigate={PhoenixKit.Utils.Routes.path("/admin/modules")} class="btn btn-outline">
-            <.icon name="hero-squares-2x2" class="w-5 h-5" /> All Modules
+            <.icon name="hero-squares-2x2" class="w-5 h-5" /> {gettext("All Modules")}
           </.link>
         </div>
       </div>

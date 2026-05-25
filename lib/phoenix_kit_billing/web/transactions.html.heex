@@ -1,11 +1,11 @@
   <div class="container mx-auto px-4 py-6">
     <%!-- Header --%>
     <.admin_page_header back={PhoenixKit.Utils.Routes.path("/admin/billing")}>
-      <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-base-content">Transactions</h1>
-      <p class="text-sm text-base-content/60 mt-0.5">{@total_count} total transactions</p>
+      <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-base-content">{gettext("Transactions")}</h1>
+      <p class="text-sm text-base-content/60 mt-0.5">{gettext("%{count} total transactions", count: @total_count)}</p>
       <:actions>
         <button phx-click="refresh" class="btn btn-ghost btn-sm">
-          <.icon name="hero-arrow-path" class="w-4 h-4" /> Refresh
+          <.icon name="hero-arrow-path" class="w-4 h-4" /> {gettext("Refresh")}
         </button>
       </:actions>
     </.admin_page_header>
@@ -16,13 +16,13 @@
         <form phx-change="filter" phx-submit="filter" class="flex flex-wrap gap-4 items-end">
           <div class="form-control flex-1 min-w-[200px]">
             <label class="label">
-              <span class="label-text">Search</span>
+              <span class="label-text">{gettext("Search")}</span>
             </label>
             <input
               type="text"
               name="search"
               value={@search}
-              placeholder="Transaction #, Invoice #..."
+              placeholder={gettext("Transaction #, Invoice #...")}
               class="input input-bordered input-sm"
               phx-debounce="300"
             />
@@ -30,29 +30,29 @@
 
           <div class="form-control">
             <label class="label">
-              <span class="label-text">Type</span>
+              <span class="label-text">{gettext("Type")}</span>
             </label>
             <select name="type" class="select select-bordered select-sm">
-              <option value="all" selected={@type_filter == "all"}>All Types</option>
-              <option value="payment" selected={@type_filter == "payment"}>Payments</option>
-              <option value="refund" selected={@type_filter == "refund"}>Refunds</option>
+              <option value="all" selected={@type_filter == "all"}>{gettext("All Types")}</option>
+              <option value="payment" selected={@type_filter == "payment"}>{gettext("Payments")}</option>
+              <option value="refund" selected={@type_filter == "refund"}>{gettext("Refunds")}</option>
             </select>
           </div>
 
           <div class="form-control">
             <label class="label">
-              <span class="label-text">Payment Method</span>
+              <span class="label-text">{gettext("Payment Method")}</span>
             </label>
             <select name="payment_method" class="select select-bordered select-sm">
-              <option value="all" selected={@payment_method_filter == "all"}>All Methods</option>
+              <option value="all" selected={@payment_method_filter == "all"}>{gettext("All Methods")}</option>
               <option value="bank" selected={@payment_method_filter == "bank"}>
-                Bank Transfer
+                {gettext("Bank Transfer")}
               </option>
             </select>
           </div>
 
           <button type="button" phx-click="clear_filters" class="btn btn-ghost btn-sm">
-            Clear Filters
+            {gettext("Clear Filters")}
           </button>
         </form>
       </div>
@@ -72,12 +72,12 @@
                 name="hero-banknotes"
                 class="w-16 h-16 mx-auto mb-4 text-base-content/30"
               />
-              <h3 class="text-xl font-semibold mb-2">No transactions found</h3>
+              <h3 class="text-xl font-semibold mb-2">{gettext("No transactions found")}</h3>
               <p class="text-base-content/60 mb-4">
                 <%= if @search != "" or @type_filter != "all" or @payment_method_filter != "all" do %>
-                  Try adjusting your filters or search terms
+                  {gettext("Try adjusting your filters or search terms")}
                 <% else %>
-                  Transactions will appear here when payments or refunds are recorded
+                  {gettext("Transactions will appear here when payments or refunds are recorded")}
                 <% end %>
               </p>
             </div>
@@ -91,17 +91,17 @@
               card_fields={
                 fn transaction ->
                   [
-                    %{label: "Type", value: transaction_type(transaction)},
+                    %{label: gettext("Type"), value: transaction_type(transaction)},
                     %{
-                      label: "Amount",
+                      label: gettext("Amount"),
                       value:
                         if(Decimal.positive?(transaction.amount),
                           do: "+#{transaction.amount} #{transaction.currency}",
                           else: "#{transaction.amount} #{transaction.currency}"
                         )
                     },
-                    %{label: "Status", value: String.upcase(transaction.payment_method || "bank")},
-                    %{label: "Date", value: transaction.inserted_at}
+                    %{label: gettext("Status"), value: String.upcase(transaction.payment_method || "bank")},
+                    %{label: gettext("Date"), value: transaction.inserted_at}
                   ]
                 end
               }
@@ -126,13 +126,13 @@
               </:card_actions>
               <.table_default_header>
                 <.table_default_row>
-                  <.table_default_header_cell>Transaction #</.table_default_header_cell>
-                  <.table_default_header_cell>Invoice</.table_default_header_cell>
-                  <.table_default_header_cell>Type</.table_default_header_cell>
-                  <.table_default_header_cell>Amount</.table_default_header_cell>
-                  <.table_default_header_cell>Method</.table_default_header_cell>
-                  <.table_default_header_cell>Description</.table_default_header_cell>
-                  <.table_default_header_cell>Date</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Transaction #")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Invoice")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Type")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Amount")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Method")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Description")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Date")}</.table_default_header_cell>
                   <.table_default_header_cell></.table_default_header_cell>
                 </.table_default_row>
               </.table_default_header>

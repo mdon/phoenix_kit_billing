@@ -3,7 +3,7 @@
     <.admin_page_header back={PhoenixKit.Utils.Routes.path("/admin/billing/orders")}>
       <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-base-content">{@page_title}</h1>
       <p class="text-sm text-base-content/60 mt-0.5">
-        {if @order, do: "Modify order details", else: "Create a new order"}
+        {if @order, do: gettext("Modify order details"), else: gettext("Create a new order")}
       </p>
     </.admin_page_header>
 
@@ -11,19 +11,19 @@
       <%!-- Customer Selection --%>
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-          <h2 class="card-title">Customer</h2>
+          <h2 class="card-title">{gettext("Customer")}</h2>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Select Customer</span>
+                <span class="label-text">{gettext("Select Customer")}</span>
               </label>
               <select
                 name="user_uuid"
                 class="select select-bordered"
                 phx-change="select_user"
               >
-                <option value="">Select a customer...</option>
+                <option value="">{gettext("Select a customer...")}</option>
                 <%= for user <- @users do %>
                   <option
                     value={user.uuid}
@@ -40,7 +40,7 @@
                 <div class="form-control">
                   <label class="label">
                     <span class="label-text">
-                      Billing Profile <span class="text-error">*</span>
+                      {gettext("Billing Profile")} <span class="text-error">*</span>
                     </span>
                   </label>
                   <select
@@ -61,7 +61,7 @@
                         <% else %>
                           {profile.first_name} {profile.last_name}
                         <% end %>
-                        {if profile.is_default, do: "(Default)"}
+                        {if profile.is_default, do: gettext("(Default)")}
                       </option>
                     <% end %>
                   </select>
@@ -72,9 +72,9 @@
                   <div class="alert alert-warning">
                     <.icon name="hero-exclamation-triangle" class="w-5 h-5" />
                     <div>
-                      <p class="font-semibold">No billing profile found</p>
+                      <p class="font-semibold">{gettext("No billing profile found")}</p>
                       <p class="text-sm">
-                        This customer has no billing profile. A billing profile is required to create an order.
+                        {gettext("This customer has no billing profile. A billing profile is required to create an order.")}
                         <.link
                           navigate={
                             PhoenixKit.Utils.Routes.path(
@@ -83,7 +83,7 @@
                           }
                           class="link font-medium"
                         >
-                          Create one now
+                          {gettext("Create one now")}
                         </.link>
                       </p>
                     </div>
@@ -99,9 +99,9 @@
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
           <div class="flex justify-between items-center">
-            <h2 class="card-title">Line Items</h2>
+            <h2 class="card-title">{gettext("Line Items")}</h2>
             <button type="button" phx-click="add_line_item" class="btn btn-outline btn-sm">
-              <.icon name="hero-plus" class="w-4 h-4" /> Add Item
+              <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Add Item")}
             </button>
           </div>
 
@@ -109,10 +109,10 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Description</th>
-                  <th class="w-24">Qty</th>
-                  <th class="w-32">Unit Price</th>
+                  <th>{gettext("Name")}</th>
+                  <th>{gettext("Description")}</th>
+                  <th class="w-24">{gettext("Qty")}</th>
+                  <th class="w-32">{gettext("Unit Price")}</th>
                   <th class="w-16"></th>
                 </tr>
               </thead>
@@ -124,7 +124,7 @@
                         type="text"
                         value={item.name}
                         class="input input-bordered input-sm w-full"
-                        placeholder="Item name"
+                        placeholder={gettext("Item name")}
                         phx-blur="update_line_item"
                         phx-value-id={item.id}
                         phx-value-field="name"
@@ -136,7 +136,7 @@
                         type="text"
                         value={item.description}
                         class="input input-bordered input-sm w-full"
-                        placeholder="Description (optional)"
+                        placeholder={gettext("Description (optional)")}
                         phx-blur="update_line_item"
                         phx-value-id={item.id}
                         phx-value-field="description"
@@ -188,12 +188,12 @@
       <%!-- Order Settings --%>
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-          <h2 class="card-title">Order Settings</h2>
+          <h2 class="card-title">{gettext("Order Settings")}</h2>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Currency</span>
+                <span class="label-text">{gettext("Currency")}</span>
               </label>
               <select name="order[currency]" class="select select-bordered">
                 <%= for currency <- @currencies do %>
@@ -206,19 +206,19 @@
 
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Status</span>
+                <span class="label-text">{gettext("Status")}</span>
               </label>
               <select
                 name="order[status]"
                 class="select select-bordered"
                 disabled={is_nil(@order)}
               >
-                <option value="draft" selected={@form[:status].value == "draft"}>Draft</option>
+                <option value="draft" selected={@form[:status].value == "draft"}>{gettext("Draft")}</option>
                 <option value="pending" selected={@form[:status].value == "pending"}>
-                  Pending
+                  {gettext("Pending")}
                 </option>
                 <option value="confirmed" selected={@form[:status].value == "confirmed"}>
-                  Confirmed
+                  {gettext("Confirmed")}
                 </option>
               </select>
             </div>
@@ -229,30 +229,30 @@
       <%!-- Notes --%>
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-          <h2 class="card-title">Notes</h2>
+          <h2 class="card-title">{gettext("Notes")}</h2>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Customer Notes</span>
+                <span class="label-text">{gettext("Customer Notes")}</span>
               </label>
               <textarea
                 name="order[notes]"
                 class="textarea textarea-bordered"
                 rows="3"
-                placeholder="Notes visible to customer..."
+                placeholder={gettext("Notes visible to customer...")}
               >{@form[:notes].value}</textarea>
             </div>
 
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Internal Notes</span>
+                <span class="label-text">{gettext("Internal Notes")}</span>
               </label>
               <textarea
                 name="order[internal_notes]"
                 class="textarea textarea-bordered"
                 rows="3"
-                placeholder="Admin-only notes..."
+                placeholder={gettext("Admin-only notes...")}
               >{@form[:internal_notes].value}</textarea>
             </div>
           </div>
@@ -265,7 +265,7 @@
           navigate={PhoenixKit.Utils.Routes.path("/admin/billing/orders")}
           class="btn btn-ghost"
         >
-          Cancel
+          {gettext("Cancel")}
         </.link>
         <button
           type="submit"
@@ -273,7 +273,7 @@
           disabled={@selected_user_uuid && Enum.empty?(@billing_profiles)}
         >
           <.icon name="hero-check" class="w-4 h-4" />
-          {if @order, do: "Update Order", else: "Create Order"}
+          {if @order, do: gettext("Update Order"), else: gettext("Create Order")}
         </button>
       </div>
     </.form>

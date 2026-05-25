@@ -7,7 +7,7 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail do
   """
 
   use Phoenix.LiveView
-  use Gettext, backend: PhoenixKitWeb.Gettext
+  use Gettext, backend: PhoenixKitBilling.Gettext
   import PhoenixKitWeb.Components.Core.AdminPageHeader
   import PhoenixKitWeb.Components.Core.UserInfo
   alias PhoenixKit.Utils.Routes
@@ -40,7 +40,7 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail do
     else
       {:ok,
        socket
-       |> put_flash(:error, "Billing module is not enabled")
+       |> put_flash(:error, gettext("Billing module is not enabled"))
        |> push_navigate(to: Routes.path("/admin"))}
     end
   end
@@ -51,7 +51,7 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail do
       nil ->
         {:noreply,
          socket
-         |> put_flash(:error, "Invoice not found")
+         |> put_flash(:error, gettext("Invoice not found"))
          |> push_navigate(to: Routes.path("/admin/billing/invoices"))}
 
       invoice ->
@@ -66,7 +66,7 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail do
           else
             socket
             |> assign(:loaded?, true)
-            |> assign(:page_title, "Invoice #{invoice.invoice_number}")
+            |> assign(:page_title, gettext("Invoice %{number}", number: invoice.invoice_number))
             |> assign(:project_title, project_title)
             |> assign(:invoice, invoice)
             |> assign(:transactions, invoice.transactions)

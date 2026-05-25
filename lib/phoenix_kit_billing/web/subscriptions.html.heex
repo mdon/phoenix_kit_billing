@@ -2,21 +2,21 @@
     <%!-- Header --%>
     <.admin_page_header
       back={PhoenixKit.Utils.Routes.path("/admin/billing")}
-      title="Subscriptions"
-      subtitle="Manage recurring billing subscriptions"
+      title={gettext("Subscriptions")}
+      subtitle={gettext("Manage recurring billing subscriptions")}
     >
       <:actions>
         <.link
           navigate={PhoenixKit.Utils.Routes.path("/admin/billing/subscription-types")}
           class="btn btn-outline btn-sm"
         >
-          <.icon name="hero-squares-2x2" class="w-4 h-4" /> Manage Subscription Types
+          <.icon name="hero-squares-2x2" class="w-4 h-4" /> {gettext("Manage Subscription Types")}
         </.link>
         <.link
           navigate={PhoenixKit.Utils.Routes.path("/admin/billing/subscriptions/new")}
           class="btn btn-primary btn-sm"
         >
-          <.icon name="hero-plus" class="w-4 h-4" /> New Subscription
+          <.icon name="hero-plus" class="w-4 h-4" /> {gettext("New Subscription")}
         </.link>
       </:actions>
     </.admin_page_header>
@@ -24,23 +24,23 @@
     <%!-- Stats Cards --%>
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
       <div class="stat bg-base-100 rounded-box shadow">
-        <div class="stat-title">Total</div>
+        <div class="stat-title">{gettext("Total")}</div>
         <div class="stat-value text-2xl">{@stats.total}</div>
       </div>
       <div class="stat bg-base-100 rounded-box shadow">
-        <div class="stat-title">Active</div>
+        <div class="stat-title">{gettext("Active")}</div>
         <div class="stat-value text-2xl text-success">{@stats.active}</div>
       </div>
       <div class="stat bg-base-100 rounded-box shadow">
-        <div class="stat-title">Trialing</div>
+        <div class="stat-title">{gettext("Trialing")}</div>
         <div class="stat-value text-2xl text-info">{@stats.trialing}</div>
       </div>
       <div class="stat bg-base-100 rounded-box shadow">
-        <div class="stat-title">Past Due</div>
+        <div class="stat-title">{gettext("Past Due")}</div>
         <div class="stat-value text-2xl text-warning">{@stats.past_due}</div>
       </div>
       <div class="stat bg-base-100 rounded-box shadow">
-        <div class="stat-title">Cancelled</div>
+        <div class="stat-title">{gettext("Cancelled")}</div>
         <div class="stat-value text-2xl text-error">{@stats.cancelled}</div>
       </div>
     </div>
@@ -56,35 +56,35 @@
               phx-value-status="all"
               class={["join-item btn btn-sm", @status_filter == "all" && "btn-active"]}
             >
-              All
+              {gettext("All")}
             </button>
             <button
               phx-click="filter_status"
               phx-value-status="active"
               class={["join-item btn btn-sm", @status_filter == "active" && "btn-active"]}
             >
-              Active
+              {gettext("Active")}
             </button>
             <button
               phx-click="filter_status"
               phx-value-status="trialing"
               class={["join-item btn btn-sm", @status_filter == "trialing" && "btn-active"]}
             >
-              Trialing
+              {gettext("Trialing")}
             </button>
             <button
               phx-click="filter_status"
               phx-value-status="past_due"
               class={["join-item btn btn-sm", @status_filter == "past_due" && "btn-active"]}
             >
-              Past Due
+              {gettext("Past Due")}
             </button>
             <button
               phx-click="filter_status"
               phx-value-status="cancelled"
               class={["join-item btn btn-sm", @status_filter == "cancelled" && "btn-active"]}
             >
-              Cancelled
+              {gettext("Cancelled")}
             </button>
           </div>
 
@@ -95,7 +95,7 @@
                 type="text"
                 name="search"
                 value={@search}
-                placeholder="Search by email..."
+                placeholder={gettext("Search by email...")}
                 class="input input-bordered input-sm join-item flex-1"
               />
               <button type="submit" class="btn btn-sm join-item">
@@ -113,9 +113,9 @@
         <%= if Enum.empty?(@subscriptions) do %>
           <div class="text-center py-12 text-base-content/50">
             <.icon name="hero-credit-card" class="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p class="text-lg">No subscriptions found</p>
+            <p class="text-lg">{gettext("No subscriptions found")}</p>
             <p class="text-sm mt-2">
-              Subscriptions will appear here when customers subscribe to plans
+              {gettext("Subscriptions will appear here when customers subscribe to plans")}
             </p>
           </div>
         <% else %>
@@ -129,16 +129,16 @@
               fn sub ->
                 [
                   %{
-                    label: "User",
+                    label: gettext("User"),
                     value: if(sub.user, do: sub.user.email, else: "-")
                   },
                   %{
-                    label: "Plan",
+                    label: gettext("Plan"),
                     value: if(sub.subscription_type, do: sub.subscription_type.name, else: "-")
                   },
-                  %{label: "Status", value: sub.status},
+                  %{label: gettext("Status"), value: sub.status},
                   %{
-                    label: "Period",
+                    label: gettext("Period"),
                     value:
                       if(sub.current_period_end,
                         do: sub.current_period_end,
@@ -152,7 +152,7 @@
             <:card_header :let={sub}>
               <div class="flex items-center justify-between">
                 <span class="font-medium">
-                  {if sub.subscription_type, do: sub.subscription_type.name, else: "Subscription"}
+                  {if sub.subscription_type, do: sub.subscription_type.name, else: gettext("Subscription")}
                 </span>
                 <span class={["badge badge-sm h-auto", status_badge_class(sub.status)]}>
                   {sub.status}
@@ -181,11 +181,11 @@
             </:card_actions>
             <.table_default_header>
               <.table_default_row>
-                <.table_default_header_cell>Customer</.table_default_header_cell>
-                <.table_default_header_cell>Subscription Type</.table_default_header_cell>
-                <.table_default_header_cell>Status</.table_default_header_cell>
-                <.table_default_header_cell>Current Period</.table_default_header_cell>
-                <.table_default_header_cell>Price</.table_default_header_cell>
+                <.table_default_header_cell>{gettext("Customer")}</.table_default_header_cell>
+                <.table_default_header_cell>{gettext("Subscription Type")}</.table_default_header_cell>
+                <.table_default_header_cell>{gettext("Status")}</.table_default_header_cell>
+                <.table_default_header_cell>{gettext("Current Period")}</.table_default_header_cell>
+                <.table_default_header_cell>{gettext("Price")}</.table_default_header_cell>
                 <.table_default_header_cell></.table_default_header_cell>
               </.table_default_row>
             </.table_default_header>
@@ -205,7 +205,7 @@
                         </div>
                       </div>
                     <% else %>
-                      <span class="text-base-content/50">No user</span>
+                      <span class="text-base-content/50">{gettext("No user")}</span>
                     <% end %>
                   </.table_default_cell>
                   <.table_default_cell>
@@ -220,7 +220,7 @@
                         </div>
                       </div>
                     <% else %>
-                      <span class="text-base-content/50">No subscription type</span>
+                      <span class="text-base-content/50">{gettext("No subscription type")}</span>
                     <% end %>
                   </.table_default_cell>
                   <.table_default_cell>
@@ -228,7 +228,7 @@
                       {sub.status}
                     </span>
                     <%= if sub.cancel_at_period_end do %>
-                      <span class="badge badge-warning badge-xs ml-1">Cancels at end</span>
+                      <span class="badge badge-warning badge-xs ml-1">{gettext("Cancels at end")}</span>
                     <% end %>
                   </.table_default_cell>
                   <.table_default_cell>

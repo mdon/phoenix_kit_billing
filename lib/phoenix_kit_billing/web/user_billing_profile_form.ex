@@ -4,7 +4,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
   """
 
   use Phoenix.LiveView
-  use Gettext, backend: PhoenixKitWeb.Gettext
+  use Gettext, backend: PhoenixKitBilling.Gettext
   alias PhoenixKit.Utils.Routes
   import PhoenixKitWeb.LayoutHelpers, only: [dashboard_assigns: 1]
   import PhoenixKitWeb.Components.Core.Icon
@@ -23,13 +23,13 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
       not Billing.enabled?() ->
         {:ok,
          socket
-         |> put_flash(:error, "Billing module is not enabled")
+         |> put_flash(:error, gettext("Billing module is not enabled"))
          |> push_navigate(to: Routes.path("/dashboard"))}
 
       is_nil(user) ->
         {:ok,
          socket
-         |> put_flash(:error, "Please log in to manage billing profiles")
+         |> put_flash(:error, gettext("Please log in to manage billing profiles"))
          |> push_navigate(to: Routes.path("/phoenix_kit/users/log-in"))}
 
       true ->
@@ -41,7 +41,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
           |> assign(:user, user)
           |> assign(:countries, countries)
           |> assign(:profile_type, "individual")
-          |> assign(:subdivision_label, "Region")
+          |> assign(:subdivision_label, gettext("Region"))
           |> assign(:return_to, return_to)
           |> load_profile(params["id"])
 
@@ -54,7 +54,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
     changeset = Billing.change_billing_profile(%BillingProfile{type: "individual"})
 
     socket
-    |> assign(:page_title, "New Billing Profile")
+    |> assign(:page_title, gettext("New Billing Profile"))
     |> assign(:profile, nil)
     |> assign(:form, to_form(changeset))
   end
@@ -63,20 +63,20 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
     case Billing.get_billing_profile(id) do
       nil ->
         socket
-        |> put_flash(:error, "Billing profile not found")
+        |> put_flash(:error, gettext("Billing profile not found"))
         |> push_navigate(to: Routes.path("/dashboard/billing-profiles"))
 
       profile ->
         # Verify ownership
         if profile.user_uuid != socket.assigns.user.uuid do
           socket
-          |> put_flash(:error, "Access denied")
+          |> put_flash(:error, gettext("Access denied"))
           |> push_navigate(to: Routes.path("/dashboard/billing-profiles"))
         else
           changeset = Billing.change_billing_profile(profile)
 
           socket
-          |> assign(:page_title, "Edit Billing Profile")
+          |> assign(:page_title, gettext("Edit Billing Profile"))
           |> assign(:profile, profile)
           |> assign(:form, to_form(changeset))
           |> assign(:profile_type, profile.type)
@@ -126,12 +126,16 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
 
     case result do
       {:ok, _profile} ->
-        action = if socket.assigns.profile, do: "updated", else: "created"
+        message =
+          if socket.assigns.profile,
+            do: gettext("Billing profile updated successfully"),
+            else: gettext("Billing profile created successfully")
+
         redirect_path = socket.assigns.return_to || Routes.path("/dashboard/billing-profiles")
 
         {:noreply,
          socket
-         |> put_flash(:info, "Billing profile #{action} successfully")
+         |> put_flash(:info, message)
          |> push_navigate(to: redirect_path)}
 
       {:error, changeset} ->
@@ -156,9 +160,9 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
             <h1 class="text-2xl font-bold">{@page_title}</h1>
             <p class="text-base-content/60 text-sm">
               <%= if @profile do %>
-                Update your billing information
+                {gettext("Update your billing information")}
               <% else %>
-                Create a new billing profile for orders
+                {gettext("Create a new billing profile for orders")}
               <% end %>
             </p>
           </div>
@@ -169,7 +173,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
           <div class="card bg-base-100 shadow-lg">
             <div class="card-body">
               <h2 class="card-title text-lg">
-                <.icon name="hero-user-circle" class="w-5 h-5" /> Profile Type
+                <.icon name="hero-user-circle" class="w-5 h-5" /> {gettext("Profile Type")}
               </h2>
 
               <div class="flex gap-4 mt-2">
@@ -183,7 +187,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
                     phx-click="change_type"
                     phx-value-type="individual"
                   />
-                  <span class="label-text">Individual</span>
+                  <span class="label-text">{gettext("Individual")}</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input
@@ -195,7 +199,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
                     phx-click="change_type"
                     phx-value-type="company"
                   />
-                  <span class="label-text">Company</span>
+                  <span class="label-text">{gettext("Company")}</span>
                 </label>
               </div>
             </div>
@@ -206,13 +210,13 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
             <div class="card bg-base-100 shadow-lg">
               <div class="card-body">
                 <h2 class="card-title text-lg">
-                  <.icon name="hero-user" class="w-5 h-5" /> Personal Information
+                  <.icon name="hero-user" class="w-5 h-5" /> {gettext("Personal Information")}
                 </h2>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div class="form-control">
                     <label class="label">
-                      <span class="label-text">First Name *</span>
+                      <span class="label-text">{gettext("First Name *")}</span>
                     </label>
                     <input
                       type="text"
@@ -228,7 +232,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
 
                   <div class="form-control">
                     <label class="label">
-                      <span class="label-text">Last Name *</span>
+                      <span class="label-text">{gettext("Last Name *")}</span>
                     </label>
                     <input
                       type="text"
@@ -246,7 +250,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div class="form-control">
                     <label class="label">
-                      <span class="label-text">Email</span>
+                      <span class="label-text">{gettext("Email")}</span>
                     </label>
                     <input
                       type="email"
@@ -259,7 +263,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
 
                   <div class="form-control">
                     <label class="label">
-                      <span class="label-text">Phone</span>
+                      <span class="label-text">{gettext("Phone")}</span>
                     </label>
                     <input
                       type="tel"
@@ -279,12 +283,12 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
             <div class="card bg-base-100 shadow-lg">
               <div class="card-body">
                 <h2 class="card-title text-lg">
-                  <.icon name="hero-building-office" class="w-5 h-5" /> Company Information
+                  <.icon name="hero-building-office" class="w-5 h-5" /> {gettext("Company Information")}
                 </h2>
 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">Company Name *</span>
+                    <span class="label-text">{gettext("Company Name *")}</span>
                   </label>
                   <input
                     type="text"
@@ -301,7 +305,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div class="form-control">
                     <label class="label">
-                      <span class="label-text">VAT Number</span>
+                      <span class="label-text">{gettext("VAT Number")}</span>
                     </label>
                     <input
                       type="text"
@@ -311,13 +315,13 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
                       placeholder="EE123456789"
                     />
                     <label class="label">
-                      <span class="label-text-alt">EU VAT format: Country code + number</span>
+                      <span class="label-text-alt">{gettext("EU VAT format: Country code + number")}</span>
                     </label>
                   </div>
 
                   <div class="form-control">
                     <label class="label">
-                      <span class="label-text">Registration Number</span>
+                      <span class="label-text">{gettext("Registration Number")}</span>
                     </label>
                     <input
                       type="text"
@@ -331,22 +335,22 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
 
                 <div class="form-control mt-4">
                   <label class="label">
-                    <span class="label-text">Legal Address</span>
+                    <span class="label-text">{gettext("Legal Address")}</span>
                   </label>
                   <textarea
                     name="billing_profile[company_legal_address]"
                     class="textarea textarea-bordered"
                     rows="2"
-                    placeholder="Registered legal address"
+                    placeholder={gettext("Registered legal address")}
                   >{@form[:company_legal_address].value}</textarea>
                 </div>
 
-                <div class="divider">Contact</div>
+                <div class="divider">{gettext("Contact")}</div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div class="form-control">
                     <label class="label">
-                      <span class="label-text">Contact Email</span>
+                      <span class="label-text">{gettext("Contact Email")}</span>
                     </label>
                     <input
                       type="email"
@@ -359,7 +363,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
 
                   <div class="form-control">
                     <label class="label">
-                      <span class="label-text">Phone</span>
+                      <span class="label-text">{gettext("Phone")}</span>
                     </label>
                     <input
                       type="tel"
@@ -378,16 +382,16 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
           <div class="card bg-base-100 shadow-lg">
             <div class="card-body">
               <h2 class="card-title text-lg">
-                <.icon name="hero-map-pin" class="w-5 h-5" /> Billing Address
+                <.icon name="hero-map-pin" class="w-5 h-5" /> {gettext("Billing Address")}
               </h2>
 
               <%!-- Country first --%>
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Country *</span>
+                  <span class="label-text">{gettext("Country *")}</span>
                 </label>
                 <select name="billing_profile[country]" class="select select-bordered">
-                  <option value="">Select country...</option>
+                  <option value="">{gettext("Select country...")}</option>
                   <%= for {name, code} <- @countries do %>
                     <option value={code} selected={@form[:country].value == code}>
                       {name}
@@ -398,34 +402,34 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
 
               <div class="form-control mt-4">
                 <label class="label">
-                  <span class="label-text">Address Line 1</span>
+                  <span class="label-text">{gettext("Address Line 1")}</span>
                 </label>
                 <input
                   type="text"
                   name="billing_profile[address_line1]"
                   value={@form[:address_line1].value}
                   class="input input-bordered"
-                  placeholder="Street address"
+                  placeholder={gettext("Street address")}
                 />
               </div>
 
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Address Line 2</span>
+                  <span class="label-text">{gettext("Address Line 2")}</span>
                 </label>
                 <input
                   type="text"
                   name="billing_profile[address_line2]"
                   value={@form[:address_line2].value}
                   class="input input-bordered"
-                  placeholder="Apartment, suite, etc."
+                  placeholder={gettext("Apartment, suite, etc.")}
                 />
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">City</span>
+                    <span class="label-text">{gettext("City")}</span>
                   </label>
                   <input
                     type="text"
@@ -451,7 +455,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">Postal Code</span>
+                    <span class="label-text">{gettext("Postal Code")}</span>
                   </label>
                   <input
                     type="text"
@@ -469,7 +473,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
           <div class="card bg-base-100 shadow-lg">
             <div class="card-body">
               <h2 class="card-title text-lg">
-                <.icon name="hero-cog-6-tooth" class="w-5 h-5" /> Options
+                <.icon name="hero-cog-6-tooth" class="w-5 h-5" /> {gettext("Options")}
               </h2>
 
               <div class="form-control">
@@ -482,9 +486,9 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
                     checked={@form[:is_default].value == true || @form[:is_default].value == "true"}
                   />
                   <div>
-                    <span class="label-text font-medium">Set as default profile</span>
+                    <span class="label-text font-medium">{gettext("Set as default profile")}</span>
                     <span class="label-text-alt block">
-                      This profile will be used by default for new orders
+                      {gettext("This profile will be used by default for new orders")}
                     </span>
                   </div>
                 </label>
@@ -492,17 +496,17 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
 
               <div class="form-control mt-4">
                 <label class="label">
-                  <span class="label-text">Profile Name (Optional)</span>
+                  <span class="label-text">{gettext("Profile Name (Optional)")}</span>
                 </label>
                 <input
                   type="text"
                   name="billing_profile[name]"
                   value={@form[:name].value}
                   class="input input-bordered"
-                  placeholder="e.g., Home Address, Work"
+                  placeholder={gettext("e.g., Home Address, Work")}
                 />
                 <label class="label">
-                  <span class="label-text-alt">Custom name to identify this profile</span>
+                  <span class="label-text-alt">{gettext("Custom name to identify this profile")}</span>
                 </label>
               </div>
             </div>
@@ -514,11 +518,11 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
               navigate={@return_to || Routes.path("/dashboard/billing-profiles")}
               class="btn btn-ghost"
             >
-              Cancel
+              {gettext("Cancel")}
             </.link>
             <button type="submit" class="btn btn-primary">
               <.icon name="hero-check" class="w-5 h-5 mr-2" />
-              {if @profile, do: "Save Changes", else: "Create Profile"}
+              {if @profile, do: gettext("Save Changes"), else: gettext("Create Profile")}
             </button>
           </div>
         </form>

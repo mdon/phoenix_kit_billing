@@ -6,7 +6,7 @@ defmodule PhoenixKitBilling.Web.Subscriptions do
   """
 
   use Phoenix.LiveView
-  use Gettext, backend: PhoenixKitWeb.Gettext
+  use Gettext, backend: PhoenixKitBilling.Gettext
   import PhoenixKitWeb.Components.Core.AdminPageHeader
   import PhoenixKitWeb.Components.Core.UserInfo
   alias PhoenixKit.Utils.Routes
@@ -34,7 +34,7 @@ defmodule PhoenixKitBilling.Web.Subscriptions do
       # navigation and where the URL-driven filters live anyway.
       {:ok,
        socket
-       |> assign(:page_title, "Subscriptions")
+       |> assign(:page_title, gettext("Subscriptions"))
        |> assign(:project_title, nil)
        |> assign(:status_filter, "all")
        |> assign(:search, "")
@@ -43,7 +43,7 @@ defmodule PhoenixKitBilling.Web.Subscriptions do
     else
       {:ok,
        socket
-       |> put_flash(:error, "Billing module is not enabled")
+       |> put_flash(:error, gettext("Billing module is not enabled"))
        |> push_navigate(to: Routes.path("/admin"))}
     end
   end
@@ -132,13 +132,13 @@ defmodule PhoenixKitBilling.Web.Subscriptions do
           {:noreply,
            socket
            |> load_subscriptions()
-           |> put_flash(:info, "Subscription will be cancelled at period end")}
+           |> put_flash(:info, gettext("Subscription will be cancelled at period end"))}
 
         {:error, reason} ->
-          {:noreply, put_flash(socket, :error, "Failed to cancel: #{inspect(reason)}")}
+          {:noreply, put_flash(socket, :error, gettext("Failed to cancel: %{reason}", reason: inspect(reason)))}
       end
     else
-      {:noreply, put_flash(socket, :error, "Subscription not found")}
+      {:noreply, put_flash(socket, :error, gettext("Subscription not found"))}
     end
   end
 

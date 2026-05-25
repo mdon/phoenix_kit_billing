@@ -4,7 +4,7 @@ defmodule PhoenixKitBilling.Web.BillingProfileForm do
   """
 
   use Phoenix.LiveView
-  use Gettext, backend: PhoenixKitWeb.Gettext
+  use Gettext, backend: PhoenixKitBilling.Gettext
   import PhoenixKitWeb.Components.Core.AdminPageHeader
   alias PhoenixKit.Utils.Routes
   import PhoenixKitWeb.Components.Core.Icon
@@ -30,12 +30,12 @@ defmodule PhoenixKitBilling.Web.BillingProfileForm do
        |> assign(:profile, nil)
        |> assign(:form, nil)
        |> assign(:selected_user_uuid, nil)
-       |> assign(:subdivision_label, "Region")
-       |> assign(:page_title, "Billing Profile")}
+       |> assign(:subdivision_label, gettext("Region"))
+       |> assign(:page_title, gettext("Billing Profile"))}
     else
       {:ok,
        socket
-       |> put_flash(:error, "Billing module is not enabled")
+       |> put_flash(:error, gettext("Billing module is not enabled"))
        |> push_navigate(to: Routes.path("/admin"))}
     end
   end
@@ -45,25 +45,25 @@ defmodule PhoenixKitBilling.Web.BillingProfileForm do
     changeset = Billing.change_billing_profile(%BillingProfile{type: "individual"})
 
     socket
-    |> assign(:page_title, "New Billing Profile")
+    |> assign(:page_title, gettext("New Billing Profile"))
     |> assign(:profile, nil)
     |> assign(:form, to_form(changeset))
     |> assign(:selected_user_uuid, nil)
-    |> assign(:subdivision_label, "Region")
+    |> assign(:subdivision_label, gettext("Region"))
   end
 
   defp load_profile(socket, id) do
     case Billing.get_billing_profile(id) do
       nil ->
         socket
-        |> put_flash(:error, "Billing profile not found")
+        |> put_flash(:error, gettext("Billing profile not found"))
         |> push_navigate(to: Routes.path("/admin/billing/profiles"))
 
       profile ->
         changeset = Billing.change_billing_profile(profile)
 
         socket
-        |> assign(:page_title, "Edit Billing Profile")
+        |> assign(:page_title, gettext("Edit Billing Profile"))
         |> assign(:profile, profile)
         |> assign(:form, to_form(changeset))
         |> assign(:selected_user_uuid, profile.user_uuid)
@@ -143,11 +143,11 @@ defmodule PhoenixKitBilling.Web.BillingProfileForm do
       {:ok, _profile} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Billing profile saved successfully")
+         |> put_flash(:info, gettext("Billing profile saved successfully"))
          |> push_navigate(to: Routes.path("/admin/billing/profiles"))}
 
       {:error, :no_user} ->
-        {:noreply, put_flash(socket, :error, "Please select a user")}
+        {:noreply, put_flash(socket, :error, gettext("Please select a user"))}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :form, to_form(changeset))}

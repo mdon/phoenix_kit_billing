@@ -1,11 +1,11 @@
   <div class="container mx-auto px-4 py-6">
     <%!-- Header --%>
     <.admin_page_header back={PhoenixKit.Utils.Routes.path("/admin/billing")}>
-      <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-base-content">Invoices</h1>
-      <p class="text-sm text-base-content/60 mt-0.5">{@total_count} total invoices</p>
+      <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-base-content">{gettext("Invoices")}</h1>
+      <p class="text-sm text-base-content/60 mt-0.5">{gettext("%{count} total invoices", count: @total_count)}</p>
       <:actions>
         <button phx-click="refresh" class="btn btn-ghost btn-sm">
-          <.icon name="hero-arrow-path" class="w-4 h-4" /> Refresh
+          <.icon name="hero-arrow-path" class="w-4 h-4" /> {gettext("Refresh")}
         </button>
       </:actions>
     </.admin_page_header>
@@ -16,13 +16,13 @@
         <form phx-change="filter" phx-submit="filter" class="flex flex-wrap gap-4 items-end">
           <div class="form-control flex-1 min-w-[200px]">
             <label class="label">
-              <span class="label-text">Search</span>
+              <span class="label-text">{gettext("Search")}</span>
             </label>
             <input
               type="text"
               name="search"
               value={@search}
-              placeholder="Invoice number, customer..."
+              placeholder={gettext("Invoice number, customer...")}
               class="input input-bordered input-sm"
               phx-debounce="300"
             />
@@ -30,20 +30,20 @@
 
           <div class="form-control">
             <label class="label">
-              <span class="label-text">Status</span>
+              <span class="label-text">{gettext("Status")}</span>
             </label>
             <select name="status" class="select select-bordered select-sm">
-              <option value="all" selected={@status_filter == "all"}>All Statuses</option>
-              <option value="draft" selected={@status_filter == "draft"}>Draft</option>
-              <option value="sent" selected={@status_filter == "sent"}>Sent</option>
-              <option value="paid" selected={@status_filter == "paid"}>Paid</option>
-              <option value="void" selected={@status_filter == "void"}>Void</option>
-              <option value="overdue" selected={@status_filter == "overdue"}>Overdue</option>
+              <option value="all" selected={@status_filter == "all"}>{gettext("All Statuses")}</option>
+              <option value="draft" selected={@status_filter == "draft"}>{gettext("Draft")}</option>
+              <option value="sent" selected={@status_filter == "sent"}>{gettext("Sent")}</option>
+              <option value="paid" selected={@status_filter == "paid"}>{gettext("Paid")}</option>
+              <option value="void" selected={@status_filter == "void"}>{gettext("Void")}</option>
+              <option value="overdue" selected={@status_filter == "overdue"}>{gettext("Overdue")}</option>
             </select>
           </div>
 
           <button type="button" phx-click="clear_filters" class="btn btn-ghost btn-sm">
-            Clear Filters
+            {gettext("Clear Filters")}
           </button>
         </form>
       </div>
@@ -63,19 +63,19 @@
                 name="hero-document-text"
                 class="w-16 h-16 mx-auto mb-4 text-base-content/30"
               />
-              <h3 class="text-xl font-semibold mb-2">No invoices found</h3>
+              <h3 class="text-xl font-semibold mb-2">{gettext("No invoices found")}</h3>
               <p class="text-base-content/60 mb-4">
                 <%= if @search != "" or @status_filter != "all" do %>
-                  Try adjusting your filters or search terms
+                  {gettext("Try adjusting your filters or search terms")}
                 <% else %>
-                  Invoices are generated from orders
+                  {gettext("Invoices are generated from orders")}
                 <% end %>
               </p>
               <.link
                 navigate={PhoenixKit.Utils.Routes.path("/admin/billing/orders")}
                 class="btn btn-primary"
               >
-                View Orders
+                {gettext("View Orders")}
               </.link>
             </div>
           <% else %>
@@ -89,15 +89,15 @@
                 fn invoice ->
                   [
                     %{
-                      label: "Order #",
+                      label: gettext("Order #"),
                       value: if(invoice.order, do: invoice.order.order_number, else: "-")
                     },
                     %{
-                      label: "Customer",
+                      label: gettext("Customer"),
                       value: if(invoice.user, do: invoice.user.email, else: "-")
                     },
                     %{
-                      label: "Due Date",
+                      label: gettext("Due Date"),
                       value:
                         if(invoice.due_date,
                           do: Calendar.strftime(invoice.due_date, "%b %d, %Y"),
@@ -130,12 +130,12 @@
               </:card_actions>
               <.table_default_header>
                 <.table_default_row>
-                  <.table_default_header_cell>Invoice #</.table_default_header_cell>
-                  <.table_default_header_cell>Order #</.table_default_header_cell>
-                  <.table_default_header_cell>Customer</.table_default_header_cell>
-                  <.table_default_header_cell>Status</.table_default_header_cell>
-                  <.table_default_header_cell>Total</.table_default_header_cell>
-                  <.table_default_header_cell>Due Date</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Invoice #")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Order #")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Customer")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Status")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Total")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Due Date")}</.table_default_header_cell>
                   <.table_default_header_cell></.table_default_header_cell>
                 </.table_default_row>
               </.table_default_header>

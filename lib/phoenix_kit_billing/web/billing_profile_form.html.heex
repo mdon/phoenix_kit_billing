@@ -4,9 +4,9 @@
       <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-base-content">{@page_title}</h1>
       <p class="text-sm text-base-content/60 mt-0.5">
         <%= if @profile do %>
-          Edit billing profile details
+          {gettext("Edit billing profile details")}
         <% else %>
-          Create a new billing profile for a user
+          {gettext("Create a new billing profile for a user")}
         <% end %>
       </p>
     </.admin_page_header>
@@ -16,12 +16,12 @@
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
           <h2 class="card-title">
-            <.icon name="hero-user" class="w-5 h-5" /> User
+            <.icon name="hero-user" class="w-5 h-5" /> {gettext("User")}
           </h2>
 
           <div class="form-control">
             <label class="label">
-              <span class="label-text">Select User *</span>
+              <span class="label-text">{gettext("Select User *")}</span>
             </label>
             <select
               name="user_uuid"
@@ -29,7 +29,7 @@
               phx-change="select_user"
               disabled={@profile != nil}
             >
-              <option value="">Select a user...</option>
+              <option value="">{gettext("Select a user...")}</option>
               <%= for user <- @users do %>
                 <option
                   value={user.uuid}
@@ -45,7 +45,7 @@
             <%= if @profile do %>
               <label class="label">
                 <span class="label-text-alt text-info">
-                  User cannot be changed after creation
+                  {gettext("User cannot be changed after creation")}
                 </span>
               </label>
             <% end %>
@@ -57,7 +57,7 @@
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
           <h2 class="card-title">
-            <.icon name="hero-identification" class="w-5 h-5" /> Profile Type
+            <.icon name="hero-identification" class="w-5 h-5" /> {gettext("Profile Type")}
           </h2>
 
           <div class="flex gap-4">
@@ -72,8 +72,8 @@
                 phx-value-type="individual"
               />
               <span class="label-text">
-                <span class="font-medium">Individual</span>
-                <span class="text-base-content/60 block text-sm">Personal billing profile</span>
+                <span class="font-medium">{gettext("Individual")}</span>
+                <span class="text-base-content/60 block text-sm">{gettext("Personal billing profile")}</span>
               </span>
             </label>
 
@@ -88,9 +88,9 @@
                 phx-value-type="company"
               />
               <span class="label-text">
-                <span class="font-medium">Company</span>
+                <span class="font-medium">{gettext("Company")}</span>
                 <span class="text-base-content/60 block text-sm">
-                  Business billing profile (EU)
+                  {gettext("Business billing profile (EU)")}
                 </span>
               </span>
             </label>
@@ -103,13 +103,13 @@
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
             <h2 class="card-title">
-              <.icon name="hero-user-circle" class="w-5 h-5" /> Personal Information
+              <.icon name="hero-user-circle" class="w-5 h-5" /> {gettext("Personal Information")}
             </h2>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">First Name *</span>
+                  <span class="label-text">{gettext("First Name *")}</span>
                 </label>
                 <input
                   type="text"
@@ -125,7 +125,7 @@
 
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Middle Name</span>
+                  <span class="label-text">{gettext("Middle Name")}</span>
                 </label>
                 <input
                   type="text"
@@ -137,7 +137,7 @@
 
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Last Name *</span>
+                  <span class="label-text">{gettext("Last Name *")}</span>
                 </label>
                 <input
                   type="text"
@@ -155,7 +155,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Email</span>
+                  <span class="label-text">{gettext("Email")}</span>
                 </label>
                 <input
                   type="email"
@@ -166,14 +166,14 @@
                 />
                 <label class="label">
                   <span class="label-text-alt">
-                    Billing email (can differ from account email)
+                    {gettext("Billing email (can differ from account email)")}
                   </span>
                 </label>
               </div>
 
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Phone</span>
+                  <span class="label-text">{gettext("Phone")}</span>
                 </label>
                 <input
                   type="tel"
@@ -193,12 +193,12 @@
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
             <h2 class="card-title">
-              <.icon name="hero-building-office" class="w-5 h-5" /> Company Information
+              <.icon name="hero-building-office" class="w-5 h-5" /> {gettext("Company Information")}
             </h2>
 
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Company Name *</span>
+                <span class="label-text">{gettext("Company Name *")}</span>
               </label>
               <input
                 type="text"
@@ -215,7 +215,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">VAT Number</span>
+                  <span class="label-text">{gettext("VAT Number")}</span>
                 </label>
                 <input
                   type="text"
@@ -225,7 +225,7 @@
                   placeholder="EE123456789"
                 />
                 <label class="label">
-                  <span class="label-text-alt">EU VAT format: Country code + number</span>
+                  <span class="label-text-alt">{gettext("EU VAT format: Country code + number")}</span>
                 </label>
                 <.error :for={msg <- @form[:company_vat_number].errors |> Enum.map(&elem(&1, 0))}>
                   {msg}
@@ -234,7 +234,7 @@
 
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Registration Number</span>
+                  <span class="label-text">{gettext("Registration Number")}</span>
                 </label>
                 <input
                   type="text"
@@ -248,22 +248,22 @@
 
             <div class="form-control mt-4">
               <label class="label">
-                <span class="label-text">Legal Address</span>
+                <span class="label-text">{gettext("Legal Address")}</span>
               </label>
               <textarea
                 name="billing_profile[company_legal_address]"
                 class="textarea textarea-bordered"
                 rows="2"
-                placeholder="Registered legal address"
+                placeholder={gettext("Registered legal address")}
               >{@form[:company_legal_address].value}</textarea>
             </div>
 
-            <div class="divider">Contact</div>
+            <div class="divider">{gettext("Contact")}</div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Contact Email</span>
+                  <span class="label-text">{gettext("Contact Email")}</span>
                 </label>
                 <input
                   type="email"
@@ -276,7 +276,7 @@
 
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Phone</span>
+                  <span class="label-text">{gettext("Phone")}</span>
                 </label>
                 <input
                   type="tel"
@@ -295,16 +295,16 @@
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
           <h2 class="card-title">
-            <.icon name="hero-map-pin" class="w-5 h-5" /> Billing Address
+            <.icon name="hero-map-pin" class="w-5 h-5" /> {gettext("Billing Address")}
           </h2>
 
           <%!-- Country first --%>
           <div class="form-control">
             <label class="label">
-              <span class="label-text">Country</span>
+              <span class="label-text">{gettext("Country")}</span>
             </label>
             <select name="billing_profile[country]" class="select select-bordered">
-              <option value="">Select country...</option>
+              <option value="">{gettext("Select country...")}</option>
               <%= for {name, code} <- @countries do %>
                 <option value={code} selected={@form[:country].value == code}>
                   {name}
@@ -315,34 +315,34 @@
 
           <div class="form-control mt-4">
             <label class="label">
-              <span class="label-text">Address Line 1</span>
+              <span class="label-text">{gettext("Address Line 1")}</span>
             </label>
             <input
               type="text"
               name="billing_profile[address_line1]"
               value={@form[:address_line1].value}
               class="input input-bordered"
-              placeholder="Street address"
+              placeholder={gettext("Street address")}
             />
           </div>
 
           <div class="form-control">
             <label class="label">
-              <span class="label-text">Address Line 2</span>
+              <span class="label-text">{gettext("Address Line 2")}</span>
             </label>
             <input
               type="text"
               name="billing_profile[address_line2]"
               value={@form[:address_line2].value}
               class="input input-bordered"
-              placeholder="Apartment, suite, etc."
+              placeholder={gettext("Apartment, suite, etc.")}
             />
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
             <div class="form-control">
               <label class="label">
-                <span class="label-text">City</span>
+                <span class="label-text">{gettext("City")}</span>
               </label>
               <input
                 type="text"
@@ -368,7 +368,7 @@
 
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Postal Code</span>
+                <span class="label-text">{gettext("Postal Code")}</span>
               </label>
               <input
                 type="text"
@@ -386,7 +386,7 @@
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
           <h2 class="card-title">
-            <.icon name="hero-cog-6-tooth" class="w-5 h-5" /> Options
+            <.icon name="hero-cog-6-tooth" class="w-5 h-5" /> {gettext("Options")}
           </h2>
 
           <div class="form-control">
@@ -399,9 +399,9 @@
                 checked={@form[:is_default].value == true || @form[:is_default].value == "true"}
               />
               <div>
-                <span class="label-text font-medium">Set as default profile</span>
+                <span class="label-text font-medium">{gettext("Set as default profile")}</span>
                 <span class="label-text-alt block">
-                  This profile will be used by default for new orders
+                  {gettext("This profile will be used by default for new orders")}
                 </span>
               </div>
             </label>
@@ -409,17 +409,17 @@
 
           <div class="form-control mt-4">
             <label class="label">
-              <span class="label-text">Profile Name (Optional)</span>
+              <span class="label-text">{gettext("Profile Name (Optional)")}</span>
             </label>
             <input
               type="text"
               name="billing_profile[name]"
               value={@form[:name].value}
               class="input input-bordered"
-              placeholder="e.g., Home Address, Work, Company HQ"
+              placeholder={gettext("e.g., Home Address, Work, Company HQ")}
             />
             <label class="label">
-              <span class="label-text-alt">Custom name to identify this profile</span>
+              <span class="label-text-alt">{gettext("Custom name to identify this profile")}</span>
             </label>
           </div>
         </div>
@@ -431,11 +431,11 @@
           navigate={PhoenixKit.Utils.Routes.path("/admin/billing/profiles")}
           class="btn btn-ghost"
         >
-          Cancel
+          {gettext("Cancel")}
         </.link>
         <button type="submit" class="btn btn-primary">
           <.icon name="hero-check" class="w-4 h-4" />
-          {if @profile, do: "Update Profile", else: "Create Profile"}
+          {if @profile, do: gettext("Update Profile"), else: gettext("Create Profile")}
         </button>
       </div>
     </.form>

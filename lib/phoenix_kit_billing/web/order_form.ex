@@ -4,7 +4,7 @@ defmodule PhoenixKitBilling.Web.OrderForm do
   """
 
   use Phoenix.LiveView
-  use Gettext, backend: PhoenixKitWeb.Gettext
+  use Gettext, backend: PhoenixKitBilling.Gettext
   import PhoenixKitWeb.Components.Core.AdminPageHeader
   alias PhoenixKit.Utils.Routes
   import PhoenixKitWeb.Components.Core.Icon
@@ -36,11 +36,11 @@ defmodule PhoenixKitBilling.Web.OrderForm do
        |> assign(:country_tax_rate, nil)
        |> assign(:country_name, nil)
        |> assign(:country_vat_percent, nil)
-       |> assign(:page_title, "Order")}
+       |> assign(:page_title, gettext("Order"))}
     else
       {:ok,
        socket
-       |> put_flash(:error, "Billing module is not enabled")
+       |> put_flash(:error, gettext("Billing module is not enabled"))
        |> push_navigate(to: Routes.path("/admin"))}
     end
   end
@@ -72,7 +72,7 @@ defmodule PhoenixKitBilling.Web.OrderForm do
       })
 
     socket
-    |> assign(:page_title, "New Order")
+    |> assign(:page_title, gettext("New Order"))
     |> assign(:order, nil)
     |> assign(:form, to_form(changeset))
     |> assign(:line_items, [%{id: 0, name: "", description: "", quantity: 1, unit_price: "0.00"}])
@@ -87,7 +87,7 @@ defmodule PhoenixKitBilling.Web.OrderForm do
     case Billing.get_order(id, preload: [:billing_profile]) do
       nil ->
         socket
-        |> put_flash(:error, "Order not found")
+        |> put_flash(:error, gettext("Order not found"))
         |> push_navigate(to: Routes.path("/admin/billing/orders"))
 
       order ->
@@ -106,7 +106,7 @@ defmodule PhoenixKitBilling.Web.OrderForm do
           end
 
         socket
-        |> assign(:page_title, "Edit Order #{order.order_number}")
+        |> assign(:page_title, gettext("Edit Order %{number}", number: order.order_number))
         |> assign(:order, order)
         |> assign(:form, to_form(changeset))
         |> assign(:line_items, line_items)
@@ -277,7 +277,7 @@ defmodule PhoenixKitBilling.Web.OrderForm do
       {:ok, order} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Order saved successfully")
+         |> put_flash(:info, gettext("Order saved successfully"))
          |> push_navigate(to: Routes.path("/admin/billing/orders/#{order.uuid}"))}
 
       {:error, changeset} ->

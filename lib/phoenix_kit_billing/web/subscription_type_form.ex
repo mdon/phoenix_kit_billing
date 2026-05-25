@@ -4,7 +4,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
   """
 
   use Phoenix.LiveView
-  use Gettext, backend: PhoenixKitWeb.Gettext
+  use Gettext, backend: PhoenixKitBilling.Gettext
   import PhoenixKitWeb.Components.Core.AdminPageHeader
   alias PhoenixKit.Utils.Routes
   import PhoenixKitWeb.Components.Core.Icon
@@ -25,8 +25,8 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
         case params do
           %{"id" => id} ->
             case Billing.get_subscription_type(id) do
-              {:ok, type} -> {type, "Edit Subscription Type", :edit}
-              {:error, _} -> {nil, "Subscription Type Not Found", :not_found}
+              {:ok, type} -> {type, gettext("Edit Subscription Type"), :edit}
+              {:error, _} -> {nil, gettext("Subscription Type Not Found"), :not_found}
             end
 
           _ ->
@@ -35,7 +35,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
                interval: "month",
                interval_count: 1,
                active: true
-             }, "Create Subscription Type", :new}
+             }, gettext("Create Subscription Type"), :new}
         end
 
       if type do
@@ -55,13 +55,13 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
       else
         {:ok,
          socket
-         |> put_flash(:error, "Subscription type not found")
+         |> put_flash(:error, gettext("Subscription type not found"))
          |> push_navigate(to: Routes.path("/admin/billing/subscription-types"))}
       end
     else
       {:ok,
        socket
-       |> put_flash(:error, "Billing module is not enabled")
+       |> put_flash(:error, gettext("Billing module is not enabled"))
        |> push_navigate(to: Routes.path("/admin"))}
     end
   end
@@ -110,7 +110,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
 
       {:error, reason} ->
         {:noreply,
-         put_flash(socket, :error, "Failed to save subscription type: #{inspect(reason)}")}
+         put_flash(socket, :error, gettext("Failed to save subscription type: %{reason}", reason: inspect(reason)))}
     end
   end
 
@@ -140,8 +140,8 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
   defp format_features(features) when is_list(features), do: Enum.join(features, "\n")
   defp format_features(_), do: ""
 
-  defp type_saved_message(:new), do: "Subscription type created successfully"
-  defp type_saved_message(:edit), do: "Subscription type updated successfully"
+  defp type_saved_message(:new), do: gettext("Subscription type created successfully")
+  defp type_saved_message(:edit), do: gettext("Subscription type updated successfully")
 
   def error_to_string([]), do: ""
 
