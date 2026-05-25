@@ -3,51 +3,7 @@
     <.admin_page_header back={PhoenixKit.Utils.Routes.path("/admin/billing")}>
       <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-base-content">{gettext("Invoices")}</h1>
       <p class="text-sm text-base-content/60 mt-0.5">{gettext("%{count} total invoices", count: @total_count)}</p>
-      <:actions>
-        <button phx-click="refresh" class="btn btn-ghost btn-sm">
-          <.icon name="hero-arrow-path" class="w-4 h-4" /> {gettext("Refresh")}
-        </button>
-      </:actions>
     </.admin_page_header>
-
-    <%!-- Filters --%>
-    <div class="card bg-base-100 shadow mb-6">
-      <div class="card-body py-4">
-        <form phx-change="filter" phx-submit="filter" class="flex flex-wrap gap-4 items-end">
-          <div class="form-control flex-1 min-w-[200px]">
-            <label class="label">
-              <span class="label-text">{gettext("Search")}</span>
-            </label>
-            <input
-              type="text"
-              name="search"
-              value={@search}
-              placeholder={gettext("Invoice number, customer...")}
-              class="input input-bordered input-sm"
-              phx-debounce="300"
-            />
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">{gettext("Status")}</span>
-            </label>
-            <select name="status" class="select select-bordered select-sm">
-              <option value="all" selected={@status_filter == "all"}>{gettext("All Statuses")}</option>
-              <option value="draft" selected={@status_filter == "draft"}>{gettext("Draft")}</option>
-              <option value="sent" selected={@status_filter == "sent"}>{gettext("Sent")}</option>
-              <option value="paid" selected={@status_filter == "paid"}>{gettext("Paid")}</option>
-              <option value="void" selected={@status_filter == "void"}>{gettext("Void")}</option>
-              <option value="overdue" selected={@status_filter == "overdue"}>{gettext("Overdue")}</option>
-            </select>
-          </div>
-
-          <button type="button" phx-click="clear_filters" class="btn btn-ghost btn-sm">
-            {gettext("Clear Filters")}
-          </button>
-        </form>
-      </div>
-    </div>
 
     <%!-- Invoices Table --%>
     <div class="card bg-base-100 shadow-xl">
@@ -108,6 +64,37 @@
                 end
               }
             >
+              <:toolbar_actions>
+                <form phx-change="filter" phx-submit="filter" class="flex flex-wrap items-center gap-2">
+                  <input
+                    type="text"
+                    name="search"
+                    value={@search}
+                    placeholder={gettext("Invoice number, customer...")}
+                    class="input input-bordered input-sm w-full md:w-56"
+                    phx-debounce="300"
+                  />
+                  <select name="status" class="select select-bordered select-sm">
+                    <option value="all" selected={@status_filter == "all"}>{gettext("All Statuses")}</option>
+                    <option value="draft" selected={@status_filter == "draft"}>{gettext("Draft")}</option>
+                    <option value="sent" selected={@status_filter == "sent"}>{gettext("Sent")}</option>
+                    <option value="paid" selected={@status_filter == "paid"}>{gettext("Paid")}</option>
+                    <option value="void" selected={@status_filter == "void"}>{gettext("Void")}</option>
+                    <option value="overdue" selected={@status_filter == "overdue"}>{gettext("Overdue")}</option>
+                  </select>
+                  <button type="button" phx-click="clear_filters" class="btn btn-ghost btn-sm">
+                    {gettext("Clear Filters")}
+                  </button>
+                  <button
+                    type="button"
+                    phx-click="refresh"
+                    class="btn btn-ghost btn-sm btn-square"
+                    title={gettext("Refresh")}
+                  >
+                    <.icon name="hero-arrow-path" class="w-4 h-4" />
+                  </button>
+                </form>
+              </:toolbar_actions>
               <:card_header :let={invoice}>
                 <div class="flex items-center justify-between">
                   <span class="font-mono font-medium">{invoice.invoice_number}</span>
