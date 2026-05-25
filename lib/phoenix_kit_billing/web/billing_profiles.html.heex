@@ -2,59 +2,21 @@
     <%!-- Header --%>
     <.admin_page_header back={PhoenixKit.Utils.Routes.path("/admin/billing")}>
       <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-base-content">
-        Billing Profiles
+        {gettext("Billing Profiles")}
       </h1>
-      <p class="text-sm text-base-content/60 mt-0.5">{@total_count} total profiles</p>
+      <p class="text-sm text-base-content/60 mt-0.5">{gettext("%{count} total profiles", count: @total_count)}</p>
       <:actions>
         <button phx-click="refresh" class="btn btn-ghost btn-sm">
-          <.icon name="hero-arrow-path" class="w-4 h-4" /> Refresh
+          <.icon name="hero-arrow-path" class="w-4 h-4" /> {gettext("Refresh")}
         </button>
         <.link
           navigate={PhoenixKit.Utils.Routes.path("/admin/billing/profiles/new")}
           class="btn btn-primary btn-sm"
         >
-          <.icon name="hero-plus" class="w-4 h-4" /> New Profile
+          <.icon name="hero-plus" class="w-4 h-4" /> {gettext("New Profile")}
         </.link>
       </:actions>
     </.admin_page_header>
-
-    <%!-- Filters --%>
-    <div class="card bg-base-100 shadow mb-6">
-      <div class="card-body py-4">
-        <form phx-change="filter" phx-submit="filter" class="flex flex-wrap gap-4 items-end">
-          <div class="form-control flex-1 min-w-[200px]">
-            <label class="label">
-              <span class="label-text">Search</span>
-            </label>
-            <input
-              type="text"
-              name="search"
-              value={@search}
-              placeholder="Name, email, company..."
-              class="input input-bordered input-sm"
-              phx-debounce="300"
-            />
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Type</span>
-            </label>
-            <select name="type" class="select select-bordered select-sm">
-              <option value="all" selected={@type_filter == "all"}>All Types</option>
-              <option value="individual" selected={@type_filter == "individual"}>
-                Individual
-              </option>
-              <option value="company" selected={@type_filter == "company"}>Company</option>
-            </select>
-          </div>
-
-          <button type="button" phx-click="clear_filters" class="btn btn-ghost btn-sm">
-            Clear Filters
-          </button>
-        </form>
-      </div>
-    </div>
 
     <%!-- Profiles Table --%>
     <div class="card bg-base-100 shadow-xl">
@@ -67,12 +29,12 @@
           <%= if Enum.empty?(@profiles) do %>
             <div class="text-center py-12">
               <.icon name="hero-user-circle" class="w-16 h-16 mx-auto mb-4 text-base-content/30" />
-              <h3 class="text-xl font-semibold mb-2">No billing profiles found</h3>
+              <h3 class="text-xl font-semibold mb-2">{gettext("No billing profiles found")}</h3>
               <p class="text-base-content/60">
                 <%= if @search != "" or @type_filter != "all" do %>
-                  Try adjusting your filters or search terms
+                  {gettext("Try adjusting your filters or search terms")}
                 <% else %>
-                  Billing profiles are created by users
+                  {gettext("Billing profiles are created by users")}
                 <% end %>
               </p>
             </div>
@@ -87,11 +49,11 @@
                 fn profile ->
                   [
                     %{
-                      label: "User",
+                      label: gettext("User"),
                       value: if(profile.user, do: profile.user.email, else: "-")
                     },
                     %{
-                      label: "Location",
+                      label: gettext("Location"),
                       value:
                         if(profile.city,
                           do: "#{profile.city}, #{profile.country}",
@@ -99,13 +61,35 @@
                         )
                     },
                     %{
-                      label: "Default",
-                      value: if(profile.is_default, do: "Yes", else: "No")
+                      label: gettext("Default"),
+                      value: if(profile.is_default, do: gettext("Yes"), else: gettext("No"))
                     }
                   ]
                 end
               }
             >
+              <:toolbar_actions>
+                <form phx-change="filter" phx-submit="filter" class="flex flex-wrap items-center gap-2">
+                  <input
+                    type="text"
+                    name="search"
+                    value={@search}
+                    placeholder={gettext("Name, email, company...")}
+                    class="input input-bordered input-sm w-full md:w-56"
+                    phx-debounce="300"
+                  />
+                  <select name="type" class="select select-bordered select-sm">
+                    <option value="all" selected={@type_filter == "all"}>{gettext("All Types")}</option>
+                    <option value="individual" selected={@type_filter == "individual"}>
+                      {gettext("Individual")}
+                    </option>
+                    <option value="company" selected={@type_filter == "company"}>{gettext("Company")}</option>
+                  </select>
+                  <button type="button" phx-click="clear_filters" class="btn btn-ghost btn-sm">
+                    {gettext("Clear Filters")}
+                  </button>
+                </form>
+              </:toolbar_actions>
               <:card_header :let={profile}>
                 <div class="flex items-center justify-between">
                   <span class="font-medium">
@@ -131,12 +115,12 @@
               </:card_actions>
               <.table_default_header>
                 <.table_default_row>
-                  <.table_default_header_cell>User</.table_default_header_cell>
-                  <.table_default_header_cell>Type</.table_default_header_cell>
-                  <.table_default_header_cell>Name / Company</.table_default_header_cell>
-                  <.table_default_header_cell>Location</.table_default_header_cell>
-                  <.table_default_header_cell>Default</.table_default_header_cell>
-                  <.table_default_header_cell>Created</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("User")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Type")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Name / Company")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Location")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Default")}</.table_default_header_cell>
+                  <.table_default_header_cell>{gettext("Created")}</.table_default_header_cell>
                   <.table_default_header_cell></.table_default_header_cell>
                 </.table_default_row>
               </.table_default_header>
@@ -163,7 +147,7 @@
                         <div class="font-medium">{profile.company_name}</div>
                         <%= if profile.company_vat_number do %>
                           <div class="text-xs text-base-content/60">
-                            VAT: {profile.company_vat_number}
+                            {gettext("VAT:")} {profile.company_vat_number}
                           </div>
                         <% end %>
                       <% else %>
@@ -184,7 +168,7 @@
                     </.table_default_cell>
                     <.table_default_cell>
                       <%= if profile.is_default do %>
-                        <span class="badge badge-success badge-sm h-auto">Default</span>
+                        <span class="badge badge-success badge-sm h-auto">{gettext("Default")}</span>
                       <% end %>
                     </.table_default_cell>
                     <.table_default_cell class="text-sm text-base-content/60">

@@ -7,7 +7,7 @@ defmodule PhoenixKitBilling.Web.Settings do
   """
 
   use Phoenix.LiveView
-  use Gettext, backend: PhoenixKitWeb.Gettext
+  use Gettext, backend: PhoenixKitBilling.Gettext
   import PhoenixKitWeb.Components.Core.AdminPageHeader
   import PhoenixKitWeb.Components.Core.Icon
 
@@ -23,7 +23,7 @@ defmodule PhoenixKitBilling.Web.Settings do
 
     socket =
       socket
-      |> assign(:page_title, "Billing Settings")
+      |> assign(:page_title, gettext("Billing Settings"))
       |> assign(:project_title, project_title)
       |> assign(:billing_enabled, billing_enabled)
       |> load_settings()
@@ -95,7 +95,7 @@ defmodule PhoenixKitBilling.Web.Settings do
     {:noreply,
      socket
      |> load_settings()
-     |> put_flash(:info, "General settings saved")}
+     |> put_flash(:info, gettext("General settings saved"))}
   end
 
   @impl true

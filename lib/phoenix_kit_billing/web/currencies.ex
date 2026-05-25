@@ -7,7 +7,7 @@ defmodule PhoenixKitBilling.Web.Currencies do
   """
 
   use Phoenix.LiveView
-  use Gettext, backend: PhoenixKitWeb.Gettext
+  use Gettext, backend: PhoenixKitBilling.Gettext
   import PhoenixKitWeb.Components.Core.AdminPageHeader
   alias PhoenixKit.Utils.Routes
   import PhoenixKitWeb.Components.Core.Icon
@@ -26,7 +26,7 @@ defmodule PhoenixKitBilling.Web.Currencies do
 
       socket =
         socket
-        |> assign(:page_title, "Currencies")
+        |> assign(:page_title, gettext("Currencies"))
         |> assign(:project_title, project_title)
         |> assign(:currencies, [])
         |> assign(:loading, true)
@@ -41,7 +41,7 @@ defmodule PhoenixKitBilling.Web.Currencies do
     else
       {:ok,
        socket
-       |> put_flash(:error, "Billing module is not enabled")
+       |> put_flash(:error, gettext("Billing module is not enabled"))
        |> push_navigate(to: Routes.path("/admin"))}
     end
   end
@@ -70,10 +70,10 @@ defmodule PhoenixKitBilling.Web.Currencies do
         {:noreply,
          socket
          |> load_currencies()
-         |> put_flash(:info, "Currency updated")}
+         |> put_flash(:info, gettext("Currency updated"))}
 
       {:error, _changeset} ->
-        {:noreply, put_flash(socket, :error, "Failed to update currency")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to update currency"))}
     end
   end
 
@@ -86,10 +86,10 @@ defmodule PhoenixKitBilling.Web.Currencies do
         {:noreply,
          socket
          |> load_currencies()
-         |> put_flash(:info, "#{currency.code} set as default currency")}
+         |> put_flash(:info, gettext("%{code} set as default currency", code: currency.code))}
 
       {:error, _reason} ->
-        {:noreply, put_flash(socket, :error, "Failed to set default currency")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to set default currency"))}
     end
   end
 
@@ -152,7 +152,10 @@ defmodule PhoenixKitBilling.Web.Currencies do
 
     case result do
       {:ok, _currency} ->
-        action = if socket.assigns.editing_currency, do: "updated", else: "created"
+        message =
+          if socket.assigns.editing_currency,
+            do: gettext("Currency updated successfully"),
+            else: gettext("Currency created successfully")
 
         {:noreply,
          socket
@@ -160,7 +163,7 @@ defmodule PhoenixKitBilling.Web.Currencies do
          |> assign(:show_form, false)
          |> assign(:editing_currency, nil)
          |> assign(:form, nil)
-         |> put_flash(:info, "Currency #{action} successfully")}
+         |> put_flash(:info, message)}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :form, to_form(changeset))}
@@ -178,17 +181,17 @@ defmodule PhoenixKitBilling.Web.Currencies do
         {:noreply,
          socket
          |> load_currencies()
-         |> put_flash(:info, "#{currency.code} deleted")}
+         |> put_flash(:info, gettext("%{code} deleted", code: currency.code))}
 
       {:error, :is_default} ->
-        {:noreply, put_flash(socket, :error, "Cannot delete the default currency")}
+        {:noreply, put_flash(socket, :error, gettext("Cannot delete the default currency"))}
 
       {:error, :currency_in_use} ->
         {:noreply,
-         put_flash(socket, :error, "Cannot delete currency — it is used by existing orders")}
+         put_flash(socket, :error, gettext("Cannot delete currency — it is used by existing orders"))}
 
       {:error, _other} ->
-        {:noreply, put_flash(socket, :error, "Failed to delete currency")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to delete currency"))}
     end
   end
 
@@ -275,9 +278,9 @@ defmodule PhoenixKitBilling.Web.Currencies do
 
     message =
       case {ok_count, fail_count} do
-        {ok, 0} -> "#{ok} currencies imported"
-        {0, fail} -> "Import failed for #{fail} currencies"
-        {ok, fail} -> "#{ok} imported, #{fail} failed"
+        {ok, 0} -> gettext("%{count} currencies imported", count: ok)
+        {0, fail} -> gettext("Import failed for %{count} currencies", count: fail)
+        {ok, fail} -> gettext("%{ok} imported, %{fail} failed", ok: ok, fail: fail)
       end
 
     {:noreply,

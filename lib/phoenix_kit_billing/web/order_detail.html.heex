@@ -8,36 +8,36 @@
         <.order_status_badge status={@order.status} size={:md} />
       </div>
       <p class="text-sm text-base-content/60 mt-0.5">
-        Created <.time_ago datetime={@order.inserted_at} />
+        {gettext("Created")} <.time_ago datetime={@order.inserted_at} />
       </p>
       <:actions>
         <%= case @order.status do %>
           <% "draft" -> %>
             <button phx-click="confirm_order" class="btn btn-info btn-sm">
-              <.icon name="hero-check" class="w-4 h-4" /> Confirm Order
+              <.icon name="hero-check" class="w-4 h-4" /> {gettext("Confirm Order")}
             </button>
             <button phx-click="generate_invoice" class="btn btn-outline btn-sm">
-              <.icon name="hero-document-text" class="w-4 h-4" /> Generate Invoice
+              <.icon name="hero-document-text" class="w-4 h-4" /> {gettext("Generate Invoice")}
             </button>
             <.link
               navigate={PhoenixKit.Utils.Routes.path("/admin/billing/orders/#{@order.uuid}/edit")}
               class="btn btn-outline btn-sm"
             >
-              <.icon name="hero-pencil" class="w-4 h-4" /> Edit
+              <.icon name="hero-pencil" class="w-4 h-4" /> {gettext("Edit")}
             </.link>
           <% "pending" -> %>
             <button phx-click="confirm_order" class="btn btn-info btn-sm">
-              <.icon name="hero-check" class="w-4 h-4" /> Confirm Order
+              <.icon name="hero-check" class="w-4 h-4" /> {gettext("Confirm Order")}
             </button>
             <button phx-click="generate_invoice" class="btn btn-outline btn-sm">
-              <.icon name="hero-document-text" class="w-4 h-4" /> Generate Invoice
+              <.icon name="hero-document-text" class="w-4 h-4" /> {gettext("Generate Invoice")}
             </button>
           <% "confirmed" -> %>
             <button phx-click="mark_paid" class="btn btn-success btn-sm">
-              <.icon name="hero-banknotes" class="w-4 h-4" /> Mark as Paid
+              <.icon name="hero-banknotes" class="w-4 h-4" /> {gettext("Mark as Paid")}
             </button>
             <button phx-click="generate_invoice" class="btn btn-outline btn-sm">
-              <.icon name="hero-document-text" class="w-4 h-4" /> Generate Invoice
+              <.icon name="hero-document-text" class="w-4 h-4" /> {gettext("Generate Invoice")}
             </button>
           <% _ -> %>
         <% end %>
@@ -45,9 +45,9 @@
           <button
             phx-click="cancel_order"
             class="btn btn-error btn-outline btn-sm"
-            data-confirm="Are you sure you want to cancel this order?"
+            data-confirm={gettext("Are you sure you want to cancel this order?")}
           >
-            <.icon name="hero-x-mark" class="w-4 h-4" /> Cancel
+            <.icon name="hero-x-mark" class="w-4 h-4" /> {gettext("Cancel")}
           </button>
         <% end %>
       </:actions>
@@ -59,17 +59,17 @@
         <%!-- Order Summary --%>
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
-            <h2 class="card-title">Order Summary</h2>
+            <h2 class="card-title">{gettext("Order Summary")}</h2>
 
             <%!-- Line Items --%>
             <div class="overflow-x-auto mt-4">
               <table class="table">
                 <thead>
                   <tr>
-                    <th>Item</th>
-                    <th class="text-right">Qty</th>
-                    <th class="text-right">Unit Price</th>
-                    <th class="text-right">Total</th>
+                    <th>{gettext("Item")}</th>
+                    <th class="text-right">{gettext("Qty")}</th>
+                    <th class="text-right">{gettext("Unit Price")}</th>
+                    <th class="text-right">{gettext("Total")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -93,7 +93,7 @@
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colspan="3" class="text-right font-medium">Subtotal</td>
+                    <td colspan="3" class="text-right font-medium">{gettext("Subtotal")}</td>
                     <td class="text-right">
                       <.currency_compact amount={@order.subtotal} currency={@order.currency} />
                     </td>
@@ -101,7 +101,7 @@
                   <%= if Decimal.gt?(@order.tax_amount || Decimal.new(0), Decimal.new(0)) do %>
                     <tr>
                       <td colspan="3" class="text-right">
-                        Tax ({Decimal.round(
+                        {gettext("Tax")} ({Decimal.round(
                           Decimal.mult(@order.tax_rate || Decimal.new(0), 100),
                           2
                         )
@@ -116,7 +116,7 @@
                   <%= if Decimal.gt?(@order.discount_amount || Decimal.new(0), Decimal.new(0)) do %>
                     <tr>
                       <td colspan="3" class="text-right text-success">
-                        Discount
+                        {gettext("Discount")}
                         <%= if @order.discount_code do %>
                           <span class="badge badge-sm badge-outline ml-1">
                             {@order.discount_code}
@@ -132,7 +132,7 @@
                     </tr>
                   <% end %>
                   <tr class="text-lg font-bold">
-                    <td colspan="3" class="text-right">Total</td>
+                    <td colspan="3" class="text-right">{gettext("Total")}</td>
                     <td class="text-right">
                       <.currency_amount amount={@order.total} currency={@order.currency} />
                     </td>
@@ -147,16 +147,16 @@
         <%= if @order.notes || @order.internal_notes do %>
           <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
-              <h2 class="card-title">Notes</h2>
+              <h2 class="card-title">{gettext("Notes")}</h2>
               <%= if @order.notes do %>
                 <div class="mt-2">
-                  <h4 class="font-medium text-sm text-base-content/60">Customer Notes</h4>
+                  <h4 class="font-medium text-sm text-base-content/60">{gettext("Customer Notes")}</h4>
                   <p class="mt-1">{@order.notes}</p>
                 </div>
               <% end %>
               <%= if @order.internal_notes do %>
                 <div class="mt-4">
-                  <h4 class="font-medium text-sm text-base-content/60">Internal Notes</h4>
+                  <h4 class="font-medium text-sm text-base-content/60">{gettext("Internal Notes")}</h4>
                   <p class="mt-1 bg-warning/10 p-3 rounded-lg">{@order.internal_notes}</p>
                 </div>
               <% end %>
@@ -168,10 +168,10 @@
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
             <div class="flex justify-between items-center">
-              <h2 class="card-title">Invoices</h2>
+              <h2 class="card-title">{gettext("Invoices")}</h2>
               <%= if @order.status in ["draft", "pending", "confirmed"] do %>
                 <button phx-click="generate_invoice" class="btn btn-outline btn-sm">
-                  <.icon name="hero-plus" class="w-4 h-4" /> Generate Invoice
+                  <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Generate Invoice")}
                 </button>
               <% end %>
             </div>
@@ -179,17 +179,17 @@
             <%= if Enum.empty?(@invoices) do %>
               <div class="text-center py-8 text-base-content/50">
                 <.icon name="hero-document-text" class="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No invoices generated yet</p>
+                <p>{gettext("No invoices generated yet")}</p>
               </div>
             <% else %>
               <div class="overflow-x-auto mt-4">
                 <.table_default size="sm">
                   <.table_default_header>
                     <.table_default_row>
-                      <.table_default_header_cell>Invoice #</.table_default_header_cell>
-                      <.table_default_header_cell>Status</.table_default_header_cell>
-                      <.table_default_header_cell>Total</.table_default_header_cell>
-                      <.table_default_header_cell>Due Date</.table_default_header_cell>
+                      <.table_default_header_cell>{gettext("Invoice #")}</.table_default_header_cell>
+                      <.table_default_header_cell>{gettext("Status")}</.table_default_header_cell>
+                      <.table_default_header_cell>{gettext("Total")}</.table_default_header_cell>
+                      <.table_default_header_cell>{gettext("Due Date")}</.table_default_header_cell>
                       <.table_default_header_cell></.table_default_header_cell>
                     </.table_default_row>
                   </.table_default_header>
@@ -243,7 +243,7 @@
         <%!-- Customer Info --%>
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
-            <h2 class="card-title">Customer</h2>
+            <h2 class="card-title">{gettext("Customer")}</h2>
             <%= if @order.user do %>
               <div class="flex items-center gap-3 mt-2">
                 <.user_avatar user={@order.user} size="lg" />
@@ -253,12 +253,12 @@
                     navigate={PhoenixKit.Utils.Routes.path("/admin/users/#{@order.user.uuid}")}
                     class="text-sm text-primary hover:underline"
                   >
-                    View Profile
+                    {gettext("View Profile")}
                   </.link>
                 </div>
               </div>
             <% else %>
-              <p class="text-base-content/50">No customer linked</p>
+              <p class="text-base-content/50">{gettext("No customer linked")}</p>
             <% end %>
           </div>
         </div>
@@ -266,14 +266,14 @@
         <%!-- Billing Info --%>
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
-            <h2 class="card-title">Billing Information</h2>
+            <h2 class="card-title">{gettext("Billing Information")}</h2>
             <%= if @order.billing_snapshot && map_size(@order.billing_snapshot) > 0 do %>
               <div class="mt-2 space-y-2 text-sm">
                 <%= if @order.billing_snapshot["type"] == "company" do %>
                   <div class="font-medium">{@order.billing_snapshot["company_name"]}</div>
                   <%= if @order.billing_snapshot["company_vat_number"] do %>
                     <div class="text-base-content/60">
-                      VAT: {@order.billing_snapshot["company_vat_number"]}
+                      {gettext("VAT:")} {@order.billing_snapshot["company_vat_number"]}
                     </div>
                   <% end %>
                 <% else %>
@@ -293,13 +293,13 @@
                 <% end %>
               </div>
             <% else %>
-              <p class="text-base-content/50 mt-2">No billing information</p>
+              <p class="text-base-content/50 mt-2">{gettext("No billing information")}</p>
               <%= if @order.billing_profile do %>
                 <.link
                   navigate={PhoenixKit.Utils.Routes.path("/admin/billing/profiles")}
                   class="btn btn-outline btn-sm mt-2"
                 >
-                  View Billing Profile
+                  {gettext("View Billing Profile")}
                 </.link>
               <% end %>
             <% end %>
@@ -309,23 +309,23 @@
         <%!-- Payment Details --%>
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
-            <h2 class="card-title">Payment</h2>
+            <h2 class="card-title">{gettext("Payment")}</h2>
             <div class="mt-2 space-y-3">
               <div class="flex justify-between">
-                <span class="text-base-content/60">Method</span>
+                <span class="text-base-content/60">{gettext("Method")}</span>
                 <%= if @order.payment_method do %>
                   <span class="badge badge-outline">{String.upcase(@order.payment_method)}</span>
                 <% else %>
-                  <span class="text-base-content/40 text-sm">Not specified</span>
+                  <span class="text-base-content/40 text-sm">{gettext("Not specified")}</span>
                 <% end %>
               </div>
               <div class="flex justify-between">
-                <span class="text-base-content/60">Currency</span>
+                <span class="text-base-content/60">{gettext("Currency")}</span>
                 <.currency_badge code={@order.currency} size={:sm} />
               </div>
               <%= if @order.confirmed_at do %>
                 <div class="flex justify-between">
-                  <span class="text-base-content/60">Confirmed</span>
+                  <span class="text-base-content/60">{gettext("Confirmed")}</span>
                   <span class="text-sm">
                     <.time_ago datetime={@order.confirmed_at} />
                   </span>
@@ -333,7 +333,7 @@
               <% end %>
               <%= if @order.paid_at do %>
                 <div class="flex justify-between">
-                  <span class="text-base-content/60">Paid</span>
+                  <span class="text-base-content/60">{gettext("Paid")}</span>
                   <span class="text-sm">
                     <.time_ago datetime={@order.paid_at} />
                   </span>
@@ -341,7 +341,7 @@
               <% end %>
               <%= if @order.cancelled_at do %>
                 <div class="flex justify-between">
-                  <span class="text-base-content/60">Cancelled</span>
+                  <span class="text-base-content/60">{gettext("Cancelled")}</span>
                   <span class="text-sm text-error">
                     <.time_ago datetime={@order.cancelled_at} />
                   </span>

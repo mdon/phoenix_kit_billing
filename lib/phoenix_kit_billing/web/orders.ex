@@ -6,7 +6,7 @@ defmodule PhoenixKitBilling.Web.Orders do
   """
 
   use Phoenix.LiveView
-  use Gettext, backend: PhoenixKitWeb.Gettext
+  use Gettext, backend: PhoenixKitBilling.Gettext
   import PhoenixKitWeb.Components.Core.AdminPageHeader
   import PhoenixKitWeb.Components.Core.UserInfo
   alias PhoenixKit.Utils.Routes
@@ -35,7 +35,7 @@ defmodule PhoenixKitBilling.Web.Orders do
 
       socket =
         socket
-        |> assign(:page_title, "Orders")
+        |> assign(:page_title, gettext("Orders"))
         |> assign(:project_title, project_title)
         |> assign(:orders, [])
         |> assign(:total_count, 0)
@@ -47,7 +47,7 @@ defmodule PhoenixKitBilling.Web.Orders do
     else
       {:ok,
        socket
-       |> put_flash(:error, "Billing module is not enabled")
+       |> put_flash(:error, gettext("Billing module is not enabled"))
        |> push_navigate(to: Routes.path("/admin"))}
     end
   end

@@ -12,7 +12,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
   """
 
   use Phoenix.LiveView
-  use Gettext, backend: PhoenixKitWeb.Gettext
+  use Gettext, backend: PhoenixKitBilling.Gettext
   import PhoenixKitWeb.Components.Core.AdminPageHeader
   import PhoenixKitWeb.Components.Core.UserInfo
   import PhoenixKitWeb.Components.Core.Icon
@@ -33,7 +33,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
 
       socket =
         socket
-        |> assign(:page_title, "Create Subscription")
+        |> assign(:page_title, gettext("Create Subscription"))
         |> assign(:project_title, project_title)
         |> assign(:subscription_types, types)
         |> assign(:user_search, "")
@@ -51,7 +51,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
     else
       {:ok,
        socket
-       |> put_flash(:error, "Billing module is not enabled")
+       |> put_flash(:error, gettext("Billing module is not enabled"))
        |> push_navigate(to: Routes.path("/admin"))}
     end
   end
@@ -62,7 +62,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
       nil ->
         {:noreply,
          socket
-         |> put_flash(:error, "Subscription not found")
+         |> put_flash(:error, gettext("Subscription not found"))
          |> push_navigate(to: Routes.path("/admin/billing/subscriptions"))}
 
       subscription ->
@@ -70,7 +70,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
 
         {:noreply,
          socket
-         |> assign(:page_title, "Edit Subscription")
+         |> assign(:page_title, gettext("Edit Subscription"))
          |> assign(:subscription, subscription)
          |> assign(:selected_user, subscription.user)
          |> assign(
@@ -106,7 +106,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
   def handle_event("select_user", %{"id" => user_uuid}, socket) do
     case Auth.get_user(user_uuid) do
       nil ->
-        {:noreply, put_flash(socket, :error, "User not found")}
+        {:noreply, put_flash(socket, :error, gettext("User not found"))}
 
       user ->
         payment_methods = Billing.list_payment_methods(user.uuid, status: "active")
@@ -184,18 +184,18 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
     if to_string(subscription.subscription_type_uuid) == new_type_uuid do
       {:noreply,
        socket
-       |> put_flash(:info, "No changes to save")
+       |> put_flash(:info, gettext("No changes to save"))
        |> push_navigate(to: Routes.path("/admin/billing/subscriptions/#{subscription.uuid}"))}
     else
       case Billing.change_subscription_type(subscription, new_type_uuid) do
         {:ok, updated} ->
           {:noreply,
            socket
-           |> put_flash(:info, "Subscription updated successfully")
+           |> put_flash(:info, gettext("Subscription updated successfully"))
            |> push_navigate(to: Routes.path("/admin/billing/subscriptions/#{updated.uuid}"))}
 
         {:error, reason} ->
-          {:noreply, assign(socket, :error, "Failed to update subscription: #{inspect(reason)}")}
+          {:noreply, assign(socket, :error, gettext("Failed to update subscription: %{reason}", reason: inspect(reason)))}
       end
     end
   end
@@ -212,10 +212,10 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
 
     cond do
       is_nil(user) ->
-        {:noreply, assign(socket, :error, "Please select a customer")}
+        {:noreply, assign(socket, :error, gettext("Please select a customer"))}
 
       is_nil(type_uuid) ->
-        {:noreply, assign(socket, :error, "Please select a subscription type")}
+        {:noreply, assign(socket, :error, gettext("Please select a subscription type"))}
 
       true ->
         attrs = %{
@@ -229,7 +229,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
           {:ok, subscription} ->
             {:noreply,
              socket
-             |> put_flash(:info, "Subscription created successfully")
+             |> put_flash(:info, gettext("Subscription created successfully"))
              |> push_navigate(
                to: Routes.path("/admin/billing/subscriptions/#{subscription.uuid}")
              )}
@@ -240,7 +240,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
 
           {:error, reason} ->
             {:noreply,
-             assign(socket, :error, "Failed to create subscription: #{inspect(reason)}")}
+             assign(socket, :error, gettext("Failed to create subscription: %{reason}", reason: inspect(reason)))}
         end
     end
   end
@@ -251,13 +251,13 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
       {:ok, _} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Subscription paused")
+         |> put_flash(:info, gettext("Subscription paused"))
          |> push_navigate(
            to: Routes.path("/admin/billing/subscriptions/#{socket.assigns.subscription.uuid}")
          )}
 
       {:error, reason} ->
-        {:noreply, assign(socket, :error, "Failed to pause: #{inspect(reason)}")}
+        {:noreply, assign(socket, :error, gettext("Failed to pause: %{reason}", reason: inspect(reason)))}
     end
   end
 
@@ -267,13 +267,13 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
       {:ok, _} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Subscription resumed")
+         |> put_flash(:info, gettext("Subscription resumed"))
          |> push_navigate(
            to: Routes.path("/admin/billing/subscriptions/#{socket.assigns.subscription.uuid}")
          )}
 
       {:error, reason} ->
-        {:noreply, assign(socket, :error, "Failed to resume: #{inspect(reason)}")}
+        {:noreply, assign(socket, :error, gettext("Failed to resume: %{reason}", reason: inspect(reason)))}
     end
   end
 
@@ -283,13 +283,13 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
       {:ok, _} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Subscription will be cancelled at period end")
+         |> put_flash(:info, gettext("Subscription will be cancelled at period end"))
          |> push_navigate(
            to: Routes.path("/admin/billing/subscriptions/#{socket.assigns.subscription.uuid}")
          )}
 
       {:error, reason} ->
-        {:noreply, assign(socket, :error, "Failed to cancel: #{inspect(reason)}")}
+        {:noreply, assign(socket, :error, gettext("Failed to cancel: %{reason}", reason: inspect(reason)))}
     end
   end
 
@@ -302,11 +302,11 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
       {:ok, _} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Subscription extended by 30 days")
+         |> put_flash(:info, gettext("Subscription extended by 30 days"))
          |> push_navigate(to: Routes.path("/admin/billing/subscriptions/#{sub.uuid}"))}
 
       {:error, reason} ->
-        {:noreply, assign(socket, :error, "Failed to extend: #{inspect(reason)}")}
+        {:noreply, assign(socket, :error, gettext("Failed to extend: %{reason}", reason: inspect(reason)))}
     end
   end
 

@@ -8,21 +8,21 @@
         <.invoice_status_badge status={@invoice.status} size={:md} />
       </div>
       <p class="text-sm text-base-content/60 mt-0.5">
-        Created <.time_ago datetime={@invoice.inserted_at} />
+        {gettext("Created")} <.time_ago datetime={@invoice.inserted_at} />
       </p>
       <:actions>
         <%!-- Send/Resend Invoice - available for all except void --%>
         <%= if @invoice.status != "void" do %>
           <button phx-click="open_send_modal" class="btn btn-info btn-sm">
             <.icon name="hero-paper-airplane" class="w-4 h-4" />
-            {if @invoice.status == "draft", do: "Send Invoice", else: "Resend Invoice"}
+            {if @invoice.status == "draft", do: gettext("Send Invoice"), else: gettext("Resend Invoice")}
           </button>
         <% end %>
 
         <%!-- Mark as Paid - available for sent/overdue --%>
         <%= if @invoice.status in ["sent", "overdue"] do %>
           <button phx-click="open_payment_modal" class="btn btn-success btn-sm">
-            <.icon name="hero-banknotes" class="w-4 h-4" /> Record Payment
+            <.icon name="hero-banknotes" class="w-4 h-4" /> {gettext("Record Payment")}
           </button>
         <% end %>
 
@@ -54,7 +54,7 @@
                     <.icon name="hero-credit-card" class="w-4 h-4" />
                 <% end %>
               <% end %>
-              Pay with {provider |> Atom.to_string() |> String.capitalize()}
+              {gettext("Pay with %{provider}", provider: provider |> Atom.to_string() |> String.capitalize())}
             </button>
           <% end %>
         <% end %>
@@ -62,7 +62,7 @@
         <%!-- Issue Refund - available if has payments --%>
         <%= if PhoenixKitBilling.Invoice.has_payments?(@invoice) do %>
           <button phx-click="open_refund_modal" class="btn btn-warning btn-sm">
-            <.icon name="hero-arrow-uturn-left" class="w-4 h-4" /> Issue Refund
+            <.icon name="hero-arrow-uturn-left" class="w-4 h-4" /> {gettext("Issue Refund")}
           </button>
         <% end %>
 
@@ -71,9 +71,9 @@
           <button phx-click="generate_receipt" class="btn btn-outline btn-sm">
             <.icon name="hero-document-check" class="w-4 h-4" />
             <%= if @invoice.status == "paid" do %>
-              Generate Receipt
+              {gettext("Generate Receipt")}
             <% else %>
-              Generate Partial Receipt
+              {gettext("Generate Partial Receipt")}
             <% end %>
           </button>
         <% end %>
@@ -83,9 +83,9 @@
           <button
             phx-click="void_invoice"
             class="btn btn-error btn-outline btn-sm"
-            data-confirm="Are you sure you want to void this invoice?"
+            data-confirm={gettext("Are you sure you want to void this invoice?")}
           >
-            <.icon name="hero-x-mark" class="w-4 h-4" /> Void
+            <.icon name="hero-x-mark" class="w-4 h-4" /> {gettext("Void")}
           </button>
         <% end %>
 
@@ -96,7 +96,7 @@
           class="btn btn-outline btn-sm"
           target="_blank"
         >
-          <.icon name="hero-printer" class="w-4 h-4" /> Print / PDF
+          <.icon name="hero-printer" class="w-4 h-4" /> {gettext("Print / PDF")}
         </.link>
 
         <%!-- View Receipt - available when receipt is generated --%>
@@ -108,10 +108,10 @@
             class="btn btn-success btn-sm"
             target="_blank"
           >
-            <.icon name="hero-document-check" class="w-4 h-4" /> View Receipt
+            <.icon name="hero-document-check" class="w-4 h-4" /> {gettext("View Receipt")}
           </.link>
           <button phx-click="open_send_receipt_modal" class="btn btn-success btn-outline btn-sm">
-            <.icon name="hero-paper-airplane" class="w-4 h-4" /> Send Receipt
+            <.icon name="hero-paper-airplane" class="w-4 h-4" /> {gettext("Send Receipt")}
           </button>
         <% end %>
       </:actions>
@@ -123,17 +123,17 @@
         <%!-- Invoice Details --%>
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
-            <h2 class="card-title">Invoice Details</h2>
+            <h2 class="card-title">{gettext("Invoice Details")}</h2>
 
             <%!-- Line Items --%>
             <div class="overflow-x-auto mt-4">
               <table class="table">
                 <thead>
                   <tr>
-                    <th>Item</th>
-                    <th class="text-right">Qty</th>
-                    <th class="text-right">Unit Price</th>
-                    <th class="text-right">Total</th>
+                    <th>{gettext("Item")}</th>
+                    <th class="text-right">{gettext("Qty")}</th>
+                    <th class="text-right">{gettext("Unit Price")}</th>
+                    <th class="text-right">{gettext("Total")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -160,7 +160,7 @@
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colspan="3" class="text-right font-medium">Subtotal</td>
+                    <td colspan="3" class="text-right font-medium">{gettext("Subtotal")}</td>
                     <td class="text-right">
                       <.currency_compact amount={@invoice.subtotal} currency={@invoice.currency} />
                     </td>
@@ -168,7 +168,7 @@
                   <%= if Decimal.gt?(@invoice.tax_amount || Decimal.new(0), Decimal.new(0)) do %>
                     <tr>
                       <td colspan="3" class="text-right">
-                        Tax ({Decimal.round(
+                        {gettext("Tax")} ({Decimal.round(
                           Decimal.mult(@invoice.tax_rate || Decimal.new(0), 100),
                           2
                         )
@@ -184,7 +184,7 @@
                     </tr>
                   <% end %>
                   <tr class="text-lg font-bold">
-                    <td colspan="3" class="text-right">Total</td>
+                    <td colspan="3" class="text-right">{gettext("Total")}</td>
                     <td class="text-right">
                       <.currency_amount amount={@invoice.total} currency={@invoice.currency} />
                     </td>
@@ -199,25 +199,25 @@
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
             <div class="flex justify-between items-center">
-              <h2 class="card-title">Payments & Transactions</h2>
+              <h2 class="card-title">{gettext("Payments & Transactions")}</h2>
               <.link
                 navigate={PhoenixKit.Utils.Routes.path("/admin/billing/transactions")}
                 class="btn btn-ghost btn-xs"
               >
-                View All <.icon name="hero-arrow-right" class="w-3 h-3" />
+                {gettext("View All")} <.icon name="hero-arrow-right" class="w-3 h-3" />
               </.link>
             </div>
 
             <%!-- Payment Summary --%>
             <div class="grid grid-cols-3 gap-4 mt-4">
               <div class="bg-base-200 rounded-lg p-4 text-center">
-                <div class="text-sm text-base-content/60">Total</div>
+                <div class="text-sm text-base-content/60">{gettext("Total")}</div>
                 <div class="text-lg font-bold">
                   <.currency_compact amount={@invoice.total} currency={@invoice.currency} />
                 </div>
               </div>
               <div class="bg-success/10 rounded-lg p-4 text-center">
-                <div class="text-sm text-success">Paid</div>
+                <div class="text-sm text-success">{gettext("Paid")}</div>
                 <div class="text-lg font-bold text-success">
                   <.currency_compact amount={@invoice.paid_amount} currency={@invoice.currency} />
                 </div>
@@ -242,7 +242,7 @@
                     else: "text-base-content/60"
                   )
                 ]}>
-                  Remaining
+                  {gettext("Remaining")}
                 </div>
                 <div class={[
                   "text-lg font-bold",
@@ -266,19 +266,19 @@
             <%= if Enum.empty?(@transactions) do %>
               <div class="text-center py-6 text-base-content/50">
                 <.icon name="hero-banknotes" class="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p>No transactions recorded yet</p>
+                <p>{gettext("No transactions recorded yet")}</p>
               </div>
             <% else %>
               <div class="overflow-x-auto mt-4">
                 <table class="table table-sm">
                   <thead>
                     <tr>
-                      <th>Date</th>
-                      <th>Number</th>
-                      <th>Type</th>
-                      <th class="text-right">Amount</th>
-                      <th>Description</th>
-                      <th class="text-right">Actions</th>
+                      <th>{gettext("Date")}</th>
+                      <th>{gettext("Number")}</th>
+                      <th>{gettext("Type")}</th>
+                      <th class="text-right">{gettext("Amount")}</th>
+                      <th>{gettext("Description")}</th>
+                      <th class="text-right">{gettext("Actions")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -397,35 +397,35 @@
         <%= if @invoice.payment_terms || @invoice.notes do %>
           <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
-              <h2 class="card-title">Payment Information</h2>
+              <h2 class="card-title">{gettext("Payment Information")}</h2>
               <%= if @invoice.payment_terms do %>
                 <div class="mt-2">
-                  <h4 class="font-medium text-sm text-base-content/60">Payment Terms</h4>
+                  <h4 class="font-medium text-sm text-base-content/60">{gettext("Payment Terms")}</h4>
                   <p class="mt-1">{@invoice.payment_terms}</p>
                 </div>
               <% end %>
               <%= if @invoice.bank_details && map_size(@invoice.bank_details) > 0 do %>
                 <div class="mt-4">
-                  <h4 class="font-medium text-sm text-base-content/60">Bank Details</h4>
+                  <h4 class="font-medium text-sm text-base-content/60">{gettext("Bank Details")}</h4>
                   <div class="mt-2 bg-base-200 p-4 rounded-lg font-mono text-sm">
                     <%= if @invoice.bank_details["bank_name"] do %>
-                      <div>Bank: {@invoice.bank_details["bank_name"]}</div>
+                      <div>{gettext("Bank:")} {@invoice.bank_details["bank_name"]}</div>
                     <% end %>
                     <%= if @invoice.bank_details["account_name"] do %>
-                      <div>Account: {@invoice.bank_details["account_name"]}</div>
+                      <div>{gettext("Account:")} {@invoice.bank_details["account_name"]}</div>
                     <% end %>
                     <%= if @invoice.bank_details["iban"] do %>
-                      <div>IBAN: {@invoice.bank_details["iban"]}</div>
+                      <div>{gettext("IBAN:")} {@invoice.bank_details["iban"]}</div>
                     <% end %>
                     <%= if @invoice.bank_details["swift"] do %>
-                      <div>SWIFT/BIC: {@invoice.bank_details["swift"]}</div>
+                      <div>{gettext("SWIFT/BIC:")} {@invoice.bank_details["swift"]}</div>
                     <% end %>
                   </div>
                 </div>
               <% end %>
               <%= if @invoice.notes do %>
                 <div class="mt-4">
-                  <h4 class="font-medium text-sm text-base-content/60">Notes</h4>
+                  <h4 class="font-medium text-sm text-base-content/60">{gettext("Notes")}</h4>
                   <p class="mt-1">{@invoice.notes}</p>
                 </div>
               <% end %>
@@ -440,10 +440,10 @@
               <div class="flex items-center gap-3">
                 <.icon name="hero-document-check" class="w-8 h-8 text-success" />
                 <div>
-                  <h2 class="card-title text-success">Receipt Generated</h2>
+                  <h2 class="card-title text-success">{gettext("Receipt Generated")}</h2>
                   <p class="font-mono">{@invoice.receipt_number}</p>
                   <p class="text-sm text-base-content/60 mt-1">
-                    Generated <.time_ago datetime={@invoice.receipt_generated_at} />
+                    {gettext("Generated")} <.time_ago datetime={@invoice.receipt_generated_at} />
                   </p>
                 </div>
               </div>
@@ -458,7 +458,7 @@
         <%= if @invoice.order do %>
           <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
-              <h2 class="card-title">Related Order</h2>
+              <h2 class="card-title">{gettext("Related Order")}</h2>
               <div class="mt-2">
                 <.link
                   navigate={
@@ -482,7 +482,7 @@
         <%!-- Customer Info --%>
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
-            <h2 class="card-title">Customer</h2>
+            <h2 class="card-title">{gettext("Customer")}</h2>
             <%= if @invoice.user do %>
               <div class="flex items-center gap-3 mt-2">
                 <.user_avatar user={@invoice.user} size="lg" />
@@ -494,12 +494,12 @@
                     }
                     class="text-sm text-primary hover:underline"
                   >
-                    View Profile
+                    {gettext("View Profile")}
                   </.link>
                 </div>
               </div>
             <% else %>
-              <p class="text-base-content/50 mt-2">No customer linked</p>
+              <p class="text-base-content/50 mt-2">{gettext("No customer linked")}</p>
             <% end %>
           </div>
         </div>
@@ -507,14 +507,14 @@
         <%!-- Billing Details --%>
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
-            <h2 class="card-title">Billing Details</h2>
+            <h2 class="card-title">{gettext("Billing Details")}</h2>
             <%= if @invoice.billing_details && map_size(@invoice.billing_details) > 0 do %>
               <div class="mt-2 space-y-2 text-sm">
                 <%= if @invoice.billing_details["type"] == "company" do %>
                   <div class="font-medium">{@invoice.billing_details["company_name"]}</div>
                   <%= if @invoice.billing_details["company_vat_number"] do %>
                     <div class="text-base-content/60">
-                      VAT: {@invoice.billing_details["company_vat_number"]}
+                      {gettext("VAT:")} {@invoice.billing_details["company_vat_number"]}
                     </div>
                   <% end %>
                 <% else %>
@@ -536,7 +536,7 @@
                 <% end %>
               </div>
             <% else %>
-              <p class="text-base-content/50 mt-2">No billing details</p>
+              <p class="text-base-content/50 mt-2">{gettext("No billing details")}</p>
             <% end %>
           </div>
         </div>
@@ -544,7 +544,7 @@
         <%!-- Timeline (sorted by datetime) --%>
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
-            <h2 class="card-title">Timeline</h2>
+            <h2 class="card-title">{gettext("Timeline")}</h2>
             <% timeline_events = build_timeline_events(@invoice, @transactions) %>
             <ul class="timeline timeline-vertical mt-2">
               <%= for {event, index} <- Enum.with_index(timeline_events) do %>
@@ -560,7 +560,7 @@
                       <div class="timeline-middle">
                         <.icon name="hero-document-plus" class="w-4 h-4" />
                       </div>
-                      <div class="timeline-end timeline-box">Created</div>
+                      <div class="timeline-end timeline-box">{gettext("Created")}</div>
                     <% :invoice_sent -> %>
                       <div class="timeline-start text-sm text-base-content/60">
                         <.time_ago datetime={event.datetime} />
@@ -569,7 +569,7 @@
                         <.icon name="hero-paper-airplane" class="w-4 h-4" />
                       </div>
                       <div class="timeline-end timeline-box">
-                        <div>Invoice Sent</div>
+                        <div>{gettext("Invoice Sent")}</div>
                         <div class="text-xs text-base-content/60">{event.data["email"]}</div>
                       </div>
                     <% :invoice_sent_legacy -> %>
@@ -579,7 +579,7 @@
                       <div class="timeline-middle text-info">
                         <.icon name="hero-paper-airplane" class="w-4 h-4" />
                       </div>
-                      <div class="timeline-end timeline-box">Invoice Sent</div>
+                      <div class="timeline-end timeline-box">{gettext("Invoice Sent")}</div>
                     <% :payment -> %>
                       <div class="timeline-start text-sm text-base-content/60">
                         <.time_ago datetime={event.datetime} />
@@ -588,7 +588,7 @@
                         <.icon name="hero-banknotes" class="w-4 h-4" />
                       </div>
                       <div class="timeline-end timeline-box bg-success/10 border-success">
-                        <div>Payment</div>
+                        <div>{gettext("Payment")}</div>
                         <div class="text-xs font-mono">
                           +<.currency_compact
                             amount={event.data.amount}
@@ -607,7 +607,7 @@
                         <.icon name="hero-check-circle" class="w-4 h-4" />
                       </div>
                       <div class="timeline-end timeline-box bg-success/10 border-success">
-                        Fully Paid
+                        {gettext("Fully Paid")}
                       </div>
                     <% :receipt_generated -> %>
                       <div class="timeline-start text-sm text-base-content/60">
@@ -617,7 +617,7 @@
                         <.icon name="hero-document-check" class="w-4 h-4" />
                       </div>
                       <div class="timeline-end timeline-box">
-                        <div>Receipt Generated</div>
+                        <div>{gettext("Receipt Generated")}</div>
                         <div class="text-xs text-base-content/60 font-mono">{event.data}</div>
                       </div>
                     <% :receipt_sent -> %>
@@ -628,7 +628,7 @@
                         <.icon name="hero-paper-airplane" class="w-4 h-4" />
                       </div>
                       <div class="timeline-end timeline-box">
-                        <div>Receipt Sent</div>
+                        <div>{gettext("Receipt Sent")}</div>
                         <div class="text-xs text-base-content/60">{event.data["email"]}</div>
                       </div>
                     <% :refund -> %>
@@ -639,7 +639,7 @@
                         <.icon name="hero-arrow-uturn-left" class="w-4 h-4" />
                       </div>
                       <div class="timeline-end timeline-box bg-warning/10 border-warning">
-                        <div>Refund</div>
+                        <div>{gettext("Refund")}</div>
                         <div class="text-xs font-mono">
                           <.currency_compact
                             amount={Decimal.abs(event.data.amount)}
@@ -658,7 +658,7 @@
                         <.icon name="hero-paper-airplane" class="w-4 h-4" />
                       </div>
                       <div class="timeline-end timeline-box">
-                        <div>Credit Note Sent</div>
+                        <div>{gettext("Credit Note Sent")}</div>
                         <div class="text-xs text-base-content/60">{event.data["email"]}</div>
                         <div class="text-xs text-base-content/60 font-mono">
                           {event.data["credit_note_number"]}
@@ -671,7 +671,7 @@
                       <div class="timeline-middle text-error">
                         <.icon name="hero-x-circle" class="w-4 h-4" />
                       </div>
-                      <div class="timeline-end timeline-box bg-error/10 border-error">Voided</div>
+                      <div class="timeline-end timeline-box bg-error/10 border-error">{gettext("Voided")}</div>
                     <% _ -> %>
                       <div class="timeline-start text-sm text-base-content/60">
                         <.time_ago datetime={event.datetime} />
@@ -679,7 +679,7 @@
                       <div class="timeline-middle">
                         <.icon name="hero-question-mark-circle" class="w-4 h-4" />
                       </div>
-                      <div class="timeline-end timeline-box">Unknown Event</div>
+                      <div class="timeline-end timeline-box">{gettext("Unknown Event")}</div>
                   <% end %>
                   <%= if index < length(timeline_events) - 1 do %>
                     <hr />
@@ -695,7 +695,7 @@
                     <.icon name="hero-x-circle" class="w-4 h-4" />
                   </div>
                   <div class="timeline-end timeline-box bg-error/10 border-error">
-                    <div>Fully Refunded</div>
+                    <div>{gettext("Fully Refunded")}</div>
                   </div>
                 </li>
               <% end %>
@@ -710,17 +710,17 @@
   <%= if @show_payment_modal do %>
     <div class="modal modal-open">
       <div class="modal-box">
-        <h3 class="font-bold text-lg">Record Payment</h3>
+        <h3 class="font-bold text-lg">{gettext("Record Payment")}</h3>
         <p class="py-2 text-base-content/60">
-          Recording payment for invoice {@invoice.invoice_number}
+          {gettext("Recording payment for invoice %{number}", number: @invoice.invoice_number)}
         </p>
 
         <form phx-change="update_payment_form" phx-submit="record_payment">
           <div class="form-control mt-4">
             <label class="label">
-              <span class="label-text">Amount ({@invoice.currency})</span>
+              <span class="label-text">{gettext("Amount")} ({@invoice.currency})</span>
               <span class="label-text-alt">
-                Remaining:
+                {gettext("Remaining:")}
                 <.currency_compact
                   amount={PhoenixKitBilling.Invoice.remaining_amount(@invoice)}
                   currency={@invoice.currency}
@@ -743,7 +743,7 @@
 
           <div class="form-control mt-4">
             <label class="label">
-              <span class="label-text">Payment Method</span>
+              <span class="label-text">{gettext("Payment Method")}</span>
             </label>
             <select name="payment_method" class="select select-bordered">
               <%= for method <- @available_payment_methods do %>
@@ -756,21 +756,21 @@
 
           <div class="form-control mt-4">
             <label class="label">
-              <span class="label-text">Description (optional)</span>
+              <span class="label-text">{gettext("Description (optional)")}</span>
             </label>
             <input
               type="text"
               name="description"
               value={@payment_description}
-              placeholder="Payment reference, notes..."
+              placeholder={gettext("Payment reference, notes...")}
               class="input input-bordered"
             />
           </div>
 
           <div class="modal-action">
-            <button type="button" phx-click="close_payment_modal" class="btn">Cancel</button>
+            <button type="button" phx-click="close_payment_modal" class="btn">{gettext("Cancel")}</button>
             <button type="submit" class="btn btn-success">
-              <.icon name="hero-banknotes" class="w-4 h-4" /> Record Payment
+              <.icon name="hero-banknotes" class="w-4 h-4" /> {gettext("Record Payment")}
             </button>
           </div>
         </form>
@@ -783,17 +783,17 @@
   <%= if @show_refund_modal do %>
     <div class="modal modal-open">
       <div class="modal-box">
-        <h3 class="font-bold text-lg">Issue Refund</h3>
+        <h3 class="font-bold text-lg">{gettext("Issue Refund")}</h3>
         <p class="py-2 text-base-content/60">
-          Issue refund for invoice {@invoice.invoice_number}
+          {gettext("Issue refund for invoice %{number}", number: @invoice.invoice_number)}
         </p>
 
         <form phx-change="update_refund_form" phx-submit="record_refund">
           <div class="form-control mt-4">
             <label class="label">
-              <span class="label-text">Refund Amount ({@invoice.currency})</span>
+              <span class="label-text">{gettext("Refund Amount")} ({@invoice.currency})</span>
               <span class="label-text-alt">
-                Max:
+                {gettext("Max:")}
                 <.currency_compact
                   amount={@invoice.paid_amount}
                   currency={@invoice.currency}
@@ -808,20 +808,20 @@
               max={Decimal.to_string(@invoice.paid_amount)}
               value={@refund_amount}
               class="input input-bordered"
-              placeholder="Enter refund amount"
+              placeholder={gettext("Enter refund amount")}
               required
             />
           </div>
 
           <div class="form-control mt-4">
             <label class="label">
-              <span class="label-text">Reason <span class="text-error">*</span></span>
+              <span class="label-text">{gettext("Reason")} <span class="text-error">*</span></span>
             </label>
             <input
               type="text"
               name="description"
               value={@refund_description}
-              placeholder="Reason for refund (required)"
+              placeholder={gettext("Reason for refund (required)")}
               class="input input-bordered"
               required
             />
@@ -829,7 +829,7 @@
 
           <div class="form-control mt-4">
             <label class="label">
-              <span class="label-text">Refund Method</span>
+              <span class="label-text">{gettext("Refund Method")}</span>
             </label>
             <select name="payment_method" class="select select-bordered">
               <%= for method <- @available_payment_methods do %>
@@ -841,9 +841,9 @@
           </div>
 
           <div class="modal-action">
-            <button type="button" phx-click="close_refund_modal" class="btn">Cancel</button>
+            <button type="button" phx-click="close_refund_modal" class="btn">{gettext("Cancel")}</button>
             <button type="submit" class="btn btn-warning">
-              <.icon name="hero-arrow-uturn-left" class="w-4 h-4" /> Issue Refund
+              <.icon name="hero-arrow-uturn-left" class="w-4 h-4" /> {gettext("Issue Refund")}
             </button>
           </div>
         </form>
@@ -857,18 +857,18 @@
     <div class="modal modal-open">
       <div class="modal-box">
         <h3 class="font-bold text-lg">
-          {if @invoice.status == "draft", do: "Send Invoice", else: "Resend Invoice"}
+          {if @invoice.status == "draft", do: gettext("Send Invoice"), else: gettext("Resend Invoice")}
         </h3>
         <p class="py-2 text-base-content/60">
           {if @invoice.status == "draft",
-            do: "Send invoice to customer's email address",
-            else: "Resend invoice to customer's email address"}
+            do: gettext("Send invoice to customer's email address"),
+            else: gettext("Resend invoice to customer's email address")}
         </p>
 
         <form phx-change="update_send_form" phx-submit="send_invoice">
           <div class="form-control mt-4">
             <label class="label">
-              <span class="label-text">Email Address</span>
+              <span class="label-text">{gettext("Email Address")}</span>
             </label>
             <input
               type="email"
@@ -881,10 +881,10 @@
           </div>
 
           <div class="modal-action">
-            <button type="button" phx-click="close_send_modal" class="btn">Cancel</button>
+            <button type="button" phx-click="close_send_modal" class="btn">{gettext("Cancel")}</button>
             <button type="submit" class="btn btn-info">
               <.icon name="hero-paper-airplane" class="w-4 h-4" />
-              {if @invoice.status == "draft", do: "Send Invoice", else: "Resend Invoice"}
+              {if @invoice.status == "draft", do: gettext("Send Invoice"), else: gettext("Resend Invoice")}
             </button>
           </div>
         </form>
@@ -897,15 +897,15 @@
   <%= if @show_send_receipt_modal do %>
     <div class="modal modal-open">
       <div class="modal-box">
-        <h3 class="font-bold text-lg">Send Receipt</h3>
+        <h3 class="font-bold text-lg">{gettext("Send Receipt")}</h3>
         <p class="py-2 text-base-content/60">
-          Send payment receipt to customer's email address
+          {gettext("Send payment receipt to customer's email address")}
         </p>
 
         <form phx-change="update_send_receipt_form" phx-submit="send_receipt">
           <div class="form-control mt-4">
             <label class="label">
-              <span class="label-text">Email Address</span>
+              <span class="label-text">{gettext("Email Address")}</span>
             </label>
             <input
               type="email"
@@ -918,9 +918,9 @@
           </div>
 
           <div class="modal-action">
-            <button type="button" phx-click="close_send_receipt_modal" class="btn">Cancel</button>
+            <button type="button" phx-click="close_send_receipt_modal" class="btn">{gettext("Cancel")}</button>
             <button type="submit" class="btn btn-success">
-              <.icon name="hero-paper-airplane" class="w-4 h-4" /> Send Receipt
+              <.icon name="hero-paper-airplane" class="w-4 h-4" /> {gettext("Send Receipt")}
             </button>
           </div>
         </form>
@@ -933,15 +933,15 @@
   <%= if @show_send_credit_note_modal do %>
     <div class="modal modal-open">
       <div class="modal-box">
-        <h3 class="font-bold text-lg">Send Credit Note</h3>
+        <h3 class="font-bold text-lg">{gettext("Send Credit Note")}</h3>
         <p class="py-2 text-base-content/60">
-          Send credit note (refund document) to customer's email address
+          {gettext("Send credit note (refund document) to customer's email address")}
         </p>
 
         <form phx-change="update_send_credit_note_form" phx-submit="send_credit_note">
           <div class="form-control mt-4">
             <label class="label">
-              <span class="label-text">Email Address</span>
+              <span class="label-text">{gettext("Email Address")}</span>
             </label>
             <input
               type="email"
@@ -955,10 +955,10 @@
 
           <div class="modal-action">
             <button type="button" phx-click="close_send_credit_note_modal" class="btn">
-              Cancel
+              {gettext("Cancel")}
             </button>
             <button type="submit" class="btn btn-warning">
-              <.icon name="hero-paper-airplane" class="w-4 h-4" /> Send Credit Note
+              <.icon name="hero-paper-airplane" class="w-4 h-4" /> {gettext("Send Credit Note")}
             </button>
           </div>
         </form>
@@ -971,9 +971,9 @@
   <%= if @show_send_payment_confirmation_modal do %>
     <div class="modal modal-open">
       <div class="modal-box">
-        <h3 class="font-bold text-lg">Send Payment Confirmation</h3>
+        <h3 class="font-bold text-lg">{gettext("Send Payment Confirmation")}</h3>
         <p class="py-2 text-base-content/60">
-          Send payment confirmation to customer's email address
+          {gettext("Send payment confirmation to customer's email address")}
         </p>
 
         <form
@@ -982,7 +982,7 @@
         >
           <div class="form-control mt-4">
             <label class="label">
-              <span class="label-text">Email Address</span>
+              <span class="label-text">{gettext("Email Address")}</span>
             </label>
             <input
               type="email"
@@ -996,10 +996,10 @@
 
           <div class="modal-action">
             <button type="button" phx-click="close_send_payment_confirmation_modal" class="btn">
-              Cancel
+              {gettext("Cancel")}
             </button>
             <button type="submit" class="btn btn-success">
-              <.icon name="hero-paper-airplane" class="w-4 h-4" /> Send Confirmation
+              <.icon name="hero-paper-airplane" class="w-4 h-4" /> {gettext("Send Confirmation")}
             </button>
           </div>
         </form>

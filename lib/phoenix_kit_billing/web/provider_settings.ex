@@ -7,7 +7,7 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
   """
 
   use Phoenix.LiveView
-  use Gettext, backend: PhoenixKitWeb.Gettext
+  use Gettext, backend: PhoenixKitBilling.Gettext
   import PhoenixKitWeb.Components.Core.AdminPageHeader
   alias PhoenixKit.Utils.Routes
   import PhoenixKitWeb.Components.Core.Icon
@@ -24,7 +24,7 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
 
       socket =
         socket
-        |> assign(:page_title, "Payment Providers")
+        |> assign(:page_title, gettext("Payment Providers"))
         |> assign(:project_title, project_title)
         |> load_provider_settings()
 
@@ -32,7 +32,7 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
     else
       {:ok,
        socket
-       |> put_flash(:error, "Billing module is not enabled")
+       |> put_flash(:error, gettext("Billing module is not enabled"))
        |> push_navigate(to: Routes.path("/admin/billing/settings"))}
     end
   end
@@ -92,7 +92,7 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
      socket
      |> assign(:stripe_enabled, new_enabled)
      |> assign(:available_providers, Providers.list_available_providers())
-     |> put_flash(:info, if(new_enabled, do: "Stripe enabled", else: "Stripe disabled"))}
+     |> put_flash(:info, if(new_enabled, do: gettext("Stripe enabled"), else: gettext("Stripe disabled")))}
   end
 
   @impl true
@@ -110,7 +110,7 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
     {:noreply,
      socket
      |> load_provider_settings()
-     |> put_flash(:info, "Stripe settings saved")}
+     |> put_flash(:info, gettext("Stripe settings saved"))}
   end
 
   @impl true
@@ -122,7 +122,7 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
      socket
      |> assign(:paypal_enabled, new_enabled)
      |> assign(:available_providers, Providers.list_available_providers())
-     |> put_flash(:info, if(new_enabled, do: "PayPal enabled", else: "PayPal disabled"))}
+     |> put_flash(:info, if(new_enabled, do: gettext("PayPal enabled"), else: gettext("PayPal disabled")))}
   end
 
   @impl true
@@ -141,7 +141,7 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
     {:noreply,
      socket
      |> load_provider_settings()
-     |> put_flash(:info, "PayPal settings saved")}
+     |> put_flash(:info, gettext("PayPal settings saved"))}
   end
 
   @impl true
@@ -153,7 +153,7 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
      socket
      |> assign(:razorpay_enabled, new_enabled)
      |> assign(:available_providers, Providers.list_available_providers())
-     |> put_flash(:info, if(new_enabled, do: "Razorpay enabled", else: "Razorpay disabled"))}
+     |> put_flash(:info, if(new_enabled, do: gettext("Razorpay enabled"), else: gettext("Razorpay disabled")))}
   end
 
   @impl true
@@ -171,7 +171,7 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
     {:noreply,
      socket
      |> load_provider_settings()
-     |> put_flash(:info, "Razorpay settings saved")}
+     |> put_flash(:info, gettext("Razorpay settings saved"))}
   end
 
   @impl true
@@ -183,7 +183,7 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
      socket
      |> assign(:everypay_enabled, new_enabled)
      |> assign(:available_providers, Providers.list_available_providers())
-     |> put_flash(:info, if(new_enabled, do: "EveryPay enabled", else: "EveryPay disabled"))}
+     |> put_flash(:info, if(new_enabled, do: gettext("EveryPay enabled"), else: gettext("EveryPay disabled")))}
   end
 
   @impl true
@@ -202,7 +202,7 @@ defmodule PhoenixKitBilling.Web.ProviderSettings do
     {:noreply,
      socket
      |> load_provider_settings()
-     |> put_flash(:info, "EveryPay settings saved")}
+     |> put_flash(:info, gettext("EveryPay settings saved"))}
   end
 
   # Helper to mask sensitive keys

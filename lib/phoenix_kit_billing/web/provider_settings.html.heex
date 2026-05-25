@@ -2,8 +2,8 @@
     <%!-- Header --%>
     <.admin_page_header
       back={PhoenixKit.Utils.Routes.path("/admin/billing")}
-      title="Payment Providers"
-      subtitle="Configure online payment integrations"
+      title={gettext("Payment Providers")}
+      subtitle={gettext("Configure online payment integrations")}
     />
 
     <%!-- Navigation Tabs --%>
@@ -12,25 +12,25 @@
         navigate={PhoenixKit.Utils.Routes.path("/admin/settings/billing")}
         class="tab"
       >
-        <.icon name="hero-cog-6-tooth" class="w-4 h-4 mr-2" /> General
+        <.icon name="hero-cog-6-tooth" class="w-4 h-4 mr-2" /> {gettext("General")}
       </.link>
       <.link
         navigate={PhoenixKit.Utils.Routes.path("/admin/settings/billing/providers")}
         class="tab tab-active"
       >
-        <.icon name="hero-credit-card" class="w-4 h-4 mr-2" /> Payment Providers
+        <.icon name="hero-credit-card" class="w-4 h-4 mr-2" /> {gettext("Payment Providers")}
       </.link>
       <.link
         navigate={PhoenixKit.Utils.Routes.path("/admin/billing/currencies")}
         class="tab"
       >
-        <.icon name="hero-currency-dollar" class="w-4 h-4 mr-2" /> Currencies
+        <.icon name="hero-currency-dollar" class="w-4 h-4 mr-2" /> {gettext("Currencies")}
       </.link>
       <.link
         navigate={PhoenixKit.Utils.Routes.path("/admin/billing/subscription-types")}
         class="tab"
       >
-        <.icon name="hero-clipboard-document-list" class="w-4 h-4 mr-2" /> Subscription Types
+        <.icon name="hero-clipboard-document-list" class="w-4 h-4 mr-2" /> {gettext("Subscription Types")}
       </.link>
     </div>
 
@@ -38,9 +38,9 @@
     <div class="alert alert-info mb-6">
       <.icon name="hero-information-circle" class="w-5 h-5" />
       <div>
-        <span class="font-medium">Active Providers:</span>
+        <span class="font-medium">{gettext("Active Providers:")}</span>
         <%= if Enum.empty?(@available_providers) do %>
-          <span class="text-base-content/60">None configured</span>
+          <span class="text-base-content/60">{gettext("None configured")}</span>
         <% else %>
           <%= for {provider, index} <- Enum.with_index(@available_providers) do %>
             <span class="badge badge-success badge-sm ml-1">
@@ -65,7 +65,7 @@
               </div>
               <div>
                 <h2 class="card-title text-lg">Stripe</h2>
-                <p class="text-xs text-base-content/60">Cards, Apple Pay, Google Pay</p>
+                <p class="text-xs text-base-content/60">{gettext("Cards, Apple Pay, Google Pay")}</p>
               </div>
             </div>
             <label class="cursor-pointer">
@@ -83,10 +83,10 @@
           <form phx-submit="save_stripe" class="space-y-3">
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Secret Key</span>
+                <span class="label-text text-xs">{gettext("Secret Key")}</span>
                 <%= if has_credentials?(@stripe_secret_key) do %>
                   <span class="label-text-alt text-success text-xs">
-                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> Set
+                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> {gettext("Set")}
                   </span>
                 <% end %>
               </label>
@@ -101,10 +101,10 @@
 
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Publishable Key</span>
+                <span class="label-text text-xs">{gettext("Publishable Key")}</span>
                 <%= if has_credentials?(@stripe_publishable_key) do %>
                   <span class="label-text-alt text-success text-xs">
-                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> Set
+                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> {gettext("Set")}
                   </span>
                 <% end %>
               </label>
@@ -119,10 +119,10 @@
 
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Webhook Secret</span>
+                <span class="label-text text-xs">{gettext("Webhook Secret")}</span>
                 <%= if has_credentials?(@stripe_webhook_secret) do %>
                   <span class="label-text-alt text-success text-xs">
-                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> Set
+                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> {gettext("Set")}
                   </span>
                 <% end %>
               </label>
@@ -137,7 +137,7 @@
 
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Webhook URL</span>
+                <span class="label-text text-xs">{gettext("Webhook URL")}</span>
               </label>
               <div class="join w-full">
                 <input
@@ -150,7 +150,7 @@
                   type="button"
                   class="btn btn-sm join-item"
                   onclick={"navigator.clipboard.writeText('#{@stripe_webhook_url}')"}
-                  title="Copy to clipboard"
+                  title={gettext("Copy to clipboard")}
                 >
                   <.icon name="hero-clipboard" class="w-4 h-4" />
                 </button>
@@ -158,7 +158,7 @@
             </div>
 
             <div class="card-actions justify-end pt-2">
-              <button type="submit" class="btn btn-primary btn-sm">Save Stripe</button>
+              <button type="submit" class="btn btn-primary btn-sm">{gettext("Save Stripe")}</button>
             </div>
           </form>
         </div>
@@ -174,7 +174,7 @@
               </div>
               <div>
                 <h2 class="card-title text-lg">PayPal</h2>
-                <p class="text-xs text-base-content/60">PayPal, Venmo, Cards</p>
+                <p class="text-xs text-base-content/60">{gettext("PayPal, Venmo, Cards")}</p>
               </div>
             </div>
             <label class="cursor-pointer">
@@ -192,22 +192,22 @@
           <form phx-submit="save_paypal" class="space-y-3">
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Mode</span>
+                <span class="label-text text-xs">{gettext("Mode")}</span>
               </label>
               <select name="mode" class="select select-bordered select-sm">
                 <option value="sandbox" selected={@paypal_mode == "sandbox"}>
-                  Sandbox (Test)
+                  {gettext("Sandbox (Test)")}
                 </option>
-                <option value="live" selected={@paypal_mode == "live"}>Live (Production)</option>
+                <option value="live" selected={@paypal_mode == "live"}>{gettext("Live (Production)")}</option>
               </select>
             </div>
 
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Client ID</span>
+                <span class="label-text text-xs">{gettext("Client ID")}</span>
                 <%= if has_credentials?(@paypal_client_id) do %>
                   <span class="label-text-alt text-success text-xs">
-                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> Set
+                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> {gettext("Set")}
                   </span>
                 <% end %>
               </label>
@@ -222,10 +222,10 @@
 
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Client Secret</span>
+                <span class="label-text text-xs">{gettext("Client Secret")}</span>
                 <%= if has_credentials?(@paypal_client_secret) do %>
                   <span class="label-text-alt text-success text-xs">
-                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> Set
+                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> {gettext("Set")}
                   </span>
                 <% end %>
               </label>
@@ -240,10 +240,10 @@
 
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Webhook ID</span>
+                <span class="label-text text-xs">{gettext("Webhook ID")}</span>
                 <%= if has_credentials?(@paypal_webhook_id) do %>
                   <span class="label-text-alt text-success text-xs">
-                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> Set
+                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> {gettext("Set")}
                   </span>
                 <% end %>
               </label>
@@ -258,7 +258,7 @@
 
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Webhook URL</span>
+                <span class="label-text text-xs">{gettext("Webhook URL")}</span>
               </label>
               <div class="join w-full">
                 <input
@@ -271,7 +271,7 @@
                   type="button"
                   class="btn btn-sm join-item"
                   onclick={"navigator.clipboard.writeText('#{@paypal_webhook_url}')"}
-                  title="Copy to clipboard"
+                  title={gettext("Copy to clipboard")}
                 >
                   <.icon name="hero-clipboard" class="w-4 h-4" />
                 </button>
@@ -279,7 +279,7 @@
             </div>
 
             <div class="card-actions justify-end pt-2">
-              <button type="submit" class="btn btn-info btn-sm">Save PayPal</button>
+              <button type="submit" class="btn btn-info btn-sm">{gettext("Save PayPal")}</button>
             </div>
           </form>
         </div>
@@ -295,7 +295,7 @@
               </div>
               <div>
                 <h2 class="card-title text-lg">Razorpay</h2>
-                <p class="text-xs text-base-content/60">India payments (UPI, Cards)</p>
+                <p class="text-xs text-base-content/60">{gettext("India payments (UPI, Cards)")}</p>
               </div>
             </div>
             <label class="cursor-pointer">
@@ -313,10 +313,10 @@
           <form phx-submit="save_razorpay" class="space-y-3">
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Key ID</span>
+                <span class="label-text text-xs">{gettext("Key ID")}</span>
                 <%= if has_credentials?(@razorpay_key_id) do %>
                   <span class="label-text-alt text-success text-xs">
-                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> Set
+                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> {gettext("Set")}
                   </span>
                 <% end %>
               </label>
@@ -331,10 +331,10 @@
 
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Key Secret</span>
+                <span class="label-text text-xs">{gettext("Key Secret")}</span>
                 <%= if has_credentials?(@razorpay_key_secret) do %>
                   <span class="label-text-alt text-success text-xs">
-                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> Set
+                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> {gettext("Set")}
                   </span>
                 <% end %>
               </label>
@@ -349,10 +349,10 @@
 
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Webhook Secret</span>
+                <span class="label-text text-xs">{gettext("Webhook Secret")}</span>
                 <%= if has_credentials?(@razorpay_webhook_secret) do %>
                   <span class="label-text-alt text-success text-xs">
-                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> Set
+                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> {gettext("Set")}
                   </span>
                 <% end %>
               </label>
@@ -367,7 +367,7 @@
 
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Webhook URL</span>
+                <span class="label-text text-xs">{gettext("Webhook URL")}</span>
               </label>
               <div class="join w-full">
                 <input
@@ -380,7 +380,7 @@
                   type="button"
                   class="btn btn-sm join-item"
                   onclick={"navigator.clipboard.writeText('#{@razorpay_webhook_url}')"}
-                  title="Copy to clipboard"
+                  title={gettext("Copy to clipboard")}
                 >
                   <.icon name="hero-clipboard" class="w-4 h-4" />
                 </button>
@@ -388,7 +388,7 @@
             </div>
 
             <div class="card-actions justify-end pt-2">
-              <button type="submit" class="btn btn-secondary btn-sm">Save Razorpay</button>
+              <button type="submit" class="btn btn-secondary btn-sm">{gettext("Save Razorpay")}</button>
             </div>
           </form>
         </div>
@@ -404,7 +404,7 @@
               </div>
               <div>
                 <h2 class="card-title text-lg">EveryPay</h2>
-                <p class="text-xs text-base-content/60">Card payments (Baltics)</p>
+                <p class="text-xs text-base-content/60">{gettext("Card payments (Baltics)")}</p>
               </div>
             </div>
             <label class="cursor-pointer">
@@ -422,20 +422,20 @@
           <form phx-submit="save_everypay" class="space-y-3">
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Mode</span>
+                <span class="label-text text-xs">{gettext("Mode")}</span>
               </label>
               <select name="mode" class="select select-bordered select-sm">
-                <option value="test" selected={@everypay_mode == "test"}>Test (Demo)</option>
-                <option value="live" selected={@everypay_mode == "live"}>Live (Production)</option>
+                <option value="test" selected={@everypay_mode == "test"}>{gettext("Test (Demo)")}</option>
+                <option value="live" selected={@everypay_mode == "live"}>{gettext("Live (Production)")}</option>
               </select>
             </div>
 
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">API Username</span>
+                <span class="label-text text-xs">{gettext("API Username")}</span>
                 <%= if has_credentials?(@everypay_api_username) do %>
                   <span class="label-text-alt text-success text-xs">
-                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> Set
+                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> {gettext("Set")}
                   </span>
                 <% end %>
               </label>
@@ -450,10 +450,10 @@
 
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">API Secret</span>
+                <span class="label-text text-xs">{gettext("API Secret")}</span>
                 <%= if has_credentials?(@everypay_api_secret) do %>
                   <span class="label-text-alt text-success text-xs">
-                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> Set
+                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> {gettext("Set")}
                   </span>
                 <% end %>
               </label>
@@ -468,10 +468,10 @@
 
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Account Name</span>
+                <span class="label-text text-xs">{gettext("Account Name")}</span>
                 <%= if has_credentials?(@everypay_account_name) do %>
                   <span class="label-text-alt text-success text-xs">
-                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> Set
+                    <.icon name="hero-check-circle" class="w-3 h-3 inline" /> {gettext("Set")}
                   </span>
                 <% end %>
               </label>
@@ -486,7 +486,7 @@
 
             <div class="form-control">
               <label class="label py-1">
-                <span class="label-text text-xs">Callback URL</span>
+                <span class="label-text text-xs">{gettext("Callback URL")}</span>
               </label>
               <div class="join w-full">
                 <input
@@ -499,7 +499,7 @@
                   type="button"
                   class="btn btn-sm join-item"
                   onclick={"navigator.clipboard.writeText('#{@everypay_webhook_url}')"}
-                  title="Copy to clipboard"
+                  title={gettext("Copy to clipboard")}
                 >
                   <.icon name="hero-clipboard" class="w-4 h-4" />
                 </button>
@@ -507,7 +507,7 @@
             </div>
 
             <div class="card-actions justify-end pt-2">
-              <button type="submit" class="btn btn-accent btn-sm">Save EveryPay</button>
+              <button type="submit" class="btn btn-accent btn-sm">{gettext("Save EveryPay")}</button>
             </div>
           </form>
         </div>
@@ -517,17 +517,17 @@
     <%!-- Quick Help --%>
     <div class="card bg-base-100 shadow-xl mt-6">
       <div class="card-body">
-        <h2 class="card-title">Setup Instructions</h2>
+        <h2 class="card-title">{gettext("Setup Instructions")}</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-4">
           <div class="bg-base-200 p-4 rounded-lg">
             <h3 class="font-medium flex items-center gap-2">
               <.icon name="hero-credit-card" class="w-5 h-5 text-primary" /> Stripe
             </h3>
             <ol class="text-sm text-base-content/70 mt-2 space-y-1 list-decimal list-inside">
-              <li>Create account at stripe.com</li>
-              <li>Get API keys from Dashboard → Developers</li>
-              <li>Create webhook with events: checkout.session.completed, payment_intent.*</li>
-              <li>Copy webhook signing secret</li>
+              <li>{gettext("Create account at stripe.com")}</li>
+              <li>{gettext("Get API keys from Dashboard → Developers")}</li>
+              <li>{gettext("Create webhook with events: checkout.session.completed, payment_intent.*")}</li>
+              <li>{gettext("Copy webhook signing secret")}</li>
             </ol>
           </div>
           <div class="bg-base-200 p-4 rounded-lg">
@@ -535,10 +535,10 @@
               <.icon name="hero-currency-dollar" class="w-5 h-5 text-info" /> PayPal
             </h3>
             <ol class="text-sm text-base-content/70 mt-2 space-y-1 list-decimal list-inside">
-              <li>Create app at developer.paypal.com</li>
-              <li>Get Client ID and Secret</li>
-              <li>Configure webhook with events: CHECKOUT.ORDER.*, PAYMENT.*</li>
-              <li>Copy Webhook ID</li>
+              <li>{gettext("Create app at developer.paypal.com")}</li>
+              <li>{gettext("Get Client ID and Secret")}</li>
+              <li>{gettext("Configure webhook with events: CHECKOUT.ORDER.*, PAYMENT.*")}</li>
+              <li>{gettext("Copy Webhook ID")}</li>
             </ol>
           </div>
           <div class="bg-base-200 p-4 rounded-lg">
@@ -546,10 +546,10 @@
               <.icon name="hero-banknotes" class="w-5 h-5 text-secondary" /> Razorpay
             </h3>
             <ol class="text-sm text-base-content/70 mt-2 space-y-1 list-decimal list-inside">
-              <li>Create account at razorpay.com</li>
-              <li>Get Key ID and Secret from Settings → API Keys</li>
-              <li>Create webhook with events: payment.*, order.paid</li>
-              <li>Copy webhook secret</li>
+              <li>{gettext("Create account at razorpay.com")}</li>
+              <li>{gettext("Get Key ID and Secret from Settings → API Keys")}</li>
+              <li>{gettext("Create webhook with events: payment.*, order.paid")}</li>
+              <li>{gettext("Copy webhook secret")}</li>
             </ol>
           </div>
           <div class="bg-base-200 p-4 rounded-lg">
@@ -557,10 +557,10 @@
               <.icon name="hero-credit-card" class="w-5 h-5 text-accent" /> EveryPay
             </h3>
             <ol class="text-sm text-base-content/70 mt-2 space-y-1 list-decimal list-inside">
-              <li>Get API username and secret from the EveryPay merchant portal</li>
-              <li>Copy the processing account name (e.g. EUR3D1)</li>
-              <li>Set the Callback URL in E-shop settings to the URL above</li>
-              <li>Use Test mode against the demo gateway first</li>
+              <li>{gettext("Get API username and secret from the EveryPay merchant portal")}</li>
+              <li>{gettext("Copy the processing account name (e.g. EUR3D1)")}</li>
+              <li>{gettext("Set the Callback URL in E-shop settings to the URL above")}</li>
+              <li>{gettext("Use Test mode against the demo gateway first")}</li>
             </ol>
           </div>
         </div>

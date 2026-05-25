@@ -6,7 +6,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfiles do
   """
 
   use Phoenix.LiveView
-  use Gettext, backend: PhoenixKitWeb.Gettext
+  use Gettext, backend: PhoenixKitBilling.Gettext
   alias PhoenixKit.Utils.Routes
   import PhoenixKitWeb.LayoutHelpers, only: [dashboard_assigns: 1]
   import PhoenixKitWeb.Components.Core.Icon
@@ -23,13 +23,13 @@ defmodule PhoenixKitBilling.Web.UserBillingProfiles do
       not Billing.enabled?() ->
         {:ok,
          socket
-         |> put_flash(:error, "Billing module is not enabled")
+         |> put_flash(:error, gettext("Billing module is not enabled"))
          |> push_navigate(to: Routes.path("/dashboard"))}
 
       is_nil(user) ->
         {:ok,
          socket
-         |> put_flash(:error, "Please log in to view your billing profiles")
+         |> put_flash(:error, gettext("Please log in to view your billing profiles"))
          |> push_navigate(to: Routes.path("/phoenix_kit/users/log-in"))}
 
       true ->
@@ -40,7 +40,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfiles do
 
         socket =
           socket
-          |> assign(:page_title, "My Billing Profiles")
+          |> assign(:page_title, gettext("My Billing Profiles"))
           |> assign(:profiles, profiles)
           |> assign(:user, user)
 
@@ -60,13 +60,13 @@ defmodule PhoenixKitBilling.Web.UserBillingProfiles do
           {:noreply,
            socket
            |> assign(:profiles, profiles)
-           |> put_flash(:info, "Default profile updated")}
+           |> put_flash(:info, gettext("Default profile updated"))}
 
         {:error, _} ->
-          {:noreply, put_flash(socket, :error, "Failed to set default profile")}
+          {:noreply, put_flash(socket, :error, gettext("Failed to set default profile"))}
       end
     else
-      {:noreply, put_flash(socket, :error, "Profile not found")}
+      {:noreply, put_flash(socket, :error, gettext("Profile not found"))}
     end
   end
 
@@ -82,13 +82,13 @@ defmodule PhoenixKitBilling.Web.UserBillingProfiles do
           {:noreply,
            socket
            |> assign(:profiles, profiles)
-           |> put_flash(:info, "Profile deleted successfully")}
+           |> put_flash(:info, gettext("Profile deleted successfully"))}
 
         {:error, _} ->
-          {:noreply, put_flash(socket, :error, "Failed to delete profile")}
+          {:noreply, put_flash(socket, :error, gettext("Failed to delete profile"))}
       end
     else
-      {:noreply, put_flash(socket, :error, "Profile not found")}
+      {:noreply, put_flash(socket, :error, gettext("Profile not found"))}
     end
   end
 
@@ -118,16 +118,16 @@ defmodule PhoenixKitBilling.Web.UserBillingProfiles do
         <%!-- Header --%>
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
-            <h1 class="text-3xl font-bold">My Billing Profiles</h1>
+            <h1 class="text-3xl font-bold">{gettext("My Billing Profiles")}</h1>
             <p class="text-base-content/60 mt-1">
-              Manage your billing information for orders and invoices
+              {gettext("Manage your billing information for orders and invoices")}
             </p>
           </div>
           <.link
             navigate={Routes.path("/dashboard/billing-profiles/new")}
             class="btn btn-primary"
           >
-            <.icon name="hero-plus" class="w-5 h-5 mr-2" /> New Profile
+            <.icon name="hero-plus" class="w-5 h-5 mr-2" /> {gettext("New Profile")}
           </.link>
         </div>
 
@@ -136,12 +136,12 @@ defmodule PhoenixKitBilling.Web.UserBillingProfiles do
           <div class="card bg-base-100 shadow-lg">
             <div class="card-body text-center py-16">
               <.icon name="hero-identification" class="w-16 h-16 mx-auto mb-4 opacity-30" />
-              <h2 class="text-xl font-medium text-base-content/60">No billing profiles yet</h2>
+              <h2 class="text-xl font-medium text-base-content/60">{gettext("No billing profiles yet")}</h2>
               <p class="text-base-content/50 mb-6">
-                Create a billing profile to use for your orders
+                {gettext("Create a billing profile to use for your orders")}
               </p>
               <.link navigate={Routes.path("/dashboard/billing-profiles/new")} class="btn btn-primary">
-                Create Your First Profile
+                {gettext("Create Your First Profile")}
               </.link>
             </div>
           </div>
@@ -158,7 +158,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfiles do
                           {String.capitalize(profile.type)}
                         </span>
                         <%= if profile.is_default do %>
-                          <span class="badge badge-success">Default</span>
+                          <span class="badge badge-success">{gettext("Default")}</span>
                         <% end %>
                       </div>
 
@@ -166,7 +166,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfiles do
                         <h3 class="text-lg font-semibold">{profile.company_name}</h3>
                         <%= if profile.company_vat_number do %>
                           <p class="text-sm text-base-content/60">
-                            VAT: {profile.company_vat_number}
+                            {gettext("VAT:")} {profile.company_vat_number}
                           </p>
                         <% end %>
                       <% else %>
@@ -197,7 +197,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfiles do
                         navigate={Routes.path("/dashboard/billing-profiles/#{profile.uuid}/edit")}
                         class="btn btn-outline btn-sm"
                       >
-                        <.icon name="hero-pencil" class="w-4 h-4" /> Edit
+                        <.icon name="hero-pencil" class="w-4 h-4" /> {gettext("Edit")}
                       </.link>
 
                       <%= if not profile.is_default do %>
@@ -206,17 +206,17 @@ defmodule PhoenixKitBilling.Web.UserBillingProfiles do
                           phx-value-uuid={profile.uuid}
                           class="btn btn-outline btn-sm"
                         >
-                          <.icon name="hero-star" class="w-4 h-4" /> Set Default
+                          <.icon name="hero-star" class="w-4 h-4" /> {gettext("Set Default")}
                         </button>
                       <% end %>
 
                       <button
                         phx-click="delete"
                         phx-value-uuid={profile.uuid}
-                        data-confirm="Are you sure you want to delete this billing profile?"
+                        data-confirm={gettext("Are you sure you want to delete this billing profile?")}
                         class="btn btn-outline btn-error btn-sm"
                       >
-                        <.icon name="hero-trash" class="w-4 h-4" /> Delete
+                        <.icon name="hero-trash" class="w-4 h-4" /> {gettext("Delete")}
                       </button>
                     </div>
                   </div>

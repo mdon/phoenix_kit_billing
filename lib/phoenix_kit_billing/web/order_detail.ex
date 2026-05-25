@@ -6,7 +6,7 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
   """
 
   use Phoenix.LiveView
-  use Gettext, backend: PhoenixKitWeb.Gettext
+  use Gettext, backend: PhoenixKitBilling.Gettext
   import PhoenixKitWeb.Components.Core.AdminPageHeader
   import PhoenixKitWeb.Components.Core.UserInfo
   alias PhoenixKit.Utils.Routes
@@ -34,7 +34,7 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
     else
       {:ok,
        socket
-       |> put_flash(:error, "Billing module is not enabled")
+       |> put_flash(:error, gettext("Billing module is not enabled"))
        |> push_navigate(to: Routes.path("/admin"))}
     end
   end
@@ -45,7 +45,7 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
       nil ->
         {:noreply,
          socket
-         |> put_flash(:error, "Order not found")
+         |> put_flash(:error, gettext("Order not found"))
          |> push_navigate(to: Routes.path("/admin/billing/orders"))}
 
       order ->
@@ -57,7 +57,7 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
           else
             socket
             |> assign(:loaded?, true)
-            |> assign(:page_title, "Order #{order.order_number}")
+            |> assign(:page_title, gettext("Order %{number}", number: order.order_number))
             |> assign(:project_title, Settings.get_project_title())
             |> assign(:order, order)
             |> assign(:invoices, order.invoices)
@@ -103,10 +103,10 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
         {:noreply,
          socket
          |> assign(:order, order)
-         |> put_flash(:info, "Order confirmed successfully")}
+         |> put_flash(:info, gettext("Order confirmed successfully"))}
 
       {:error, reason} ->
-        {:noreply, put_flash(socket, :error, "Failed to confirm order: #{reason}")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to confirm order: %{reason}", reason: reason))}
     end
   end
 
@@ -117,10 +117,10 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
         {:noreply,
          socket
          |> assign(:order, order)
-         |> put_flash(:info, "Order marked as paid")}
+         |> put_flash(:info, gettext("Order marked as paid"))}
 
       {:error, reason} ->
-        {:noreply, put_flash(socket, :error, "Failed to mark as paid: #{reason}")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to mark as paid: %{reason}", reason: reason))}
     end
   end
 
@@ -131,10 +131,10 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
         {:noreply,
          socket
          |> assign(:order, order)
-         |> put_flash(:info, "Order cancelled")}
+         |> put_flash(:info, gettext("Order cancelled"))}
 
       {:error, reason} ->
-        {:noreply, put_flash(socket, :error, "Failed to cancel order: #{reason}")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to cancel order: %{reason}", reason: reason))}
     end
   end
 
@@ -147,11 +147,11 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
         {:noreply,
          socket
          |> assign(:invoices, invoices)
-         |> put_flash(:info, "Invoice #{invoice.invoice_number} created")}
+         |> put_flash(:info, gettext("Invoice %{number} created", number: invoice.invoice_number))}
 
       {:error, changeset} ->
         errors = format_changeset_errors(changeset)
-        {:noreply, put_flash(socket, :error, "Failed to create invoice: #{errors}")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to create invoice: %{errors}", errors: errors))}
     end
   end
 

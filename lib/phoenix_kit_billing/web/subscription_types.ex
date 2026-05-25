@@ -6,7 +6,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypes do
   """
 
   use Phoenix.LiveView
-  use Gettext, backend: PhoenixKitWeb.Gettext
+  use Gettext, backend: PhoenixKitBilling.Gettext
   import PhoenixKitWeb.Components.Core.AdminPageHeader
   import PhoenixKitWeb.Components.Core.Icon
   import PhoenixKitWeb.Components.Core.TableRowMenu
@@ -24,7 +24,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypes do
 
       socket =
         socket
-        |> assign(:page_title, "Subscription Types")
+        |> assign(:page_title, gettext("Subscription Types"))
         |> assign(:project_title, project_title)
         |> load_subscription_types()
 
@@ -32,7 +32,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypes do
     else
       {:ok,
        socket
-       |> put_flash(:error, "Billing module is not enabled")
+       |> put_flash(:error, gettext("Billing module is not enabled"))
        |> push_navigate(to: Routes.path("/admin"))}
     end
   end
@@ -60,17 +60,17 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypes do
            |> put_flash(
              :info,
              if(type.active,
-               do: "Subscription type deactivated",
-               else: "Subscription type activated"
+               do: gettext("Subscription type deactivated"),
+               else: gettext("Subscription type activated")
              )
            )}
 
         {:error, reason} ->
           {:noreply,
-           put_flash(socket, :error, "Failed to update subscription type: #{inspect(reason)}")}
+           put_flash(socket, :error, gettext("Failed to update subscription type: %{reason}", reason: inspect(reason)))}
       end
     else
-      {:noreply, put_flash(socket, :error, "Subscription type not found")}
+      {:noreply, put_flash(socket, :error, gettext("Subscription type not found"))}
     end
   end
 
@@ -84,22 +84,22 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypes do
           {:noreply,
            socket
            |> load_subscription_types()
-           |> put_flash(:info, "Subscription type deleted")}
+           |> put_flash(:info, gettext("Subscription type deleted"))}
 
         {:error, :has_subscriptions} ->
           {:noreply,
            put_flash(
              socket,
              :error,
-             "Cannot delete subscription type with active subscriptions. Deactivate it instead."
+             gettext("Cannot delete subscription type with active subscriptions. Deactivate it instead.")
            )}
 
         {:error, reason} ->
           {:noreply,
-           put_flash(socket, :error, "Failed to delete subscription type: #{inspect(reason)}")}
+           put_flash(socket, :error, gettext("Failed to delete subscription type: %{reason}", reason: inspect(reason)))}
       end
     else
-      {:noreply, put_flash(socket, :error, "Subscription type not found")}
+      {:noreply, put_flash(socket, :error, gettext("Subscription type not found"))}
     end
   end
 end

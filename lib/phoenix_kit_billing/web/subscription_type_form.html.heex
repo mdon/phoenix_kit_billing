@@ -4,9 +4,9 @@
       <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-base-content">{@page_title}</h1>
       <p class="text-sm text-base-content/60 mt-0.5">
         <%= if @mode == :new do %>
-          Create a new subscription type
+          {gettext("Create a new subscription type")}
         <% else %>
-          Edit subscription type details and pricing
+          {gettext("Edit subscription type details and pricing")}
         <% end %>
       </p>
     </.admin_page_header>
@@ -18,19 +18,19 @@
           <%!-- Basic Info --%>
           <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
-              <h2 class="card-title">Basic Information</h2>
+              <h2 class="card-title">{gettext("Basic Information")}</h2>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">Name <span class="text-error">*</span></span>
+                    <span class="label-text">{gettext("Name")} <span class="text-error">*</span></span>
                   </label>
                   <input
                     type="text"
                     name="subscription_type[name]"
                     value={@form[:name].value}
                     class={["input input-bordered", @form[:name].errors != [] && "input-error"]}
-                    placeholder="Pro Plan"
+                    placeholder={gettext("Pro Plan")}
                     required
                   />
                   <%= if @form[:name].errors != [] do %>
@@ -44,7 +44,7 @@
 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">Slug <span class="text-error">*</span></span>
+                    <span class="label-text">{gettext("Slug")} <span class="text-error">*</span></span>
                   </label>
                   <input
                     type="text"
@@ -65,7 +65,7 @@
                     </label>
                   <% else %>
                     <label class="label">
-                      <span class="label-text-alt">URL-friendly unique identifier</span>
+                      <span class="label-text-alt">{gettext("URL-friendly unique identifier")}</span>
                     </label>
                   <% end %>
                 </div>
@@ -73,13 +73,13 @@
 
               <div class="form-control mt-4">
                 <label class="label">
-                  <span class="label-text">Description</span>
+                  <span class="label-text">{gettext("Description")}</span>
                 </label>
                 <textarea
                   name="subscription_type[description]"
                   class="textarea textarea-bordered"
                   rows="2"
-                  placeholder="A brief description of this plan"
+                  placeholder={gettext("A brief description of this plan")}
                 >{@form[:description].value}</textarea>
               </div>
             </div>
@@ -88,12 +88,12 @@
           <%!-- Pricing --%>
           <div class="card bg-base-100 shadow-xl mt-6">
             <div class="card-body">
-              <h2 class="card-title">Pricing</h2>
+              <h2 class="card-title">{gettext("Pricing")}</h2>
 
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">Price <span class="text-error">*</span></span>
+                    <span class="label-text">{gettext("Price")} <span class="text-error">*</span></span>
                   </label>
                   <input
                     type="number"
@@ -116,7 +116,7 @@
 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">Currency</span>
+                    <span class="label-text">{gettext("Currency")}</span>
                   </label>
                   <select name="subscription_type[currency]" class="select select-bordered">
                     <option value="EUR" selected={@form[:currency].value == "EUR"}>EUR</option>
@@ -128,7 +128,7 @@
 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">Trial Days</span>
+                    <span class="label-text">{gettext("Trial Days")}</span>
                   </label>
                   <input
                     type="number"
@@ -144,21 +144,21 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">Billing Interval</span>
+                    <span class="label-text">{gettext("Billing Interval")}</span>
                   </label>
                   <select name="subscription_type[interval]" class="select select-bordered">
-                    <option value="day" selected={@form[:interval].value == "day"}>Day</option>
-                    <option value="week" selected={@form[:interval].value == "week"}>Week</option>
+                    <option value="day" selected={@form[:interval].value == "day"}>{gettext("Day")}</option>
+                    <option value="week" selected={@form[:interval].value == "week"}>{gettext("Week")}</option>
                     <option value="month" selected={@form[:interval].value == "month"}>
-                      Month
+                      {gettext("Month")}
                     </option>
-                    <option value="year" selected={@form[:interval].value == "year"}>Year</option>
+                    <option value="year" selected={@form[:interval].value == "year"}>{gettext("Year")}</option>
                   </select>
                 </div>
 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">Interval Count</span>
+                    <span class="label-text">{gettext("Interval Count")}</span>
                   </label>
                   <input
                     type="number"
@@ -171,7 +171,7 @@
                   />
                   <label class="label">
                     <span class="label-text-alt">
-                      e.g. 3 months = interval "month", count 3
+                      {gettext("e.g. 3 months = interval \"month\", count 3")}
                     </span>
                   </label>
                 </div>
@@ -182,9 +182,9 @@
           <%!-- Features --%>
           <div class="card bg-base-100 shadow-xl mt-6">
             <div class="card-body">
-              <h2 class="card-title">Features</h2>
+              <h2 class="card-title">{gettext("Features")}</h2>
               <p class="text-sm text-base-content/60">
-                List the features included in this plan (one per line)
+                {gettext("List the features included in this plan (one per line)")}
               </p>
 
               <div class="form-control mt-4">
@@ -194,7 +194,7 @@
                   phx-debounce="300"
                   class="textarea textarea-bordered font-mono"
                   rows="6"
-                  placeholder="Unlimited users&#10;Priority support&#10;Advanced analytics&#10;Custom integrations"
+                  placeholder={gettext("Unlimited users\nPriority support\nAdvanced analytics\nCustom integrations")}
                 >{@features_input}</textarea>
               </div>
             </div>
@@ -203,12 +203,12 @@
           <%!-- Settings --%>
           <div class="card bg-base-100 shadow-xl mt-6">
             <div class="card-body">
-              <h2 class="card-title">Settings</h2>
+              <h2 class="card-title">{gettext("Settings")}</h2>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">Sort Order</span>
+                    <span class="label-text">{gettext("Sort Order")}</span>
                   </label>
                   <input
                     type="number"
@@ -219,7 +219,7 @@
                     placeholder="0"
                   />
                   <label class="label">
-                    <span class="label-text-alt">Lower numbers appear first</span>
+                    <span class="label-text-alt">{gettext("Lower numbers appear first")}</span>
                   </label>
                 </div>
 
@@ -232,11 +232,11 @@
                       checked={@form[:active].value == true}
                       class="checkbox checkbox-primary"
                     />
-                    <span class="label-text">Active</span>
+                    <span class="label-text">{gettext("Active")}</span>
                   </label>
                   <label class="label">
                     <span class="label-text-alt">
-                      Only active plans are shown to customers
+                      {gettext("Only active plans are shown to customers")}
                     </span>
                   </label>
                 </div>
@@ -250,11 +250,11 @@
               navigate={PhoenixKit.Utils.Routes.path("/admin/billing/subscription-types")}
               class="btn btn-ghost"
             >
-              Cancel
+              {gettext("Cancel")}
             </.link>
             <button type="submit" class="btn btn-primary">
               <.icon name="hero-check" class="w-4 h-4" />
-              {if @mode == :new, do: "Create Subscription Type", else: "Update Subscription Type"}
+              {if @mode == :new, do: gettext("Create Subscription Type"), else: gettext("Update Subscription Type")}
             </button>
           </div>
         </.form>
@@ -264,12 +264,12 @@
       <div class="lg:col-span-1">
         <div class="card bg-base-100 shadow-xl sticky top-6">
           <div class="card-body">
-            <h2 class="card-title">Preview</h2>
+            <h2 class="card-title">{gettext("Preview")}</h2>
             <div class="divider my-2"></div>
 
-            <h3 class="text-xl font-bold">{@form[:name].value || "Name"}</h3>
+            <h3 class="text-xl font-bold">{@form[:name].value || gettext("Name")}</h3>
             <p class="text-sm text-base-content/60">
-              {@form[:description].value || "Description"}
+              {@form[:description].value || gettext("Description")}
             </p>
 
             <div class="mt-4">
@@ -285,15 +285,15 @@
               </div>
               <div class="text-sm text-base-content/60">
                 <% interval = @form[:interval].value || "month" %>
-                <% count = @form[:interval_count].value || 1 %> per {if count == 1,
-                  do: interval,
-                  else: "#{count} #{interval}s"}
+                <% count = @form[:interval_count].value || 1 %>
+                {interval_phrase(interval, count)}
               </div>
             </div>
 
             <%= if @form[:trial_days].value && @form[:trial_days].value != "" && @form[:trial_days].value != "0" do %>
+              <% trial_days = @form[:trial_days].value |> to_string() |> String.to_integer() %>
               <div class="badge badge-info badge-outline mt-2">
-                {@form[:trial_days].value} day trial
+                {ngettext("%{count} day trial", "%{count} day trial", trial_days, count: trial_days)}
               </div>
             <% end %>
 
