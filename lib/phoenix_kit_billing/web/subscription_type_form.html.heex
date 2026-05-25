@@ -285,15 +285,15 @@
               </div>
               <div class="text-sm text-base-content/60">
                 <% interval = @form[:interval].value || "month" %>
-                <% count = @form[:interval_count].value || 1 %> {if count == 1,
-                  do: gettext("per %{interval}", interval: interval),
-                  else: gettext("per %{count} %{interval}s", count: count, interval: interval)}
+                <% count = @form[:interval_count].value || 1 %>
+                {interval_phrase(interval, count)}
               </div>
             </div>
 
             <%= if @form[:trial_days].value && @form[:trial_days].value != "" && @form[:trial_days].value != "0" do %>
+              <% trial_days = @form[:trial_days].value |> to_string() |> String.to_integer() %>
               <div class="badge badge-info badge-outline mt-2">
-                {gettext("%{count} day trial", count: @form[:trial_days].value)}
+                {ngettext("%{count} day trial", "%{count} day trial", trial_days, count: trial_days)}
               </div>
             <% end %>
 

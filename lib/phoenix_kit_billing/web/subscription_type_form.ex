@@ -143,6 +143,17 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
   defp type_saved_message(:new), do: gettext("Subscription type created successfully")
   defp type_saved_message(:edit), do: gettext("Subscription type updated successfully")
 
+  @doc false
+  def interval_phrase("day", 1), do: ngettext("per day", "per day", 1)
+  def interval_phrase("day", n), do: ngettext("per %{count} days", "per %{count} days", n, count: n)
+  def interval_phrase("week", 1), do: ngettext("per week", "per week", 1)
+  def interval_phrase("week", n), do: ngettext("per %{count} weeks", "per %{count} weeks", n, count: n)
+  def interval_phrase("month", 1), do: ngettext("per month", "per month", 1)
+  def interval_phrase("month", n), do: ngettext("per %{count} months", "per %{count} months", n, count: n)
+  def interval_phrase("year", 1), do: ngettext("per year", "per year", 1)
+  def interval_phrase("year", n), do: ngettext("per %{count} years", "per %{count} years", n, count: n)
+  def interval_phrase(other, n), do: "#{n} #{other}(s)"
+
   def error_to_string([]), do: ""
 
   def error_to_string(errors) when is_list(errors) do
