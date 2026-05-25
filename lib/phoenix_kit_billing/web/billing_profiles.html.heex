@@ -18,44 +18,6 @@
       </:actions>
     </.admin_page_header>
 
-    <%!-- Filters --%>
-    <div class="card bg-base-100 shadow mb-6">
-      <div class="card-body py-4">
-        <form phx-change="filter" phx-submit="filter" class="flex flex-wrap gap-4 items-end">
-          <div class="form-control flex-1 min-w-[200px]">
-            <label class="label">
-              <span class="label-text">{gettext("Search")}</span>
-            </label>
-            <input
-              type="text"
-              name="search"
-              value={@search}
-              placeholder={gettext("Name, email, company...")}
-              class="input input-bordered input-sm"
-              phx-debounce="300"
-            />
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">{gettext("Type")}</span>
-            </label>
-            <select name="type" class="select select-bordered select-sm">
-              <option value="all" selected={@type_filter == "all"}>{gettext("All Types")}</option>
-              <option value="individual" selected={@type_filter == "individual"}>
-                {gettext("Individual")}
-              </option>
-              <option value="company" selected={@type_filter == "company"}>{gettext("Company")}</option>
-            </select>
-          </div>
-
-          <button type="button" phx-click="clear_filters" class="btn btn-ghost btn-sm">
-            {gettext("Clear Filters")}
-          </button>
-        </form>
-      </div>
-    </div>
-
     <%!-- Profiles Table --%>
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body p-0">
@@ -106,6 +68,28 @@
                 end
               }
             >
+              <:toolbar_actions>
+                <form phx-change="filter" phx-submit="filter" class="flex flex-wrap items-center gap-2">
+                  <input
+                    type="text"
+                    name="search"
+                    value={@search}
+                    placeholder={gettext("Name, email, company...")}
+                    class="input input-bordered input-sm w-full md:w-56"
+                    phx-debounce="300"
+                  />
+                  <select name="type" class="select select-bordered select-sm">
+                    <option value="all" selected={@type_filter == "all"}>{gettext("All Types")}</option>
+                    <option value="individual" selected={@type_filter == "individual"}>
+                      {gettext("Individual")}
+                    </option>
+                    <option value="company" selected={@type_filter == "company"}>{gettext("Company")}</option>
+                  </select>
+                  <button type="button" phx-click="clear_filters" class="btn btn-ghost btn-sm">
+                    {gettext("Clear Filters")}
+                  </button>
+                </form>
+              </:toolbar_actions>
               <:card_header :let={profile}>
                 <div class="flex items-center justify-between">
                   <span class="font-medium">
