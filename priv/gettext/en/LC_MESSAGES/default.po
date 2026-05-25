@@ -3275,3 +3275,51 @@ msgid "per year"
 msgid_plural "per year"
 msgstr[0] "per year"
 msgstr[1] "per year"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:39
+#, elixir-autogen, elixir-format
+msgid "Daily"
+msgstr "Daily"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:40
+#, elixir-autogen, elixir-format
+msgid "Every %{count} days"
+msgid_plural "Every %{count} days"
+msgstr[0] "Every %{count} days"
+msgstr[1] "Every %{count} days"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:34
+#, elixir-autogen, elixir-format
+msgid "Every %{count} months"
+msgid_plural "Every %{count} months"
+msgstr[0] "Every %{count} months"
+msgstr[1] "Every %{count} months"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:38
+#, elixir-autogen, elixir-format
+msgid "Every %{count} weeks"
+msgid_plural "Every %{count} weeks"
+msgstr[0] "Every %{count} weeks"
+msgstr[1] "Every %{count} weeks"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:36
+#, elixir-autogen, elixir-format
+msgid "Every %{count} years"
+msgid_plural "Every %{count} years"
+msgstr[0] "Every %{count} years"
+msgstr[1] "Every %{count} years"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:33
+#, elixir-autogen, elixir-format
+msgid "Monthly"
+msgstr "Monthly"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:37
+#, elixir-autogen, elixir-format
+msgid "Weekly"
+msgstr "Weekly"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:35
+#, elixir-autogen, elixir-format
+msgid "Yearly"
+msgstr "Yearly"

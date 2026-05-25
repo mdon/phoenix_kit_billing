@@ -6,6 +6,8 @@ defmodule PhoenixKitBilling.Web.Components.SubscriptionHelpers do
   detail, form, and subscription type pages.
   """
 
+  use Gettext, backend: PhoenixKitBilling.Gettext
+
   @doc """
   Returns the daisyUI badge class for a subscription status.
   """
@@ -28,14 +30,14 @@ defmodule PhoenixKitBilling.Web.Components.SubscriptionHelpers do
 
   def format_interval(interval, interval_count) do
     case {interval, interval_count} do
-      {"month", 1} -> "Monthly"
-      {"month", n} -> "Every #{n} months"
-      {"year", 1} -> "Yearly"
-      {"year", n} -> "Every #{n} years"
-      {"week", 1} -> "Weekly"
-      {"week", n} -> "Every #{n} weeks"
-      {"day", 1} -> "Daily"
-      {"day", n} -> "Every #{n} days"
+      {"month", 1} -> gettext("Monthly")
+      {"month", n} -> ngettext("Every %{count} months", "Every %{count} months", n, count: n)
+      {"year", 1} -> gettext("Yearly")
+      {"year", n} -> ngettext("Every %{count} years", "Every %{count} years", n, count: n)
+      {"week", 1} -> gettext("Weekly")
+      {"week", n} -> ngettext("Every %{count} weeks", "Every %{count} weeks", n, count: n)
+      {"day", 1} -> gettext("Daily")
+      {"day", n} -> ngettext("Every %{count} days", "Every %{count} days", n, count: n)
       _ -> "#{interval_count} #{interval}(s)"
     end
   end

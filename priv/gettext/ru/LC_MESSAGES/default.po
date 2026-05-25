@@ -3286,3 +3286,55 @@ msgid_plural "per year"
 msgstr[0] "ежегодно"
 msgstr[1] "ежегодно"
 msgstr[2] "ежегодно"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:39
+#, elixir-autogen, elixir-format
+msgid "Daily"
+msgstr "Ежедневно"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:40
+#, elixir-autogen, elixir-format
+msgid "Every %{count} days"
+msgid_plural "Every %{count} days"
+msgstr[0] "каждый %{count} день"
+msgstr[1] "каждые %{count} дня"
+msgstr[2] "каждые %{count} дней"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:34
+#, elixir-autogen, elixir-format
+msgid "Every %{count} months"
+msgid_plural "Every %{count} months"
+msgstr[0] "каждый %{count} месяц"
+msgstr[1] "каждые %{count} месяца"
+msgstr[2] "каждые %{count} месяцев"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:38
+#, elixir-autogen, elixir-format
+msgid "Every %{count} weeks"
+msgid_plural "Every %{count} weeks"
+msgstr[0] "каждую %{count} неделю"
+msgstr[1] "каждые %{count} недели"
+msgstr[2] "каждые %{count} недель"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:36
+#, elixir-autogen, elixir-format
+msgid "Every %{count} years"
+msgid_plural "Every %{count} years"
+msgstr[0] "каждый %{count} год"
+msgstr[1] "каждые %{count} года"
+msgstr[2] "каждые %{count} лет"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:33
+#, elixir-autogen, elixir-format
+msgid "Monthly"
+msgstr "Ежемесячно"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:37
+#, elixir-autogen, elixir-format
+msgid "Weekly"
+msgstr "Еженедельно"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:35
+#, elixir-autogen, elixir-format
+msgid "Yearly"
+msgstr "Ежегодно"

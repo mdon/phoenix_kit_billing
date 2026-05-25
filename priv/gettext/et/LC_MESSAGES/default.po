@@ -3276,3 +3276,51 @@ msgid "per year"
 msgid_plural "per year"
 msgstr[0] "iga aasta"
 msgstr[1] "iga aasta"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:39
+#, elixir-autogen, elixir-format
+msgid "Daily"
+msgstr "Igapäevane"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:40
+#, elixir-autogen, elixir-format
+msgid "Every %{count} days"
+msgid_plural "Every %{count} days"
+msgstr[0] "Iga %{count} päeva tagant"
+msgstr[1] "Iga %{count} päeva tagant"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:34
+#, elixir-autogen, elixir-format
+msgid "Every %{count} months"
+msgid_plural "Every %{count} months"
+msgstr[0] "Iga %{count} kuu tagant"
+msgstr[1] "Iga %{count} kuu tagant"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:38
+#, elixir-autogen, elixir-format
+msgid "Every %{count} weeks"
+msgid_plural "Every %{count} weeks"
+msgstr[0] "Iga %{count} nädala tagant"
+msgstr[1] "Iga %{count} nädala tagant"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:36
+#, elixir-autogen, elixir-format
+msgid "Every %{count} years"
+msgid_plural "Every %{count} years"
+msgstr[0] "Iga %{count} aasta tagant"
+msgstr[1] "Iga %{count} aasta tagant"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:33
+#, elixir-autogen, elixir-format
+msgid "Monthly"
+msgstr "Igakuine"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:37
+#, elixir-autogen, elixir-format
+msgid "Weekly"
+msgstr "Iganädalane"
+
+#: lib/phoenix_kit_billing/web/components/subscription_helpers.ex:35
+#, elixir-autogen, elixir-format
+msgid "Yearly"
+msgstr "Iga-aastane"
