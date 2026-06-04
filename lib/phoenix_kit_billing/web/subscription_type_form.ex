@@ -17,6 +17,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
   alias PhoenixKitBilling.Activity
+  alias PhoenixKitBilling.Errors
   alias PhoenixKitBilling.SubscriptionType
 
   @impl true
@@ -130,7 +131,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
          put_flash(
            socket,
            :error,
-           gettext("Failed to save subscription type: %{reason}", reason: inspect(reason))
+           gettext("Failed to save subscription type: %{reason}", reason: Errors.message(reason))
          )}
     end
   end

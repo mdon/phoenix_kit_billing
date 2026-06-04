@@ -13,16 +13,15 @@ defmodule PhoenixKitBilling.Providers.Stripe do
 
   ## Configuration
 
-  Configure Stripe in your provider settings:
+  Configure Stripe via the admin UI (`/admin/settings/billing/providers`)
+  or by writing the underlying `PhoenixKit.Settings` keys directly:
 
-      # Via Admin UI: /admin/settings/billing/providers
-      # Or via Settings API:
-      PhoenixKitBilling.update_provider_config(:stripe, %{
-        enabled: true,
-        mode: "test",
-        api_key: "sk_test_...",
-        webhook_secret: "whsec_..."
-      })
+      PhoenixKit.Settings.update_setting("billing_stripe_enabled", "true")
+      PhoenixKit.Settings.update_setting("billing_stripe_secret_key", "sk_test_...")
+      PhoenixKit.Settings.update_setting("billing_stripe_webhook_secret", "whsec_...")
+
+  The secret key is read from `billing_stripe_secret_key` (falling back to
+  the legacy `billing_stripe_api_key`); see `stripe_secret_key/0`.
 
   ## Webhook Events
 
@@ -36,9 +35,8 @@ defmodule PhoenixKitBilling.Providers.Stripe do
 
   ## Dependencies
 
-  Requires the `stripe` hex package:
-
-      {:stripe, "~> 1.1"}
+  Talks to the Stripe REST API directly over `Req` — no `stripe` hex
+  package is required.
   """
 
   @behaviour PhoenixKitBilling.Providers.Provider
@@ -65,7 +63,7 @@ defmodule PhoenixKitBilling.Providers.Stripe do
   @impl true
   def available? do
     config = get_config()
-    config[:enabled] && config[:api_key] && config[:api_key] != ""
+    config[:enabled] and is_binary(config[:api_key]) and config[:api_key] != ""
   end
 
   @doc """
@@ -474,7 +472,7 @@ defmodule PhoenixKitBilling.Providers.Stripe do
   defp ensure_configured do
     config = get_config()
 
-    if config[:enabled] && config[:api_key] && config[:api_key] != "" do
+    if config[:enabled] and is_binary(config[:api_key]) and config[:api_key] != "" do
       {:ok, config}
     else
       {:error, :not_configured}

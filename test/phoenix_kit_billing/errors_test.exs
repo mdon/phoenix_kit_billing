@@ -120,6 +120,13 @@ defmodule PhoenixKitBilling.ErrorsTest do
     test ":is_default",
       do: assert(Errors.message(:is_default) == "The default item cannot be removed.")
 
+    test ":max_retries_exceeded",
+      do:
+        assert(
+          Errors.message(:max_retries_exceeded) ==
+            "This event exceeded the maximum number of retries."
+        )
+
     test ":missing_reference",
       do: assert(Errors.message(:missing_reference) == "A required reference is missing.")
 
@@ -266,6 +273,15 @@ defmodule PhoenixKitBilling.ErrorsTest do
     test "renders unknown reasons via inspect" do
       assert Errors.message({:weird, 1}) == "Unexpected error: {:weird, 1}"
       assert Errors.message(:totally_unmapped) == "Unexpected error: :totally_unmapped"
+    end
+
+    test "formats an Ecto.Changeset into a field: message string" do
+      changeset =
+        {%{}, %{name: :string}}
+        |> Ecto.Changeset.cast(%{}, [:name])
+        |> Ecto.Changeset.validate_required([:name])
+
+      assert Errors.message(changeset) == "name: can't be blank"
     end
   end
 end

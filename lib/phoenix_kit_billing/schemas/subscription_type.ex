@@ -109,6 +109,8 @@ defmodule PhoenixKitBilling.SubscriptionType do
         "week" -> 7
         "month" -> 30
         "year" -> 365
+        # Unknown/unvalidated interval — fall back to a monthly cadence.
+        _ -> 30
       end
 
     base_days * count
@@ -131,6 +133,10 @@ defmodule PhoenixKitBilling.SubscriptionType do
 
       "year" ->
         Date.shift(from_date, year: count)
+
+      # Unknown/unvalidated interval — fall back to a monthly cadence.
+      _ ->
+        Date.shift(from_date, month: count)
     end
   end
 

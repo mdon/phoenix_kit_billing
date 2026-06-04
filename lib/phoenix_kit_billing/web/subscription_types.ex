@@ -17,6 +17,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypes do
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
   alias PhoenixKitBilling.Activity
+  alias PhoenixKitBilling.Errors
 
   @impl true
   def mount(_params, _session, socket) do
@@ -79,7 +80,9 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypes do
            put_flash(
              socket,
              :error,
-             gettext("Failed to update subscription type: %{reason}", reason: inspect(reason))
+             gettext("Failed to update subscription type: %{reason}",
+               reason: Errors.message(reason)
+             )
            )}
       end
     else
@@ -122,7 +125,9 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypes do
            put_flash(
              socket,
              :error,
-             gettext("Failed to delete subscription type: %{reason}", reason: inspect(reason))
+             gettext("Failed to delete subscription type: %{reason}",
+               reason: Errors.message(reason)
+             )
            )}
       end
     else

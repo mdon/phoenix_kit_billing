@@ -25,6 +25,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
   alias PhoenixKitBilling.Activity
+  alias PhoenixKitBilling.Errors
   alias PhoenixKitBilling.SubscriptionType
 
   @impl true
@@ -205,7 +206,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
            assign(
              socket,
              :error,
-             gettext("Failed to update subscription: %{reason}", reason: inspect(reason))
+             gettext("Failed to update subscription: %{reason}", reason: Errors.message(reason))
            )}
       end
     end
@@ -258,7 +259,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
              assign(
                socket,
                :error,
-               gettext("Failed to create subscription: %{reason}", reason: inspect(reason))
+               gettext("Failed to create subscription: %{reason}", reason: Errors.message(reason))
              )}
         end
     end
@@ -277,7 +278,11 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
 
       {:error, reason} ->
         {:noreply,
-         assign(socket, :error, gettext("Failed to pause: %{reason}", reason: inspect(reason)))}
+         assign(
+           socket,
+           :error,
+           gettext("Failed to pause: %{reason}", reason: Errors.message(reason))
+         )}
     end
   end
 
@@ -294,7 +299,11 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
 
       {:error, reason} ->
         {:noreply,
-         assign(socket, :error, gettext("Failed to resume: %{reason}", reason: inspect(reason)))}
+         assign(
+           socket,
+           :error,
+           gettext("Failed to resume: %{reason}", reason: Errors.message(reason))
+         )}
     end
   end
 
@@ -313,11 +322,28 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
 
       {:error, reason} ->
         {:noreply,
-         assign(socket, :error, gettext("Failed to cancel: %{reason}", reason: inspect(reason)))}
+         assign(
+           socket,
+           :error,
+           gettext("Failed to cancel: %{reason}", reason: Errors.message(reason))
+         )}
     end
   end
 
   @impl true
+  def handle_event(
+        "extend_subscription",
+        _params,
+        %{assigns: %{subscription: %{current_period_end: nil}}} = socket
+      ) do
+    {:noreply,
+     assign(
+       socket,
+       :error,
+       gettext("Cannot extend a subscription that has no current billing period.")
+     )}
+  end
+
   def handle_event("extend_subscription", _params, socket) do
     sub = socket.assigns.subscription
     days = extension_days(sub)
@@ -337,7 +363,11 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
 
       {:error, reason} ->
         {:noreply,
-         assign(socket, :error, gettext("Failed to extend: %{reason}", reason: inspect(reason)))}
+         assign(
+           socket,
+           :error,
+           gettext("Failed to extend: %{reason}", reason: Errors.message(reason))
+         )}
     end
   end
 

@@ -18,6 +18,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
   alias PhoenixKitBilling.Activity
+  alias PhoenixKitBilling.Errors
   alias PhoenixKitBilling.Subscription
 
   @impl true
@@ -76,7 +77,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
          put_flash(
            socket,
            :error,
-           gettext("Failed to cancel: %{reason}", reason: inspect(reason))
+           gettext("Failed to cancel: %{reason}", reason: Errors.message(reason))
          )}
     end
   end
@@ -99,7 +100,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
          put_flash(
            socket,
            :error,
-           gettext("Failed to cancel: %{reason}", reason: inspect(reason))
+           gettext("Failed to cancel: %{reason}", reason: Errors.message(reason))
          )}
     end
   end
@@ -120,7 +121,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
          put_flash(
            socket,
            :error,
-           gettext("Failed to resume: %{reason}", reason: inspect(reason))
+           gettext("Failed to resume: %{reason}", reason: Errors.message(reason))
          )}
     end
   end
@@ -138,7 +139,11 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
 
       {:error, reason} ->
         {:noreply,
-         put_flash(socket, :error, gettext("Failed to pause: %{reason}", reason: inspect(reason)))}
+         put_flash(
+           socket,
+           :error,
+           gettext("Failed to pause: %{reason}", reason: Errors.message(reason))
+         )}
     end
   end
 
@@ -191,7 +196,9 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
            put_flash(
              socket,
              :error,
-             gettext("Failed to change subscription type: %{reason}", reason: inspect(reason))
+             gettext("Failed to change subscription type: %{reason}",
+               reason: Errors.message(reason)
+             )
            )}
       end
     else

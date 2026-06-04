@@ -61,6 +61,14 @@ defmodule PhoenixKitBilling.WebhookProcessor do
       {:already_processed, _webhook_event} ->
         {:error, :duplicate_event}
 
+      {:max_retries, webhook_event} ->
+        Logger.error(
+          "Webhook event #{webhook_event.provider}/#{webhook_event.event_id} " <>
+            "exceeded the retry limit (#{webhook_event.retry_count} attempts); not reprocessing."
+        )
+
+        {:error, :max_retries_exceeded}
+
       {:error, reason} ->
         Logger.error("Failed to log webhook event before processing: #{inspect(reason)}")
         {:error, :event_log_failed}
@@ -177,8 +185,7 @@ defmodule PhoenixKitBilling.WebhookProcessor do
 
           # Generate receipt if fully paid
           if updated_invoice.status == "paid" do
-            Billing.generate_receipt(updated_invoice)
-            Billing.send_receipt(updated_invoice, [])
+            maybe_generate_and_send_receipt(updated_invoice)
           end
 
           {:ok, updated_invoice}
@@ -198,6 +205,29 @@ defmodule PhoenixKitBilling.WebhookProcessor do
 
       {:error, reason} ->
         {:error, reason}
+    end
+  end
+
+  # Receipt generation/sending is best-effort after a successful payment:
+  # the payment itself already succeeded, so a receipt failure must not fail
+  # the webhook. We log non-`:ok` results rather than discarding them.
+  defp maybe_generate_and_send_receipt(invoice) do
+    case Billing.generate_receipt(invoice) do
+      {:ok, _} ->
+        :ok
+
+      other ->
+        Logger.warning(
+          "Receipt generation skipped for #{invoice.invoice_number}: #{inspect(other)}"
+        )
+    end
+
+    case Billing.send_receipt(invoice, []) do
+      {:ok, _} ->
+        :ok
+
+      other ->
+        Logger.warning("Receipt send skipped for #{invoice.invoice_number}: #{inspect(other)}")
     end
   end
 
@@ -385,6 +415,7 @@ defmodule PhoenixKitBilling.WebhookProcessor do
           cond do
             is_nil(existing) -> {:error, :event_log_failed}
             existing.processed -> {:already_processed, existing}
+            WebhookEvent.max_retries_exceeded?(existing) -> {:max_retries, existing}
             true -> {:retry, existing}
           end
         else

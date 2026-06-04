@@ -21,6 +21,7 @@ defmodule PhoenixKitBilling.Web.Subscriptions do
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
   alias PhoenixKitBilling.Activity
+  alias PhoenixKitBilling.Errors
   alias PhoenixKitBilling.Events
 
   @impl true
@@ -148,7 +149,7 @@ defmodule PhoenixKitBilling.Web.Subscriptions do
            put_flash(
              socket,
              :error,
-             gettext("Failed to cancel: %{reason}", reason: inspect(reason))
+             gettext("Failed to cancel: %{reason}", reason: Errors.message(reason))
            )}
       end
     else

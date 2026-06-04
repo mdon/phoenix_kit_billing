@@ -14,6 +14,9 @@ defmodule PhoenixKitBilling.Errors do
   ## Supported reason shapes
 
     * plain atoms — `:not_found`, `:card_declined`, `:invalid_signature`, etc.
+    * `%Ecto.Changeset{}` — formatted as `"field: message; ..."` so a
+      changeset returned alongside domain atoms in a shared `{:error, _}`
+      branch still renders readably
     * strings — passed through unchanged (legacy / interpolated messages)
     * anything else — rendered as `"Unexpected error: <inspect>"` so
       nothing silently surfaces a raw struct
@@ -53,6 +56,7 @@ defmodule PhoenixKitBilling.Errors do
           | :invoice_not_sendable
           | :invoice_not_voidable
           | :is_default
+          | :max_retries_exceeded
           | :missing_reference
           | :no_charge_id
           | :no_payment_method
@@ -138,6 +142,10 @@ defmodule PhoenixKitBilling.Errors do
     do: gettext("This invoice cannot be voided in its current state.")
 
   def message(:is_default), do: gettext("The default item cannot be removed.")
+
+  def message(:max_retries_exceeded),
+    do: gettext("This event exceeded the maximum number of retries.")
+
   def message(:missing_reference), do: gettext("A required reference is missing.")
   def message(:no_charge_id), do: gettext("No charge identifier is available.")
   def message(:no_payment_method), do: gettext("No payment method is available.")
@@ -182,6 +190,16 @@ defmodule PhoenixKitBilling.Errors do
   def message(:timestamp_too_old), do: gettext("The webhook timestamp is too old.")
   def message(:transaction_not_found), do: gettext("Transaction not found.")
   def message(:unknown_event), do: gettext("The webhook event type is not recognized.")
+
+  def message(%Ecto.Changeset{} = changeset) do
+    changeset
+    |> Ecto.Changeset.traverse_errors(fn {msg, opts} ->
+      Enum.reduce(opts, msg, fn {key, value}, acc ->
+        String.replace(acc, "%{#{key}}", to_string(value))
+      end)
+    end)
+    |> Enum.map_join("; ", fn {field, errors} -> "#{field}: #{Enum.join(errors, ", ")}" end)
+  end
 
   def message(reason) when is_binary(reason), do: reason
 
