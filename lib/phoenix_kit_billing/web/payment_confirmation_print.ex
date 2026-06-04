@@ -12,7 +12,6 @@ defmodule PhoenixKitBilling.Web.PaymentConfirmationPrint do
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
   alias PhoenixKitBilling.Transaction
-  alias PhoenixKitWeb.Live.Settings.Organization
 
   @impl true
   def mount(%{"id" => invoice_uuid, "transaction_uuid" => transaction_uuid}, _session, socket) do
@@ -54,7 +53,7 @@ defmodule PhoenixKitBilling.Web.PaymentConfirmationPrint do
 
   defp mount_payment_confirmation(socket, invoice, transaction) do
     project_title = Settings.get_project_title()
-    company_info = get_company_info()
+    company_info = Billing.get_company_info()
     confirmation_number = generate_confirmation_number(transaction)
     all_transactions = Billing.list_invoice_transactions(invoice.uuid)
     payment_context = calculate_payment_context(invoice, transaction, all_transactions)
@@ -75,20 +74,6 @@ defmodule PhoenixKitBilling.Web.PaymentConfirmationPrint do
   @impl true
   def handle_params(_params, _url, socket) do
     {:noreply, socket}
-  end
-
-  defp get_company_info do
-    company = Organization.get_company_info()
-    bank = Organization.get_bank_details()
-
-    %{
-      name: company["name"] || "",
-      address: PhoenixKitBilling.format_company_address(company),
-      vat: company["vat_number"] || "",
-      bank_name: bank["bank_name"] || "",
-      bank_iban: bank["iban"] || "",
-      bank_swift: bank["swift"] || ""
-    }
   end
 
   defp generate_confirmation_number(transaction) do

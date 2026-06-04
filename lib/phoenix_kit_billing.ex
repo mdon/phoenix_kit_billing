@@ -41,6 +41,7 @@ defmodule PhoenixKitBilling do
   """
 
   use PhoenixKit.Module
+  use Gettext, backend: PhoenixKitBilling.Gettext
 
   import Ecto.Query, warn: false
 
@@ -127,9 +128,9 @@ defmodule PhoenixKitBilling do
   def permission_metadata do
     %{
       key: "billing",
-      label: "Billing",
+      label: gettext("Billing"),
       icon: "💰",
-      description: "Orders, invoices, billing profiles and multi-currency support"
+      description: gettext("Orders, invoices, billing profiles and multi-currency support")
     }
   end
 
@@ -140,9 +141,9 @@ defmodule PhoenixKitBilling do
     config = get_config()
 
     [
-      %{label: "Orders", value: config[:orders_count] || 0},
-      %{label: "Invoices", value: config[:invoices_count] || 0},
-      %{label: "Currencies", value: config[:currencies_count] || 0}
+      %{label: gettext("Orders"), value: config[:orders_count] || 0},
+      %{label: gettext("Invoices"), value: config[:invoices_count] || 0},
+      %{label: gettext("Currencies"), value: config[:currencies_count] || 0}
     ]
   end
 
@@ -373,8 +374,15 @@ defmodule PhoenixKitBilling do
       rate = Settings.get_setting_cached("billing_default_tax_rate", "0")
 
       case Decimal.parse(rate) do
-        {decimal, _} -> Decimal.div(decimal, Decimal.new("100"))
-        :error -> Decimal.new("0")
+        {decimal, _} ->
+          Decimal.div(decimal, Decimal.new("100"))
+
+        :error ->
+          Logger.warning(
+            "[Billing] Invalid billing_default_tax_rate #{inspect(rate)}; falling back to 0"
+          )
+
+          Decimal.new("0")
       end
     else
       Decimal.new("0")
@@ -389,8 +397,15 @@ defmodule PhoenixKitBilling do
       rate = Settings.get_setting_cached("billing_default_tax_rate", "0")
 
       case Integer.parse(rate) do
-        {value, _} -> value
-        :error -> 0
+        {value, _} ->
+          value
+
+        :error ->
+          Logger.warning(
+            "[Billing] Invalid billing_default_tax_rate #{inspect(rate)}; falling back to 0"
+          )
+
+          0
       end
     else
       0
@@ -3420,6 +3435,27 @@ defmodule PhoenixKitBilling do
     ]
     |> Enum.filter(&(&1 && &1 != ""))
     |> Enum.join("\n")
+  end
+
+  @doc """
+  Returns the company info map used by the printable document views
+  (invoice, receipt, credit note, payment confirmation).
+
+  Combines organization company details and bank details into a single
+  map of formatted, print-ready strings.
+  """
+  def get_company_info do
+    company = Organization.get_company_info()
+    bank = Organization.get_bank_details()
+
+    %{
+      name: company["name"] || "",
+      address: format_company_address(company),
+      vat: company["vat_number"] || "",
+      bank_name: bank["bank_name"] || "",
+      bank_iban: bank["iban"] || "",
+      bank_swift: bank["swift"] || ""
+    }
   end
 
   # ============================================

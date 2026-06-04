@@ -53,6 +53,7 @@ defmodule PhoenixKitBilling.Test.Router do
 
       # Subscription Types
       live("/subscription-types", SubscriptionTypes, :index, as: :billing_subscription_types)
+
       live("/subscription-types/new", SubscriptionTypeForm, :new,
         as: :billing_subscription_type_new
       )

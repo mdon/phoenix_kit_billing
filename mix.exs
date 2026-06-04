@@ -10,8 +10,12 @@ defmodule PhoenixKitBilling.MixProject do
       version: @version,
       elixir: "~> 1.18",
       elixirc_paths: elixirc_paths(Mix.env()),
-      # Needed for compat/billing.ex which redefines PhoenixKit.Modules.Billing.
-      # Remove when core is fully migrated to PhoenixKitBilling namespace.
+      # `compat/billing.ex` intentionally redefines the core
+      # `PhoenixKit.Modules.Billing` namespace during the transition to the
+      # `PhoenixKitBilling` namespace, which triggers a module-redefinition
+      # warning that `--warnings-as-errors` would otherwise fail on.
+      # Removal condition: drop this once core no longer ships the old
+      # `PhoenixKit.Modules.Billing` namespace (then delete compat/billing.ex too).
       elixirc_options: [ignore_module_conflict: true],
       start_permanent: Mix.env() == :prod,
       deps: deps(),
