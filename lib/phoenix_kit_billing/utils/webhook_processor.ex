@@ -211,17 +211,23 @@ defmodule PhoenixKitBilling.WebhookProcessor do
   # Receipt generation/sending is best-effort after a successful payment:
   # the payment itself already succeeded, so a receipt failure must not fail
   # the webhook. We log non-`:ok` results rather than discarding them.
+  #
+  # `generate_receipt/1` stamps `receipt_number` onto the *returned* struct, so
+  # we must send from that struct — `send_receipt/2` rejects an invoice whose
+  # `receipt_number` is still nil with `{:error, :receipt_not_generated}`.
   defp maybe_generate_and_send_receipt(invoice) do
     case Billing.generate_receipt(invoice) do
-      {:ok, _} ->
-        :ok
+      {:ok, invoice_with_receipt} ->
+        send_receipt(invoice_with_receipt)
 
       other ->
         Logger.warning(
           "Receipt generation skipped for #{invoice.invoice_number}: #{inspect(other)}"
         )
     end
+  end
 
+  defp send_receipt(invoice) do
     case Billing.send_receipt(invoice, []) do
       {:ok, _} ->
         :ok

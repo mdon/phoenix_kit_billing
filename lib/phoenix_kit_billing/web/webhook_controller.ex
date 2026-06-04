@@ -97,7 +97,9 @@ defmodule PhoenixKitBilling.Web.WebhookController do
         |> put_status(400)
         |> json(%{error: "Missing payment_reference"})
 
-      {:error, reason} when reason in [:duplicate_event, :unknown_event] ->
+      {:error, reason} when reason in [:duplicate_event, :unknown_event, :max_retries_exceeded] ->
+        # 200 stops EveryPay redelivering: the event is either already handled
+        # or intentionally abandoned after exhausting retries.
         Logger.debug("EveryPay callback ignored: #{reason}")
 
         conn
@@ -160,6 +162,16 @@ defmodule PhoenixKitBilling.Web.WebhookController do
         conn
         |> put_status(200)
         |> json(%{status: "ignored"})
+
+      {:error, :max_retries_exceeded} ->
+        # Event intentionally abandoned after exhausting retries - return 200 so
+        # the provider stops redelivering it (the failure is already logged as
+        # an error inside WebhookProcessor for ops to act on).
+        Logger.warning("Webhook event abandoned after max retries from #{provider}")
+
+        conn
+        |> put_status(200)
+        |> json(%{status: "abandoned"})
 
       {:error, :not_configured} ->
         Logger.warning("Webhook received for unconfigured provider: #{provider}")

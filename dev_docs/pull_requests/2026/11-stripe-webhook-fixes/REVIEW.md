@@ -120,6 +120,55 @@ payment) but `Logger.warning`s non-`:ok` results.
 
 ---
 
+## Second pass — `/code-review high` follow-ups (2026-06-04)
+
+A high-effort recall review of the first-pass commit surfaced two HIGH
+issues (one a regression introduced by the first pass itself). Both fixed:
+
+### 8. Receipt emails never sent after a webhook payment (HIGH)
+
+`maybe_generate_and_send_receipt/1` (added in the first pass) matched
+`{:ok, _}` on `Billing.generate_receipt/1` and **discarded the returned
+struct**, then called `Billing.send_receipt/2` on the original `invoice`.
+`generate_receipt/1` stamps `receipt_number` only onto the struct it
+returns, and `send_receipt/2` rejects an invoice whose `receipt_number`
+is nil with `{:error, :receipt_not_generated}`
+(`lib/phoenix_kit_billing.ex:1626`). Net effect: receipts were **never**
+sent after a webhook payment (true of the pre-refactor two-line version
+too — the refactor preserved the bug and merely made it log "skipped").
+
+**Fix:** `webhook_processor.ex` now binds `{:ok, invoice_with_receipt}`
+and sends from that struct; send was split into a small `send_receipt/1`
+helper. Receipts only send when generation actually succeeded.
+
+### 9. `:max_retries_exceeded` returned HTTP 400 → provider retried forever (HIGH — regression from finding #2)
+
+The retry-cap fix (finding #2 above) returned
+`{:error, :max_retries_exceeded}` to the controller, whose catch-all
+`{:error, reason}` clause responds **HTTP 400**. Stripe/PayPal/Razorpay
+treat 4xx as a delivery failure and redeliver, re-entering the
+`{:max_retries, _}` branch → 400 again, indefinitely. The cap converted
+"reprocess forever" into "return 400 forever" — it never stopped the
+storm.
+
+**Fix:** `webhook_controller.ex` now returns **200** for
+`:max_retries_exceeded` in both the signed-provider (`handle_webhook`)
+and EveryPay paths, grouped with `:duplicate_event` / `:unknown_event`.
+The abandonment is still logged at error/warning level for ops. 200
+acknowledges receipt so the provider stops redelivering an event we have
+intentionally given up on.
+
+### Still open from this pass (LOW, not fixed)
+
+- `Errors.message/1`'s `%Ecto.Changeset{}` clause uses
+  `Enum.join(errors, ", ")`, which assumes a flat list per field; a
+  changeset with nested association/embed errors would raise. Not
+  reachable from the current 5 LV call sites (flat changesets only), so
+  left as a latent hardening item.
+- The changeset formatter in `Errors` is now a third copy of
+  `format_changeset_errors/1` (also in `subscription_form.ex` and
+  `order_detail.ex`); consolidation still deferred.
+
 ## Noted, intentionally not changed
 
 - **`Activity.log/2`'s broad `rescue e`** (`activity.ex`) is deliberate —
