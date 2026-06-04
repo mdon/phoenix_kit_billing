@@ -51,7 +51,14 @@ defmodule PhoenixKitBilling.ActivityLoggingTest do
     } do
       {:ok, view, _html} = live(conn, "/en/admin/billing/currencies")
 
-      code = "T#{System.unique_integer([:positive]) |> rem(99)}"
+      # The currency `code` column is validated to be exactly 3 chars.
+      # The previous `"T#{rem(99)}"` produced 2-char codes ("T0".."T9")
+      # whenever the unique integer landed in 0..9, which failed the
+      # changeset validation and left `currency` nil — a scheduling-
+      # dependent flake. Zero-pad to a fixed "T" + 2-digit form so the
+      # code is always a valid 3 chars (and unique within the run).
+      code =
+        "T#{rem(System.unique_integer([:positive]), 100) |> Integer.to_string() |> String.pad_leading(2, "0")}"
 
       view |> element("button[phx-click='show_add_form']") |> render_click()
 

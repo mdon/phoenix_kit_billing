@@ -2968,15 +2968,54 @@ defmodule PhoenixKitBilling do
     |> repo().update()
   end
 
+  # Fields the generic `update_subscription/2` is allowed to touch.
+  # Lifecycle/status fields (`status`, `cancel_at_period_end`,
+  # `cancelled_at`, `grace_period_end`, renewal bookkeeping) are
+  # deliberately excluded: status transitions must go through the
+  # dedicated `cancel_subscription/1`, `pause_subscription/1`,
+  # `resume_subscription/1`, and `activate_subscription/2` functions so
+  # their broadcasts and side effects always run.
+  @updatable_subscription_fields ~w(
+    plan_name
+    price
+    currency
+    provider
+    provider_subscription_id
+    current_period_start
+    current_period_end
+    trial_start
+    trial_end
+    last_renewal_error
+    metadata
+    billing_profile_uuid
+    subscription_type_uuid
+    payment_method_uuid
+  )a
+
   @doc """
   Updates a subscription with the given attributes.
 
-  Useful for administrative adjustments such as extending the billing period.
+  Useful for administrative adjustments such as extending the billing
+  period or correcting plan details. Status/lifecycle fields are *not*
+  updatable here — use the dedicated `cancel_subscription/1`,
+  `pause_subscription/1`, and `resume_subscription/1` functions instead,
+  so their broadcasts and bookkeeping always fire.
   """
   def update_subscription(%Subscription{} = subscription, attrs) do
     subscription
-    |> Subscription.changeset(attrs)
+    |> Subscription.changeset(safe_subscription_attrs(attrs))
     |> repo().update()
+  end
+
+  defp safe_subscription_attrs(attrs) do
+    allowed_strings = Enum.map(@updatable_subscription_fields, &Atom.to_string/1)
+
+    Enum.filter(attrs, fn
+      {key, _value} when is_atom(key) -> key in @updatable_subscription_fields
+      {key, _value} when is_binary(key) -> key in allowed_strings
+      _ -> false
+    end)
+    |> Map.new()
   end
 
   @doc """
