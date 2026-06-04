@@ -54,4 +54,25 @@ defmodule PhoenixKitBilling.DataCase do
       end)
     end)
   end
+
+  @doc """
+  Creates and persists a real `PhoenixKit.Users.Auth.User` via the public
+  registration flow so cross-package FK constraints on
+  `phoenix_kit_orders` / `phoenix_kit_invoices` / `phoenix_kit_subscriptions`
+  / `phoenix_kit_transactions` are satisfied.
+
+  Returns the inserted user. Accepts an optional attrs map (string keys),
+  e.g. `%{"email" => "x@y.z"}`.
+  """
+  def fixture_user(attrs \\ %{}) do
+    email = Map.get(attrs, "email") || "billing-#{System.unique_integer([:positive])}@example.com"
+
+    {:ok, user} =
+      PhoenixKit.Users.Auth.register_user(%{
+        "email" => email,
+        "password" => "password1234567"
+      })
+
+    user
+  end
 end
