@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] - 2026-06-04
+
+### Added
+- **Activity logging** (`PhoenixKitBilling.Activity`) — a guarded LiveView-layer wrapper around `PhoenixKit.Activity.log/1`, invoked on every admin mutation (orders, invoices, currencies, subscriptions, subscription types, billing profiles, and payment/refund/send actions). Logging failures never crash the caller, and only PII-safe metadata (uuids, status strings, amounts, currency codes, counts) is recorded.
+- **Centralized error messages** (`PhoenixKitBilling.Errors`) — maps the error atoms returned by contexts, providers, and webhook handlers to gettext-backed, extractable human-readable strings. All admin flash/error messages now route through `Errors.message/1` instead of `inspect/1`, so users no longer see raw atoms like `:has_active_subscriptions`. Also formats `%Ecto.Changeset{}` reasons.
+- **Webhook retry cap** — `WebhookProcessor` now stops reprocessing an event once `WebhookEvent.max_retries_exceeded?/1` is true (≥5 attempts) and the controller acknowledges it with HTTP 200 so providers stop redelivering an intentionally-abandoned event.
+- Full DB + LiveView test harness (DataCase/LiveCase, test endpoint/router/layouts) and ~230 new tests across schemas, contexts, regressions, activity logging, and LiveView smoke/validation.
+
+### Fixed
+- **Webhook processing crashed on every event.** `upsert_webhook_event/1` used `Access` bracket syntax on a `%Providers.Types.WebhookEventData{}` struct (no `Access`), raising `UndefinedFunctionError` so the controller returned 400 and no event was ever processed. Now reads the field via `Map.get/2`.
+- **Stripe was unreachable from the admin UI.** The UI saves the secret to `billing_stripe_secret_key` but `Stripe.get_config/0` read `billing_stripe_api_key`, so `available?/0` was always false and checkout returned `:provider_not_available`. Now reads `billing_stripe_secret_key` with a fallback to the legacy key, and `available?/0` always returns a boolean.
+- **`unique_constraint` names didn't match the DB indexes** for `webhook_events`, `currencies`, `subscription_types`, and `payment_methods`, so duplicate inserts raised `Ecto.ConstraintError` instead of returning `{:error, changeset}`. For `WebhookEvent` this broke idempotency (a duplicate delivery surfaced as `:processing_error` instead of `:duplicate_event`). Names pinned to the actual indexes.
+- **Receipts were never sent after a webhook payment.** The webhook path called `send_receipt/2` on an invoice without a `receipt_number` (the number is stamped only on the struct returned by `generate_receipt/1`), so it always returned `{:error, :receipt_not_generated}`. The processor now sends from the receipt-bearing struct.
+- `extend_subscription` crashed (`FunctionClauseError`) when `current_period_end` was nil; it now reports a friendly error instead.
+- `extend_subscription` now derives the extension from the subscription type's billing period rather than a hardcoded 30 days; `update_subscription/2` filters to a non-lifecycle field allowlist (status changes go through cancel/pause/resume); subscription status actions update in place instead of redirecting.
+
+### Changed
+- Subscription-type, billing-profile, and order forms migrated to core `<.input>`/`<.select>`/`<.textarea>` components with `assign_form/2` so inline errors render on validate.
+- `SubscriptionType.billing_period_days/1` and `next_billing_date/2` gained catch-all clauses (fall back to a monthly cadence) instead of raising on an unexpected interval.
+- Stripe provider moduledoc corrected to document the real `PhoenixKit.Settings`-based configuration; the provider talks to the Stripe REST API over `Req`.
+- Upgraded locked dependencies; added a test-only `lazy_html` dependency for `Phoenix.LiveViewTest`.
+
 ## [0.3.2] - 2026-05-25
 
 ### Changed
