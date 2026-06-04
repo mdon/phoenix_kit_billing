@@ -300,30 +300,33 @@ run.
 
 ## Deferred from the 2026-06-04 quality sweep
 
-The Phase 1 / Phase 2 sweep on 2026-06-04 fixed the PR-review backlog and
-added the test harness above. The following larger items were
-**intentionally left for a follow-up PR** — they are behavioral or
-structural changes safer reviewed separately than folded into a sweep:
+The Phase 1 / Phase 2 sweep on 2026-06-04 fixed the PR-review backlog,
+added the test harness above, and then completed most of the items that
+were initially deferred.
 
-- **(a) Module-wide activity logging.** The module currently emits no
-  `PhoenixKit.Activity.log/1` entries on any mutation (CRUD, status
-  transitions, module enable/disable). Adding the standard
-  `log_activity/5` + `maybe_log_activity/5` helpers and `actor_opts/1`
-  threading across the context is its own pass.
-- **(b) Dedicated `Errors` module + atom error dispatch.** Context and
-  provider call sites return raw `{:error, "string"}` shapes in places.
-  The standard pattern is a `PhoenixKitBilling.Errors` module returning
-  atoms dispatched to gettext-translated strings at the UI.
-- **(c) Full migration of remaining raw `<input>`/`<select>` to core
-  `<.input>`/`<.select>`.** Several admin forms still use raw HTML inputs
-  instead of `PhoenixKitWeb.Components.Core.{Input, Select, Textarea}`.
-- **(d) Subscription-admin behavioral items (PR #3 deferred set).** See
-  `dev_docs/pull_requests/2026/3-fix-billing-ui/FOLLOW_UP.md`:
-  guard `update_subscription/2` against arbitrary attrs (MEDIUM);
-  `extend_subscription` hardcoded to 30 days instead of the type's
-  interval; status actions redirecting away from the edit form;
-  edit-save ignoring payment-method changes; no compat-module drift
-  tests; inconsistent row-click behavior across list pages.
+**Completed in the sweep:**
+- **(a) Module-wide activity logging** — `PhoenixKitBilling.Activity`
+  LV-layer wrapper logged on every admin mutation; PII-safe; covered by
+  `test/phoenix_kit_billing/activity_logging_test.exs`.
+- **(b) `Errors` module** — `PhoenixKitBilling.Errors.message/1` maps the
+  module's atom errors to gettext-backed strings;
+  `test/phoenix_kit_billing/errors_test.exs` pins each.
+- **(d, partial) Subscription-admin items** — `update_subscription/2` now
+  filters to a non-lifecycle field allowlist; `extend_subscription`
+  derives the period from the subscription type (was hardcoded 30 days);
+  status actions update in place instead of redirecting. (Row-click was
+  already consistent across the list LVs.)
+
+**Still remaining (genuinely out of scope for now):**
+- **(c) Component migration tail.** The subscription-type, billing-profile,
+  and order forms were migrated to core `<.input>/<.select>/<.textarea>`.
+  Still raw by design/risk: the order form's customer/billing-profile
+  dynamic selects and per-row line-item inputs (custom `phx-` handling,
+  no changeset backing), checkbox/radio groups with bespoke daisyUI
+  layouts, and filter/action selects on the list pages.
+- **(d, remaining)** edit-save ignoring payment-method changes; no
+  compat-module drift tests. See
+  `dev_docs/pull_requests/2026/3-fix-billing-ui/FOLLOW_UP.md`.
 - **(e) ⚠️ CORE bug to surface to Max — `subscription_type_uuid`
   missing column.** On a fresh `PhoenixKit.Migration.ensure_current/2`
   build, `phoenix_kit_subscriptions` is missing the
