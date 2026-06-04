@@ -108,60 +108,38 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="form-control">
-                <label class="label">
-                  <span class="label-text">{gettext("First Name *")}</span>
-                </label>
-                <input
+                <.input
+                  field={@form[:first_name]}
                   type="text"
-                  name="billing_profile[first_name]"
-                  value={@form[:first_name].value}
-                  class="input input-bordered"
+                  label={gettext("First Name *")}
                   placeholder="John"
                 />
-                <.error :for={msg <- @form[:first_name].errors |> Enum.map(&elem(&1, 0))}>
-                  {msg}
-                </.error>
               </div>
 
               <div class="form-control">
-                <label class="label">
-                  <span class="label-text">{gettext("Middle Name")}</span>
-                </label>
-                <input
+                <.input
+                  field={@form[:middle_name]}
                   type="text"
-                  name="billing_profile[middle_name]"
-                  value={@form[:middle_name].value}
-                  class="input input-bordered"
+                  label={gettext("Middle Name")}
                 />
               </div>
 
               <div class="form-control">
-                <label class="label">
-                  <span class="label-text">{gettext("Last Name *")}</span>
-                </label>
-                <input
+                <.input
+                  field={@form[:last_name]}
                   type="text"
-                  name="billing_profile[last_name]"
-                  value={@form[:last_name].value}
-                  class="input input-bordered"
+                  label={gettext("Last Name *")}
                   placeholder="Doe"
                 />
-                <.error :for={msg <- @form[:last_name].errors |> Enum.map(&elem(&1, 0))}>
-                  {msg}
-                </.error>
               </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div class="form-control">
-                <label class="label">
-                  <span class="label-text">{gettext("Email")}</span>
-                </label>
-                <input
+                <.input
+                  field={@form[:email]}
                   type="email"
-                  name="billing_profile[email]"
-                  value={@form[:email].value}
-                  class="input input-bordered"
+                  label={gettext("Email")}
                   placeholder="john@example.com"
                 />
                 <label class="label">
@@ -172,14 +150,10 @@
               </div>
 
               <div class="form-control">
-                <label class="label">
-                  <span class="label-text">{gettext("Phone")}</span>
-                </label>
-                <input
+                <.input
+                  field={@form[:phone]}
                   type="tel"
-                  name="billing_profile[phone]"
-                  value={@form[:phone].value}
-                  class="input input-bordered"
+                  label={gettext("Phone")}
                   placeholder="+372 5555 5555"
                 />
               </div>
@@ -197,92 +171,65 @@
             </h2>
 
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">{gettext("Company Name *")}</span>
-              </label>
-              <input
+              <.input
+                field={@form[:company_name]}
                 type="text"
-                name="billing_profile[company_name]"
-                value={@form[:company_name].value}
-                class="input input-bordered"
+                label={gettext("Company Name *")}
                 placeholder="Acme Corp OÜ"
               />
-              <.error :for={msg <- @form[:company_name].errors |> Enum.map(&elem(&1, 0))}>
-                {msg}
-              </.error>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div class="form-control">
-                <label class="label">
-                  <span class="label-text">{gettext("VAT Number")}</span>
-                </label>
-                <input
+                <.input
+                  field={@form[:company_vat_number]}
                   type="text"
-                  name="billing_profile[company_vat_number]"
-                  value={@form[:company_vat_number].value}
-                  class="input input-bordered font-mono"
+                  label={gettext("VAT Number")}
+                  class="font-mono"
                   placeholder="EE123456789"
                 />
                 <label class="label">
                   <span class="label-text-alt">{gettext("EU VAT format: Country code + number")}</span>
                 </label>
-                <.error :for={msg <- @form[:company_vat_number].errors |> Enum.map(&elem(&1, 0))}>
-                  {msg}
-                </.error>
               </div>
 
               <div class="form-control">
-                <label class="label">
-                  <span class="label-text">{gettext("Registration Number")}</span>
-                </label>
-                <input
+                <.input
+                  field={@form[:company_registration_number]}
                   type="text"
-                  name="billing_profile[company_registration_number]"
-                  value={@form[:company_registration_number].value}
-                  class="input input-bordered font-mono"
+                  label={gettext("Registration Number")}
+                  class="font-mono"
                   placeholder="12345678"
                 />
               </div>
             </div>
 
             <div class="form-control mt-4">
-              <label class="label">
-                <span class="label-text">{gettext("Legal Address")}</span>
-              </label>
-              <textarea
-                name="billing_profile[company_legal_address]"
-                class="textarea textarea-bordered"
+              <.textarea
+                field={@form[:company_legal_address]}
+                label={gettext("Legal Address")}
                 rows="2"
                 placeholder={gettext("Registered legal address")}
-              >{@form[:company_legal_address].value}</textarea>
+              />
             </div>
 
             <div class="divider">{gettext("Contact")}</div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="form-control">
-                <label class="label">
-                  <span class="label-text">{gettext("Contact Email")}</span>
-                </label>
-                <input
+                <.input
+                  field={@form[:email]}
                   type="email"
-                  name="billing_profile[email]"
-                  value={@form[:email].value}
-                  class="input input-bordered"
+                  label={gettext("Contact Email")}
                   placeholder="billing@company.com"
                 />
               </div>
 
               <div class="form-control">
-                <label class="label">
-                  <span class="label-text">{gettext("Phone")}</span>
-                </label>
-                <input
+                <.input
+                  field={@form[:phone]}
                   type="tel"
-                  name="billing_profile[phone]"
-                  value={@form[:phone].value}
-                  class="input input-bordered"
+                  label={gettext("Phone")}
                   placeholder="+372 5555 5555"
                 />
               </div>
@@ -300,81 +247,56 @@
 
           <%!-- Country first --%>
           <div class="form-control">
-            <label class="label">
-              <span class="label-text">{gettext("Country")}</span>
-            </label>
-            <select name="billing_profile[country]" class="select select-bordered">
-              <option value="">{gettext("Select country...")}</option>
-              <%= for {name, code} <- @countries do %>
-                <option value={code} selected={@form[:country].value == code}>
-                  {name}
-                </option>
-              <% end %>
-            </select>
+            <.select
+              field={@form[:country]}
+              label={gettext("Country")}
+              prompt={gettext("Select country...")}
+              options={@countries}
+            />
           </div>
 
           <div class="form-control mt-4">
-            <label class="label">
-              <span class="label-text">{gettext("Address Line 1")}</span>
-            </label>
-            <input
+            <.input
+              field={@form[:address_line1]}
               type="text"
-              name="billing_profile[address_line1]"
-              value={@form[:address_line1].value}
-              class="input input-bordered"
+              label={gettext("Address Line 1")}
               placeholder={gettext("Street address")}
             />
           </div>
 
           <div class="form-control">
-            <label class="label">
-              <span class="label-text">{gettext("Address Line 2")}</span>
-            </label>
-            <input
+            <.input
+              field={@form[:address_line2]}
               type="text"
-              name="billing_profile[address_line2]"
-              value={@form[:address_line2].value}
-              class="input input-bordered"
+              label={gettext("Address Line 2")}
               placeholder={gettext("Apartment, suite, etc.")}
             />
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">{gettext("City")}</span>
-              </label>
-              <input
+              <.input
+                field={@form[:city]}
                 type="text"
-                name="billing_profile[city]"
-                value={@form[:city].value}
-                class="input input-bordered"
+                label={gettext("City")}
                 placeholder="Tallinn"
               />
             </div>
 
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">{@subdivision_label}</span>
-              </label>
-              <input
+              <.input
+                field={@form[:state]}
                 type="text"
-                name="billing_profile[state]"
-                value={@form[:state].value}
-                class="input input-bordered"
+                label={@subdivision_label}
                 placeholder="Harju"
               />
             </div>
 
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">{gettext("Postal Code")}</span>
-              </label>
-              <input
+              <.input
+                field={@form[:postal_code]}
                 type="text"
-                name="billing_profile[postal_code]"
-                value={@form[:postal_code].value}
-                class="input input-bordered"
+                label={gettext("Postal Code")}
                 placeholder="10115"
               />
             </div>
@@ -408,14 +330,10 @@
           </div>
 
           <div class="form-control mt-4">
-            <label class="label">
-              <span class="label-text">{gettext("Profile Name (Optional)")}</span>
-            </label>
-            <input
+            <.input
+              field={@form[:name]}
               type="text"
-              name="billing_profile[name]"
-              value={@form[:name].value}
-              class="input input-bordered"
+              label={gettext("Profile Name (Optional)")}
               placeholder={gettext("e.g., Home Address, Work, Company HQ")}
             />
             <label class="label">

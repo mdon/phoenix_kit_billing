@@ -8,6 +8,8 @@ defmodule PhoenixKitBilling.Web.OrderForm do
   import PhoenixKitWeb.Components.Core.AdminPageHeader
   alias PhoenixKit.Utils.Routes
   import PhoenixKitWeb.Components.Core.Icon
+  import PhoenixKitWeb.Components.Core.Select
+  import PhoenixKitWeb.Components.Core.Textarea
 
   alias PhoenixKit.Settings
   alias PhoenixKit.Users.Auth
