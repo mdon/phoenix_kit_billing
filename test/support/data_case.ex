@@ -34,6 +34,7 @@ defmodule PhoenixKitBilling.DataCase do
   end
 
   alias Ecto.Adapters.SQL.Sandbox
+  alias PhoenixKit.Users.Auth
   alias PhoenixKitBilling.Test.Repo, as: TestRepo
 
   setup tags do
@@ -68,7 +69,7 @@ defmodule PhoenixKitBilling.DataCase do
     email = Map.get(attrs, "email") || "billing-#{System.unique_integer([:positive])}@example.com"
 
     {:ok, user} =
-      PhoenixKit.Users.Auth.register_user(%{
+      Auth.register_user(%{
         "email" => email,
         "password" => "password1234567"
       })
