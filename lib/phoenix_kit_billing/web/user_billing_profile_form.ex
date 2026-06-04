@@ -13,6 +13,7 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
   alias PhoenixKit.Utils.CountryData
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
+  alias PhoenixKitBilling.Activity
   alias PhoenixKitBilling.BillingProfile
 
   @impl true
@@ -125,7 +126,24 @@ defmodule PhoenixKitBilling.Web.UserBillingProfileForm do
       end
 
     case result do
-      {:ok, _profile} ->
+      {:ok, profile} ->
+        action =
+          if socket.assigns.profile,
+            do: "billing.billing_profile_updated",
+            else: "billing.billing_profile_created"
+
+        Activity.log(action,
+          actor_uuid: Activity.actor_uuid(socket),
+          actor_role: Activity.actor_role(socket),
+          resource_type: "billing_profile",
+          resource_uuid: profile.uuid,
+          metadata: %{
+            "type" => profile.type,
+            "country" => profile.country,
+            "is_default" => profile.is_default
+          }
+        )
+
         message =
           if socket.assigns.profile,
             do: gettext("Billing profile updated successfully"),

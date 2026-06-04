@@ -55,7 +55,10 @@ defmodule PhoenixKitBilling.Schemas.PaymentMethodTest do
 
       assert {:error, changeset} =
                Repo.insert(
-                 PaymentMethod.changeset(%PaymentMethod{}, %{@valid | user_uuid: Ecto.UUID.generate()})
+                 PaymentMethod.changeset(%PaymentMethod{}, %{
+                   @valid
+                   | user_uuid: Ecto.UUID.generate()
+                 })
                )
 
       assert "has already been taken" in errors_on(changeset).provider

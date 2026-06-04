@@ -13,6 +13,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
   alias PhoenixKit.Settings
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
+  alias PhoenixKitBilling.Activity
   alias PhoenixKitBilling.SubscriptionType
 
   @impl true
@@ -99,7 +100,20 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
       end
 
     case result do
-      {:ok, _type} ->
+      {:ok, type} ->
+        action =
+          if socket.assigns.mode == :new,
+            do: "billing.subscription_type_created",
+            else: "billing.subscription_type_updated"
+
+        Activity.log(action,
+          actor_uuid: Activity.actor_uuid(socket),
+          actor_role: Activity.actor_role(socket),
+          resource_type: "subscription_type",
+          resource_uuid: type.uuid,
+          metadata: %{"active" => type.active}
+        )
+
         {:noreply,
          socket
          |> put_flash(:info, type_saved_message(socket.assigns.mode))

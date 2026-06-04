@@ -20,6 +20,7 @@ defmodule PhoenixKitBilling.Web.Subscriptions do
   alias PhoenixKit.Settings
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
+  alias PhoenixKitBilling.Activity
   alias PhoenixKitBilling.Events
 
   @impl true
@@ -128,7 +129,15 @@ defmodule PhoenixKitBilling.Web.Subscriptions do
 
     if subscription do
       case Billing.cancel_subscription(subscription, immediately: false) do
-        {:ok, _subscription} ->
+        {:ok, updated} ->
+          Activity.log("billing.subscription_cancelled",
+            actor_uuid: Activity.actor_uuid(socket),
+            actor_role: Activity.actor_role(socket),
+            resource_type: "subscription",
+            resource_uuid: updated.uuid,
+            metadata: %{"status" => updated.status, "immediately" => false}
+          )
+
           {:noreply,
            socket
            |> load_subscriptions()

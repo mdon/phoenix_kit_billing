@@ -20,6 +20,7 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
   alias PhoenixKit.Settings
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
+  alias PhoenixKitBilling.Activity
   alias PhoenixKitBilling.Events
 
   @impl true
@@ -100,6 +101,14 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
   def handle_event("confirm_order", _params, socket) do
     case Billing.confirm_order(socket.assigns.order) do
       {:ok, order} ->
+        Activity.log("billing.order_confirmed",
+          actor_uuid: Activity.actor_uuid(socket),
+          actor_role: Activity.actor_role(socket),
+          resource_type: "order",
+          resource_uuid: order.uuid,
+          metadata: %{"order_number" => order.order_number, "status" => order.status}
+        )
+
         {:noreply,
          socket
          |> assign(:order, order)
@@ -115,6 +124,14 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
   def handle_event("mark_paid", _params, socket) do
     case Billing.mark_order_paid(socket.assigns.order) do
       {:ok, order} ->
+        Activity.log("billing.order_marked_paid",
+          actor_uuid: Activity.actor_uuid(socket),
+          actor_role: Activity.actor_role(socket),
+          resource_type: "order",
+          resource_uuid: order.uuid,
+          metadata: %{"order_number" => order.order_number, "status" => order.status}
+        )
+
         {:noreply,
          socket
          |> assign(:order, order)
@@ -130,6 +147,14 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
   def handle_event("cancel_order", _params, socket) do
     case Billing.cancel_order(socket.assigns.order) do
       {:ok, order} ->
+        Activity.log("billing.order_cancelled",
+          actor_uuid: Activity.actor_uuid(socket),
+          actor_role: Activity.actor_role(socket),
+          resource_type: "order",
+          resource_uuid: order.uuid,
+          metadata: %{"order_number" => order.order_number, "status" => order.status}
+        )
+
         {:noreply,
          socket
          |> assign(:order, order)
@@ -145,6 +170,19 @@ defmodule PhoenixKitBilling.Web.OrderDetail do
   def handle_event("generate_invoice", _params, socket) do
     case Billing.create_invoice_from_order(socket.assigns.order) do
       {:ok, invoice} ->
+        Activity.log("billing.invoice_created",
+          actor_uuid: Activity.actor_uuid(socket),
+          actor_role: Activity.actor_role(socket),
+          resource_type: "invoice",
+          resource_uuid: invoice.uuid,
+          target_uuid: socket.assigns.order.uuid,
+          metadata: %{
+            "invoice_number" => invoice.invoice_number,
+            "status" => invoice.status,
+            "order_uuid" => socket.assigns.order.uuid
+          }
+        )
+
         invoices = Billing.list_invoices_for_order(socket.assigns.order.uuid)
 
         {:noreply,

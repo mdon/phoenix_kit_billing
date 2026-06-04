@@ -17,6 +17,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
   alias PhoenixKit.Settings
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
+  alias PhoenixKitBilling.Activity
   alias PhoenixKitBilling.Subscription
 
   @impl true
@@ -61,6 +62,10 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
   def handle_event("cancel_now", _params, socket) do
     case Billing.cancel_subscription(socket.assigns.subscription, immediately: true) do
       {:ok, subscription} ->
+        log_subscription(socket, "billing.subscription_cancelled", subscription, %{
+          "immediately" => true
+        })
+
         {:noreply,
          socket
          |> assign(:subscription, reload_subscription(subscription.uuid))
@@ -80,6 +85,10 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
   def handle_event("cancel_at_period_end", _params, socket) do
     case Billing.cancel_subscription(socket.assigns.subscription, immediately: false) do
       {:ok, subscription} ->
+        log_subscription(socket, "billing.subscription_cancelled", subscription, %{
+          "immediately" => false
+        })
+
         {:noreply,
          socket
          |> assign(:subscription, reload_subscription(subscription.uuid))
@@ -99,6 +108,8 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
   def handle_event("resume", _params, socket) do
     case Billing.resume_subscription(socket.assigns.subscription) do
       {:ok, subscription} ->
+        log_subscription(socket, "billing.subscription_resumed", subscription)
+
         {:noreply,
          socket
          |> assign(:subscription, reload_subscription(subscription.uuid))
@@ -118,6 +129,8 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
   def handle_event("pause", _params, socket) do
     case Billing.pause_subscription(socket.assigns.subscription) do
       {:ok, subscription} ->
+        log_subscription(socket, "billing.subscription_paused", subscription)
+
         {:noreply,
          socket
          |> assign(:subscription, reload_subscription(subscription.uuid))
@@ -160,6 +173,13 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
     if new_type_uuid && to_string(new_type_uuid) != to_string(subscription.subscription_type_uuid) do
       case Billing.change_subscription_type(subscription, new_type_uuid) do
         {:ok, updated_subscription} ->
+          log_subscription(
+            socket,
+            "billing.subscription_type_changed",
+            updated_subscription,
+            %{"subscription_type_uuid" => updated_subscription.subscription_type_uuid}
+          )
+
           {:noreply,
            socket
            |> assign(:subscription, reload_subscription(updated_subscription.uuid))
@@ -182,6 +202,16 @@ defmodule PhoenixKitBilling.Web.SubscriptionDetail do
 
   defp reload_subscription(id) do
     Billing.get_subscription(id, preload: [:subscription_type, :payment_method, :user])
+  end
+
+  defp log_subscription(socket, action, subscription, extra \\ %{}) do
+    Activity.log(action,
+      actor_uuid: Activity.actor_uuid(socket),
+      actor_role: Activity.actor_role(socket),
+      resource_type: "subscription",
+      resource_uuid: subscription.uuid,
+      metadata: Map.merge(%{"status" => subscription.status}, extra)
+    )
   end
 
   # Helper functions for template

@@ -11,6 +11,7 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail.Actions do
 
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
+  alias PhoenixKitBilling.Activity
 
   def record_payment(socket) do
     %{
@@ -29,7 +30,20 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail.Actions do
     }
 
     case Billing.record_payment(invoice, attrs, current_scope) do
-      {:ok, _transaction} ->
+      {:ok, transaction} ->
+        Activity.log("billing.payment_recorded",
+          actor_uuid: actor_uuid(socket),
+          actor_role: actor_role(socket),
+          resource_type: "transaction",
+          resource_uuid: transaction.uuid,
+          target_uuid: invoice.uuid,
+          metadata: %{
+            "invoice_number" => invoice.invoice_number,
+            "amount" => to_string(amount),
+            "currency" => invoice.currency
+          }
+        )
+
         socket = reload_invoice(socket)
 
         {:noreply,
@@ -111,7 +125,20 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail.Actions do
       }
 
       case Billing.record_refund(invoice, attrs, current_scope) do
-        {:ok, _transaction} ->
+        {:ok, transaction} ->
+          Activity.log("billing.refund_recorded",
+            actor_uuid: actor_uuid(socket),
+            actor_role: actor_role(socket),
+            resource_type: "transaction",
+            resource_uuid: transaction.uuid,
+            target_uuid: invoice.uuid,
+            metadata: %{
+              "invoice_number" => invoice.invoice_number,
+              "amount" => to_string(amount),
+              "currency" => invoice.currency
+            }
+          )
+
           socket = reload_invoice(socket)
 
           {:noreply,
@@ -141,6 +168,17 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail.Actions do
 
     case Billing.send_invoice(invoice, invoice_url: invoice_url, to_email: email) do
       {:ok, updated_invoice} ->
+        Activity.log("billing.invoice_sent",
+          actor_uuid: actor_uuid(socket),
+          actor_role: actor_role(socket),
+          resource_type: "invoice",
+          resource_uuid: updated_invoice.uuid,
+          metadata: %{
+            "invoice_number" => updated_invoice.invoice_number,
+            "status" => updated_invoice.status
+          }
+        )
+
         {:noreply,
          socket
          |> Phoenix.Component.assign(:invoice, updated_invoice)
@@ -159,6 +197,17 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail.Actions do
 
     case Billing.send_receipt(invoice, receipt_url: receipt_url, to_email: email) do
       {:ok, updated_invoice} ->
+        Activity.log("billing.receipt_sent",
+          actor_uuid: actor_uuid(socket),
+          actor_role: actor_role(socket),
+          resource_type: "invoice",
+          resource_uuid: updated_invoice.uuid,
+          metadata: %{
+            "invoice_number" => updated_invoice.invoice_number,
+            "status" => updated_invoice.status
+          }
+        )
+
         {:noreply,
          socket
          |> Phoenix.Component.assign(:invoice, updated_invoice)
@@ -191,6 +240,15 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail.Actions do
              credit_note_url: credit_note_url,
              to_email: email
            ) do
+      Activity.log("billing.credit_note_sent",
+        actor_uuid: actor_uuid(socket),
+        actor_role: actor_role(socket),
+        resource_type: "transaction",
+        resource_uuid: updated_transaction.uuid,
+        target_uuid: invoice.uuid,
+        metadata: %{"invoice_number" => invoice.invoice_number}
+      )
+
       updated_transactions =
         update_transaction_in_list(socket.assigns.transactions, updated_transaction)
 
@@ -230,6 +288,15 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail.Actions do
              payment_url: payment_url,
              to_email: email
            ) do
+      Activity.log("billing.payment_confirmation_sent",
+        actor_uuid: actor_uuid(socket),
+        actor_role: actor_role(socket),
+        resource_type: "transaction",
+        resource_uuid: updated_transaction.uuid,
+        target_uuid: invoice.uuid,
+        metadata: %{"invoice_number" => invoice.invoice_number}
+      )
+
       updated_transactions =
         update_transaction_in_list(socket.assigns.transactions, updated_transaction)
 
@@ -258,6 +325,14 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail.Actions do
   def void_invoice(socket) do
     case Billing.void_invoice(socket.assigns.invoice) do
       {:ok, invoice} ->
+        Activity.log("billing.invoice_voided",
+          actor_uuid: actor_uuid(socket),
+          actor_role: actor_role(socket),
+          resource_type: "invoice",
+          resource_uuid: invoice.uuid,
+          metadata: %{"invoice_number" => invoice.invoice_number, "status" => invoice.status}
+        )
+
         {:noreply,
          socket
          |> Phoenix.Component.assign(:invoice, invoice)
@@ -271,6 +346,17 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail.Actions do
   def generate_receipt(socket) do
     case Billing.generate_receipt(socket.assigns.invoice) do
       {:ok, invoice} ->
+        Activity.log("billing.receipt_generated",
+          actor_uuid: actor_uuid(socket),
+          actor_role: actor_role(socket),
+          resource_type: "invoice",
+          resource_uuid: invoice.uuid,
+          metadata: %{
+            "invoice_number" => invoice.invoice_number,
+            "receipt_number" => invoice.receipt_number
+          }
+        )
+
         {:noreply,
          socket
          |> Phoenix.Component.assign(:invoice, invoice)
@@ -282,6 +368,9 @@ defmodule PhoenixKitBilling.Web.InvoiceDetail.Actions do
   end
 
   # Private helpers
+
+  defp actor_uuid(socket), do: Activity.actor_uuid(socket)
+  defp actor_role(socket), do: Activity.actor_role(socket)
 
   defp reload_invoice(socket) do
     invoice = socket.assigns.invoice

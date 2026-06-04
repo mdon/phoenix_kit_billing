@@ -16,6 +16,7 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypes do
   alias PhoenixKit.Settings
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
+  alias PhoenixKitBilling.Activity
 
   @impl true
   def mount(_params, _session, socket) do
@@ -53,7 +54,15 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypes do
 
     if type do
       case Billing.update_subscription_type(type, %{active: !type.active}) do
-        {:ok, _type} ->
+        {:ok, updated} ->
+          Activity.log("billing.subscription_type_updated",
+            actor_uuid: Activity.actor_uuid(socket),
+            actor_role: Activity.actor_role(socket),
+            resource_type: "subscription_type",
+            resource_uuid: updated.uuid,
+            metadata: %{"active" => updated.active}
+          )
+
           {:noreply,
            socket
            |> load_subscription_types()
@@ -85,6 +94,14 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypes do
     if type do
       case Billing.delete_subscription_type(type) do
         {:ok, _type} ->
+          Activity.log("billing.subscription_type_deleted",
+            actor_uuid: Activity.actor_uuid(socket),
+            actor_role: Activity.actor_role(socket),
+            resource_type: "subscription_type",
+            resource_uuid: type.uuid,
+            metadata: %{}
+          )
+
           {:noreply,
            socket
            |> load_subscription_types()

@@ -14,6 +14,7 @@ defmodule PhoenixKitBilling.Web.OrderForm do
   alias PhoenixKit.Utils.CountryData
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
+  alias PhoenixKitBilling.Activity
   alias PhoenixKitBilling.Order
 
   @impl true
@@ -275,6 +276,21 @@ defmodule PhoenixKitBilling.Web.OrderForm do
 
     case result do
       {:ok, order} ->
+        action =
+          if socket.assigns.order, do: "billing.order_updated", else: "billing.order_created"
+
+        Activity.log(action,
+          actor_uuid: Activity.actor_uuid(socket),
+          actor_role: Activity.actor_role(socket),
+          resource_type: "order",
+          resource_uuid: order.uuid,
+          metadata: %{
+            "order_number" => order.order_number,
+            "status" => order.status,
+            "currency" => order.currency
+          }
+        )
+
         {:noreply,
          socket
          |> put_flash(:info, gettext("Order saved successfully"))

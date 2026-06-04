@@ -17,6 +17,7 @@ defmodule PhoenixKitBilling.Web.Currencies do
   alias PhoenixKit.Settings
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
+  alias PhoenixKitBilling.Activity
   alias PhoenixKitBilling.Currency
 
   @impl true
@@ -66,7 +67,15 @@ defmodule PhoenixKitBilling.Web.Currencies do
     currency = Enum.find(socket.assigns.currencies, &(&1.uuid == uuid))
 
     case Billing.update_currency(currency, %{enabled: !currency.enabled}) do
-      {:ok, _currency} ->
+      {:ok, updated} ->
+        Activity.log("billing.currency_updated",
+          actor_uuid: Activity.actor_uuid(socket),
+          actor_role: Activity.actor_role(socket),
+          resource_type: "currency",
+          resource_uuid: updated.uuid,
+          metadata: %{"code" => updated.code, "enabled" => updated.enabled}
+        )
+
         {:noreply,
          socket
          |> load_currencies()
@@ -82,7 +91,15 @@ defmodule PhoenixKitBilling.Web.Currencies do
     currency = Enum.find(socket.assigns.currencies, &(&1.uuid == uuid))
 
     case Billing.set_default_currency(currency) do
-      {:ok, _currency} ->
+      {:ok, updated} ->
+        Activity.log("billing.currency_set_default",
+          actor_uuid: Activity.actor_uuid(socket),
+          actor_role: Activity.actor_role(socket),
+          resource_type: "currency",
+          resource_uuid: updated.uuid,
+          metadata: %{"code" => updated.code}
+        )
+
         {:noreply,
          socket
          |> load_currencies()
@@ -151,7 +168,20 @@ defmodule PhoenixKitBilling.Web.Currencies do
       end
 
     case result do
-      {:ok, _currency} ->
+      {:ok, currency} ->
+        action =
+          if socket.assigns.editing_currency,
+            do: "billing.currency_updated",
+            else: "billing.currency_created"
+
+        Activity.log(action,
+          actor_uuid: Activity.actor_uuid(socket),
+          actor_role: Activity.actor_role(socket),
+          resource_type: "currency",
+          resource_uuid: currency.uuid,
+          metadata: %{"code" => currency.code}
+        )
+
         message =
           if socket.assigns.editing_currency,
             do: gettext("Currency updated successfully"),
@@ -178,6 +208,14 @@ defmodule PhoenixKitBilling.Web.Currencies do
 
     case Billing.delete_currency(currency) do
       {:ok, _currency} ->
+        Activity.log("billing.currency_deleted",
+          actor_uuid: Activity.actor_uuid(socket),
+          actor_role: Activity.actor_role(socket),
+          resource_type: "currency",
+          resource_uuid: currency.uuid,
+          metadata: %{"code" => currency.code}
+        )
+
         {:noreply,
          socket
          |> load_currencies()
@@ -279,6 +317,15 @@ defmodule PhoenixKitBilling.Web.Currencies do
           {:error, _} -> {ok, fail + 1}
         end
       end)
+
+    if ok_count > 0 do
+      Activity.log("billing.currency_imported",
+        actor_uuid: Activity.actor_uuid(socket),
+        actor_role: Activity.actor_role(socket),
+        resource_type: "currency",
+        metadata: %{"imported_count" => ok_count, "failed_count" => fail_count}
+      )
+    end
 
     message =
       case {ok_count, fail_count} do

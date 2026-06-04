@@ -50,7 +50,9 @@ defmodule PhoenixKitBilling.Schemas.SubscriptionTypeTest do
       {:ok, _} = Repo.insert(SubscriptionType.changeset(%SubscriptionType{}, @valid))
 
       assert {:error, changeset} =
-               Repo.insert(SubscriptionType.changeset(%SubscriptionType{}, %{@valid | name: "Pro 2"}))
+               Repo.insert(
+                 SubscriptionType.changeset(%SubscriptionType{}, %{@valid | name: "Pro 2"})
+               )
 
       assert "has already been taken" in errors_on(changeset).slug
     end

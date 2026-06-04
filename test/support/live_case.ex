@@ -33,7 +33,7 @@ defmodule PhoenixKitBilling.LiveCase do
       import PhoenixKitBilling.ActivityLogAssertions
       # Reuse the helpers defined on DataCase so LiveView tests don't
       # need their own duplicate copies.
-      import PhoenixKitBilling.DataCase, only: [errors_on: 1]
+      import PhoenixKitBilling.DataCase, only: [errors_on: 1, fixture_user: 0, fixture_user: 1]
 
       import PhoenixKitBilling.LiveCase
     end
