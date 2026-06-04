@@ -96,7 +96,7 @@ defmodule PhoenixKitBilling.SubscriptionType do
     |> validate_number(:trial_days, greater_than_or_equal_to: 0)
     |> validate_length(:slug, min: 1, max: 50)
     |> validate_length(:currency, is: 3)
-    |> unique_constraint(:slug)
+    |> unique_constraint(:slug, name: :phoenix_kit_subscription_types_slug_uidx)
   end
 
   @doc """

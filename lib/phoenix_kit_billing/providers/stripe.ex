@@ -455,9 +455,20 @@ defmodule PhoenixKitBilling.Providers.Stripe do
   defp get_config do
     %{
       enabled: Settings.get_setting("billing_stripe_enabled", "false") == "true",
-      api_key: Settings.get_setting("billing_stripe_api_key", ""),
+      api_key: stripe_secret_key(),
       webhook_secret: Settings.get_setting("billing_stripe_webhook_secret", "")
     }
+  end
+
+  # The admin UI persists the Stripe secret under `billing_stripe_secret_key`
+  # (matching Stripe's own naming). Older/hand-rolled configs may have used
+  # `billing_stripe_api_key`; fall back to it so those hosts keep working
+  # without a manual data migration.
+  defp stripe_secret_key do
+    case Settings.get_setting("billing_stripe_secret_key", "") do
+      "" -> Settings.get_setting("billing_stripe_api_key", "")
+      key -> key
+    end
   end
 
   defp ensure_configured do

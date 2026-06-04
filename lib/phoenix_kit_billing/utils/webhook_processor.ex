@@ -358,7 +358,10 @@ defmodule PhoenixKitBilling.WebhookProcessor do
       provider: to_string(provider),
       event_id: event_id,
       event_type: type,
-      payload: event[:raw_payload] || %{},
+      # `event` is a %Providers.Types.WebhookEventData{} struct, which does not
+      # implement Access — bracket syntax (`event[:raw_payload]`) raises. Use
+      # Map.get/2 to read the struct field safely.
+      payload: Map.get(event, :raw_payload) || %{},
       processed: false,
       retry_count: 0
     }

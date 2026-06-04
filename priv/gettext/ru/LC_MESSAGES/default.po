@@ -12,7 +12,8 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: lib/phoenix_kit_billing.ex
+#: lib/phoenix_kit_billing.ex:131
+#, elixir-autogen
 msgid "Billing"
 msgstr "Биллинг"
 
@@ -20,12 +21,14 @@ msgstr "Биллинг"
 msgid "Dashboard"
 msgstr "Панель управления"
 
+#: lib/phoenix_kit_billing.ex:144
 #: lib/phoenix_kit_billing/web/orders.ex:38
 #: lib/phoenix_kit_billing/web/orders.html.heex:4
 #, elixir-autogen
 msgid "Orders"
 msgstr "Заказы"
 
+#: lib/phoenix_kit_billing.ex:145
 #: lib/phoenix_kit_billing/web/invoices.ex:37
 #: lib/phoenix_kit_billing/web/invoices.html.heex:4
 #: lib/phoenix_kit_billing/web/order_detail.html.heex:171
@@ -65,6 +68,7 @@ msgstr "Типы подписок"
 msgid "Billing Profiles"
 msgstr "Платёжные профили"
 
+#: lib/phoenix_kit_billing.ex:146
 #: lib/phoenix_kit_billing/web/currencies.ex:29
 #: lib/phoenix_kit_billing/web/currencies.html.heex:5
 #: lib/phoenix_kit_billing/web/currencies.html.heex:97
@@ -566,7 +570,7 @@ msgstr "%{code} удалена"
 msgid "%{code} set as default currency"
 msgstr "%{code} установлена как валюта по умолчанию"
 
-#: lib/phoenix_kit_billing/web/currencies.ex:281
+#: lib/phoenix_kit_billing/web/currencies.ex:285
 #, elixir-autogen, elixir-format
 msgid "%{count} currencies imported"
 msgstr "%{count} валют импортировано"
@@ -600,7 +604,7 @@ msgstr "Всего заказов: %{count}"
 msgid "%{count} total transactions"
 msgstr "Всего транзакций: %{count}"
 
-#: lib/phoenix_kit_billing/web/currencies.ex:283
+#: lib/phoenix_kit_billing/web/currencies.ex:287
 #, elixir-autogen, elixir-format
 msgid "%{ok} imported, %{fail} failed"
 msgstr "%{ok} импортировано, %{fail} не удалось"
@@ -932,12 +936,12 @@ msgstr "Отменён"
 msgid "Cancels at end"
 msgstr "Отменяется по окончании"
 
-#: lib/phoenix_kit_billing/web/currencies.ex:191
+#: lib/phoenix_kit_billing/web/currencies.ex:194
 #, elixir-autogen, elixir-format
 msgid "Cannot delete currency — it is used by existing orders"
 msgstr "Невозможно удалить валюту — она используется в существующих заказах"
 
-#: lib/phoenix_kit_billing/web/subscription_types.ex:94
+#: lib/phoenix_kit_billing/web/subscription_types.ex:98
 #, elixir-autogen, elixir-format
 msgid "Cannot delete subscription type with active subscriptions. Deactivate it instead."
 msgstr "Невозможно удалить тип подписки с активными подписками. Деактивируйте его."
@@ -1457,17 +1461,17 @@ msgstr "Введите адрес электронной почты..."
 msgid "Enter refund amount"
 msgstr "Введите сумму возврата"
 
-#: lib/phoenix_kit_billing/web/provider_settings.ex:186
+#: lib/phoenix_kit_billing/web/provider_settings.ex:197
 #, elixir-autogen, elixir-format
 msgid "EveryPay disabled"
 msgstr "EveryPay отключён"
 
-#: lib/phoenix_kit_billing/web/provider_settings.ex:186
+#: lib/phoenix_kit_billing/web/provider_settings.ex:197
 #, elixir-autogen, elixir-format
 msgid "EveryPay enabled"
 msgstr "EveryPay включён"
 
-#: lib/phoenix_kit_billing/web/provider_settings.ex:205
+#: lib/phoenix_kit_billing/web/provider_settings.ex:217
 #, elixir-autogen, elixir-format
 msgid "EveryPay settings saved"
 msgstr "Настройки EveryPay сохранены"
@@ -1484,40 +1488,40 @@ msgstr "Курс обмена"
 msgid "Extend 30 days"
 msgstr "Продлить на 30 дней"
 
-#: lib/phoenix_kit_billing/web/order_detail.ex:137
+#: lib/phoenix_kit_billing/web/order_detail.ex:140
 #, elixir-autogen, elixir-format
 msgid "Failed to cancel order: %{reason}"
 msgstr "Не удалось отменить заказ: %{reason}"
 
-#: lib/phoenix_kit_billing/web/subscription_detail.ex:70
-#: lib/phoenix_kit_billing/web/subscription_detail.ex:84
-#: lib/phoenix_kit_billing/web/subscription_form.ex:292
-#: lib/phoenix_kit_billing/web/subscriptions.ex:138
+#: lib/phoenix_kit_billing/web/subscription_detail.ex:74
+#: lib/phoenix_kit_billing/web/subscription_detail.ex:93
+#: lib/phoenix_kit_billing/web/subscription_form.ex:304
+#: lib/phoenix_kit_billing/web/subscriptions.ex:142
 #, elixir-autogen, elixir-format
 msgid "Failed to cancel: %{reason}"
 msgstr "Не удалось отменить: %{reason}"
 
-#: lib/phoenix_kit_billing/web/subscription_detail.ex:155
+#: lib/phoenix_kit_billing/web/subscription_detail.ex:174
 #, elixir-autogen, elixir-format
 msgid "Failed to change subscription type: %{reason}"
 msgstr "Не удалось изменить тип подписки: %{reason}"
 
-#: lib/phoenix_kit_billing/web/order_detail.ex:109
+#: lib/phoenix_kit_billing/web/order_detail.ex:110
 #, elixir-autogen, elixir-format
 msgid "Failed to confirm order: %{reason}"
 msgstr "Не удалось подтвердить заказ: %{reason}"
 
-#: lib/phoenix_kit_billing/web/order_detail.ex:154
+#: lib/phoenix_kit_billing/web/order_detail.ex:159
 #, elixir-autogen, elixir-format
 msgid "Failed to create invoice: %{errors}"
 msgstr "Не удалось создать счёт: %{errors}"
 
-#: lib/phoenix_kit_billing/web/subscription_form.ex:243
+#: lib/phoenix_kit_billing/web/subscription_form.ex:251
 #, elixir-autogen, elixir-format
 msgid "Failed to create subscription: %{reason}"
 msgstr "Не удалось создать подписку: %{reason}"
 
-#: lib/phoenix_kit_billing/web/currencies.ex:194
+#: lib/phoenix_kit_billing/web/currencies.ex:198
 #, elixir-autogen, elixir-format
 msgid "Failed to delete currency"
 msgstr "Не удалось удалить валюту"
@@ -1527,34 +1531,34 @@ msgstr "Не удалось удалить валюту"
 msgid "Failed to delete profile"
 msgstr "Не удалось удалить профиль"
 
-#: lib/phoenix_kit_billing/web/subscription_types.ex:99
+#: lib/phoenix_kit_billing/web/subscription_types.ex:108
 #, elixir-autogen, elixir-format
 msgid "Failed to delete subscription type: %{reason}"
 msgstr "Не удалось удалить тип подписки: %{reason}"
 
-#: lib/phoenix_kit_billing/web/subscription_form.ex:309
+#: lib/phoenix_kit_billing/web/subscription_form.ex:322
 #, elixir-autogen, elixir-format
 msgid "Failed to extend: %{reason}"
 msgstr "Не удалось продлить: %{reason}"
 
-#: lib/phoenix_kit_billing/web/order_detail.ex:123
+#: lib/phoenix_kit_billing/web/order_detail.ex:125
 #, elixir-autogen, elixir-format
 msgid "Failed to mark as paid: %{reason}"
 msgstr "Не удалось отметить как оплаченный: %{reason}"
 
-#: lib/phoenix_kit_billing/web/subscription_detail.ex:112
-#: lib/phoenix_kit_billing/web/subscription_form.ex:260
+#: lib/phoenix_kit_billing/web/subscription_detail.ex:128
+#: lib/phoenix_kit_billing/web/subscription_form.ex:270
 #, elixir-autogen, elixir-format
 msgid "Failed to pause: %{reason}"
 msgstr "Не удалось приостановить: %{reason}"
 
-#: lib/phoenix_kit_billing/web/subscription_detail.ex:98
-#: lib/phoenix_kit_billing/web/subscription_form.ex:276
+#: lib/phoenix_kit_billing/web/subscription_detail.ex:112
+#: lib/phoenix_kit_billing/web/subscription_form.ex:287
 #, elixir-autogen, elixir-format
 msgid "Failed to resume: %{reason}"
 msgstr "Не удалось возобновить: %{reason}"
 
-#: lib/phoenix_kit_billing/web/subscription_type_form.ex:113
+#: lib/phoenix_kit_billing/web/subscription_type_form.ex:116
 #, elixir-autogen, elixir-format
 msgid "Failed to save subscription type: %{reason}"
 msgstr "Не удалось сохранить тип подписки: %{reason}"
@@ -1574,12 +1578,12 @@ msgstr "Не удалось установить профиль по умолч�
 msgid "Failed to update currency"
 msgstr "Не удалось обновить валюту"
 
-#: lib/phoenix_kit_billing/web/subscription_types.ex:70
+#: lib/phoenix_kit_billing/web/subscription_types.ex:73
 #, elixir-autogen, elixir-format
 msgid "Failed to update subscription type: %{reason}"
 msgstr "Не удалось обновить тип подписки: %{reason}"
 
-#: lib/phoenix_kit_billing/web/subscription_form.ex:198
+#: lib/phoenix_kit_billing/web/subscription_form.ex:202
 #, elixir-autogen, elixir-format
 msgid "Failed to update subscription: %{reason}"
 msgstr "Не удалось обновить подписку: %{reason}"
@@ -1698,7 +1702,7 @@ msgstr "Импортировать %{count} валют"
 msgid "Import Currencies"
 msgstr "Импортировать валюты"
 
-#: lib/phoenix_kit_billing/web/currencies.ex:282
+#: lib/phoenix_kit_billing/web/currencies.ex:286
 #, elixir-autogen, elixir-format
 msgid "Import failed for %{count} currencies"
 msgstr "Не удалось импортировать %{count} валют"
@@ -1741,7 +1745,7 @@ msgstr "Счёт"
 msgid "Invoice %{number}"
 msgstr "Счёт %{number}"
 
-#: lib/phoenix_kit_billing/web/order_detail.ex:150
+#: lib/phoenix_kit_billing/web/order_detail.ex:153
 #, elixir-autogen, elixir-format
 msgid "Invoice %{number} created"
 msgstr "Счёт %{number} создан"
@@ -2126,7 +2130,7 @@ msgstr "Параметры заказа"
 msgid "Order Summary"
 msgstr "Сводка по заказу"
 
-#: lib/phoenix_kit_billing/web/order_detail.ex:134
+#: lib/phoenix_kit_billing/web/order_detail.ex:136
 #, elixir-autogen, elixir-format
 msgid "Order cancelled"
 msgstr "Заказ отменён"
@@ -2136,7 +2140,7 @@ msgstr "Заказ отменён"
 msgid "Order confirmed successfully"
 msgstr "Заказ успешно подтверждён"
 
-#: lib/phoenix_kit_billing/web/order_detail.ex:120
+#: lib/phoenix_kit_billing/web/order_detail.ex:121
 #, elixir-autogen, elixir-format
 msgid "Order marked as paid"
 msgstr "Заказ отмечен как оплаченный"
@@ -2192,17 +2196,17 @@ msgstr "Приостановить подписку? Клиент потеряе
 msgid "Pay with %{provider}"
 msgstr "Оплатить через %{provider}"
 
-#: lib/phoenix_kit_billing/web/provider_settings.ex:125
+#: lib/phoenix_kit_billing/web/provider_settings.ex:130
 #, elixir-autogen, elixir-format
 msgid "PayPal disabled"
 msgstr "PayPal отключён"
 
-#: lib/phoenix_kit_billing/web/provider_settings.ex:125
+#: lib/phoenix_kit_billing/web/provider_settings.ex:130
 #, elixir-autogen, elixir-format
 msgid "PayPal enabled"
 msgstr "PayPal включён"
 
-#: lib/phoenix_kit_billing/web/provider_settings.ex:144
+#: lib/phoenix_kit_billing/web/provider_settings.ex:150
 #, elixir-autogen, elixir-format
 msgid "PayPal settings saved"
 msgstr "Настройки PayPal сохранены"
@@ -2324,17 +2328,17 @@ msgstr "Пожалуйста, войдите, чтобы управлять пл
 msgid "Please log in to view your billing profiles"
 msgstr "Пожалуйста, войдите для просмотра платёжных профилей"
 
-#: lib/phoenix_kit_billing/web/subscription_form.ex:215
+#: lib/phoenix_kit_billing/web/subscription_form.ex:220
 #, elixir-autogen, elixir-format
 msgid "Please select a customer"
 msgstr "Пожалуйста, выберите клиента"
 
-#: lib/phoenix_kit_billing/web/subscription_detail.ex:158
+#: lib/phoenix_kit_billing/web/subscription_detail.ex:179
 #, elixir-autogen, elixir-format
 msgid "Please select a different subscription type"
 msgstr "Пожалуйста, выберите другой тип подписки"
 
-#: lib/phoenix_kit_billing/web/subscription_form.ex:218
+#: lib/phoenix_kit_billing/web/subscription_form.ex:223
 #, elixir-autogen, elixir-format
 msgid "Please select a subscription type"
 msgstr "Пожалуйста, выберите тип подписки"
@@ -2421,17 +2425,17 @@ msgstr "Кол-во"
 msgid "Quick Info"
 msgstr "Краткая информация"
 
-#: lib/phoenix_kit_billing/web/provider_settings.ex:156
+#: lib/phoenix_kit_billing/web/provider_settings.ex:164
 #, elixir-autogen, elixir-format
 msgid "Razorpay disabled"
 msgstr "Razorpay отключён"
 
-#: lib/phoenix_kit_billing/web/provider_settings.ex:156
+#: lib/phoenix_kit_billing/web/provider_settings.ex:164
 #, elixir-autogen, elixir-format
 msgid "Razorpay enabled"
 msgstr "Razorpay включён"
 
-#: lib/phoenix_kit_billing/web/provider_settings.ex:174
+#: lib/phoenix_kit_billing/web/provider_settings.ex:183
 #, elixir-autogen, elixir-format
 msgid "Razorpay settings saved"
 msgstr "Настройки Razorpay сохранены"
@@ -2792,17 +2796,17 @@ msgstr "Статус и период"
 msgid "Street address"
 msgstr "Улица и дом"
 
-#: lib/phoenix_kit_billing/web/provider_settings.ex:95
+#: lib/phoenix_kit_billing/web/provider_settings.ex:97
 #, elixir-autogen, elixir-format
 msgid "Stripe disabled"
 msgstr "Stripe отключён"
 
-#: lib/phoenix_kit_billing/web/provider_settings.ex:95
+#: lib/phoenix_kit_billing/web/provider_settings.ex:97
 #, elixir-autogen, elixir-format
 msgid "Stripe enabled"
 msgstr "Stripe включён"
 
-#: lib/phoenix_kit_billing/web/provider_settings.ex:113
+#: lib/phoenix_kit_billing/web/provider_settings.ex:116
 #, elixir-autogen, elixir-format
 msgid "Stripe settings saved"
 msgstr "Настройки Stripe сохранены"
@@ -2840,31 +2844,31 @@ msgstr "Тип подписки не найден"
 msgid "Subscription cancelled immediately"
 msgstr "Подписка немедленно отменена"
 
-#: lib/phoenix_kit_billing/web/subscription_form.ex:232
+#: lib/phoenix_kit_billing/web/subscription_form.ex:237
 #, elixir-autogen, elixir-format
 msgid "Subscription created successfully"
 msgstr "Подписка успешно создана"
 
-#: lib/phoenix_kit_billing/web/subscription_form.ex:305
+#: lib/phoenix_kit_billing/web/subscription_form.ex:317
 #, elixir-autogen, elixir-format
 msgid "Subscription extended by 30 days"
 msgstr "Подписка продлена на 30 дней"
 
 #: lib/phoenix_kit_billing/web/subscription_detail.ex:29
 #: lib/phoenix_kit_billing/web/subscription_form.ex:65
-#: lib/phoenix_kit_billing/web/subscriptions.ex:141
+#: lib/phoenix_kit_billing/web/subscriptions.ex:146
 #, elixir-autogen, elixir-format
 msgid "Subscription not found"
 msgstr "Подписка не найдена"
 
-#: lib/phoenix_kit_billing/web/subscription_detail.ex:109
-#: lib/phoenix_kit_billing/web/subscription_form.ex:254
+#: lib/phoenix_kit_billing/web/subscription_detail.ex:124
+#: lib/phoenix_kit_billing/web/subscription_form.ex:263
 #, elixir-autogen, elixir-format
 msgid "Subscription paused"
 msgstr "Подписка приостановлена"
 
-#: lib/phoenix_kit_billing/web/subscription_detail.ex:95
-#: lib/phoenix_kit_billing/web/subscription_form.ex:270
+#: lib/phoenix_kit_billing/web/subscription_detail.ex:105
+#: lib/phoenix_kit_billing/web/subscription_form.ex:280
 #, elixir-autogen, elixir-format
 msgid "Subscription resumed"
 msgstr "Подписка возобновлена"
@@ -2874,12 +2878,12 @@ msgstr "Подписка возобновлена"
 msgid "Subscription type activated"
 msgstr "Тип подписки активирован"
 
-#: lib/phoenix_kit_billing/web/subscription_detail.ex:151
+#: lib/phoenix_kit_billing/web/subscription_detail.ex:167
 #, elixir-autogen, elixir-format
 msgid "Subscription type changed successfully"
 msgstr "Тип подписки успешно изменён"
 
-#: lib/phoenix_kit_billing/web/subscription_type_form.ex:143
+#: lib/phoenix_kit_billing/web/subscription_type_form.ex:147
 #, elixir-autogen, elixir-format
 msgid "Subscription type created successfully"
 msgstr "Тип подписки успешно создан"
@@ -2889,19 +2893,19 @@ msgstr "Тип подписки успешно создан"
 msgid "Subscription type deactivated"
 msgstr "Тип подписки деактивирован"
 
-#: lib/phoenix_kit_billing/web/subscription_types.ex:87
+#: lib/phoenix_kit_billing/web/subscription_types.ex:91
 #, elixir-autogen, elixir-format
 msgid "Subscription type deleted"
 msgstr "Тип подписки удалён"
 
 #: lib/phoenix_kit_billing/web/subscription_type_form.ex:58
-#: lib/phoenix_kit_billing/web/subscription_types.ex:73
-#: lib/phoenix_kit_billing/web/subscription_types.ex:102
+#: lib/phoenix_kit_billing/web/subscription_types.ex:77
+#: lib/phoenix_kit_billing/web/subscription_types.ex:112
 #, elixir-autogen, elixir-format
 msgid "Subscription type not found"
 msgstr "Тип подписки не найден"
 
-#: lib/phoenix_kit_billing/web/subscription_type_form.ex:144
+#: lib/phoenix_kit_billing/web/subscription_type_form.ex:148
 #, elixir-autogen, elixir-format
 msgid "Subscription type updated successfully"
 msgstr "Тип подписки успешно обновлён"
@@ -2911,13 +2915,13 @@ msgstr "Тип подписки успешно обновлён"
 msgid "Subscription updated successfully"
 msgstr "Подписка успешно обновлена"
 
-#: lib/phoenix_kit_billing/web/subscription_form.ex:286
+#: lib/phoenix_kit_billing/web/subscription_form.ex:297
 #: lib/phoenix_kit_billing/web/subscriptions.ex:135
 #, elixir-autogen, elixir-format
 msgid "Subscription will be cancelled at period end"
 msgstr "Подписка будет отменена по окончании периода"
 
-#: lib/phoenix_kit_billing/web/subscription_detail.ex:81
+#: lib/phoenix_kit_billing/web/subscription_detail.ex:86
 #, elixir-autogen, elixir-format
 msgid "Subscription will cancel at period end"
 msgstr "Подписка отменится по окончании периода"
@@ -3223,7 +3227,7 @@ msgstr "напр., Домашний адрес, Работа"
 msgid "e.g., Home Address, Work, Company HQ"
 msgstr "напр., Домашний адрес, Работа, Офис компании"
 
-#: lib/phoenix_kit_billing/web/subscription_type_form.ex:148
+#: lib/phoenix_kit_billing/web/subscription_type_form.ex:154
 #, elixir-autogen, elixir-format
 msgid "per %{count} days"
 msgid_plural "per %{count} days"
@@ -3231,7 +3235,7 @@ msgstr[0] "каждый %{count} день"
 msgstr[1] "каждые %{count} дня"
 msgstr[2] "каждые %{count} дней"
 
-#: lib/phoenix_kit_billing/web/subscription_type_form.ex:152
+#: lib/phoenix_kit_billing/web/subscription_type_form.ex:164
 #, elixir-autogen, elixir-format
 msgid "per %{count} months"
 msgid_plural "per %{count} months"
@@ -3239,7 +3243,7 @@ msgstr[0] "каждый %{count} месяц"
 msgstr[1] "каждые %{count} месяца"
 msgstr[2] "каждые %{count} месяцев"
 
-#: lib/phoenix_kit_billing/web/subscription_type_form.ex:150
+#: lib/phoenix_kit_billing/web/subscription_type_form.ex:159
 #, elixir-autogen, elixir-format
 msgid "per %{count} weeks"
 msgid_plural "per %{count} weeks"
@@ -3247,7 +3251,7 @@ msgstr[0] "каждую %{count} неделю"
 msgstr[1] "каждые %{count} недели"
 msgstr[2] "каждые %{count} недель"
 
-#: lib/phoenix_kit_billing/web/subscription_type_form.ex:154
+#: lib/phoenix_kit_billing/web/subscription_type_form.ex:169
 #, elixir-autogen, elixir-format
 msgid "per %{count} years"
 msgid_plural "per %{count} years"
@@ -3255,7 +3259,7 @@ msgstr[0] "каждый %{count} год"
 msgstr[1] "каждые %{count} года"
 msgstr[2] "каждые %{count} лет"
 
-#: lib/phoenix_kit_billing/web/subscription_type_form.ex:147
+#: lib/phoenix_kit_billing/web/subscription_type_form.ex:151
 #, elixir-autogen, elixir-format
 msgid "per day"
 msgid_plural "per day"
@@ -3263,7 +3267,7 @@ msgstr[0] "ежедневно"
 msgstr[1] "ежедневно"
 msgstr[2] "ежедневно"
 
-#: lib/phoenix_kit_billing/web/subscription_type_form.ex:151
+#: lib/phoenix_kit_billing/web/subscription_type_form.ex:161
 #, elixir-autogen, elixir-format
 msgid "per month"
 msgid_plural "per month"
@@ -3271,7 +3275,7 @@ msgstr[0] "ежемесячно"
 msgstr[1] "ежемесячно"
 msgstr[2] "ежемесячно"
 
-#: lib/phoenix_kit_billing/web/subscription_type_form.ex:149
+#: lib/phoenix_kit_billing/web/subscription_type_form.ex:156
 #, elixir-autogen, elixir-format
 msgid "per week"
 msgid_plural "per week"
@@ -3279,7 +3283,7 @@ msgstr[0] "еженедельно"
 msgstr[1] "еженедельно"
 msgstr[2] "еженедельно"
 
-#: lib/phoenix_kit_billing/web/subscription_type_form.ex:153
+#: lib/phoenix_kit_billing/web/subscription_type_form.ex:166
 #, elixir-autogen, elixir-format
 msgid "per year"
 msgid_plural "per year"
@@ -3338,3 +3342,8 @@ msgstr "Еженедельно"
 #, elixir-autogen, elixir-format
 msgid "Yearly"
 msgstr "Ежегодно"
+
+#: lib/phoenix_kit_billing.ex:133
+#, elixir-autogen, elixir-format
+msgid "Orders, invoices, billing profiles and multi-currency support"
+msgstr "Заказы, счета, платёжные профили и поддержка нескольких валют"

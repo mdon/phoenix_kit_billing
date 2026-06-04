@@ -59,7 +59,7 @@ defmodule PhoenixKitBilling.WebhookEvent do
     ])
     |> validate_required([:provider, :event_id, :event_type])
     |> unique_constraint([:provider, :event_id],
-      name: :phoenix_kit_webhook_events_provider_event_id_index
+      name: :phoenix_kit_webhook_events_provider_event_uidx
     )
   end
 

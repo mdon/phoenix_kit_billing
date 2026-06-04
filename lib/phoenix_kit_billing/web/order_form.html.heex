@@ -192,35 +192,24 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">{gettext("Currency")}</span>
-              </label>
-              <select name="order[currency]" class="select select-bordered">
-                <%= for currency <- @currencies do %>
-                  <option value={currency.code} selected={@form[:currency].value == currency.code}>
-                    {currency.code} - {currency.name}
-                  </option>
-                <% end %>
-              </select>
+              <.select
+                field={@form[:currency]}
+                label={gettext("Currency")}
+                options={Enum.map(@currencies, &{"#{&1.code} - #{&1.name}", &1.code})}
+              />
             </div>
 
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">{gettext("Status")}</span>
-              </label>
-              <select
-                name="order[status]"
-                class="select select-bordered"
+              <.select
+                field={@form[:status]}
+                label={gettext("Status")}
                 disabled={is_nil(@order)}
-              >
-                <option value="draft" selected={@form[:status].value == "draft"}>{gettext("Draft")}</option>
-                <option value="pending" selected={@form[:status].value == "pending"}>
-                  {gettext("Pending")}
-                </option>
-                <option value="confirmed" selected={@form[:status].value == "confirmed"}>
-                  {gettext("Confirmed")}
-                </option>
-              </select>
+                options={[
+                  {gettext("Draft"), "draft"},
+                  {gettext("Pending"), "pending"},
+                  {gettext("Confirmed"), "confirmed"}
+                ]}
+              />
             </div>
           </div>
         </div>
@@ -233,27 +222,21 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">{gettext("Customer Notes")}</span>
-              </label>
-              <textarea
-                name="order[notes]"
-                class="textarea textarea-bordered"
+              <.textarea
+                field={@form[:notes]}
+                label={gettext("Customer Notes")}
                 rows="3"
                 placeholder={gettext("Notes visible to customer...")}
-              >{@form[:notes].value}</textarea>
+              />
             </div>
 
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">{gettext("Internal Notes")}</span>
-              </label>
-              <textarea
-                name="order[internal_notes]"
-                class="textarea textarea-bordered"
+              <.textarea
+                field={@form[:internal_notes]}
+                label={gettext("Internal Notes")}
                 rows="3"
                 placeholder={gettext("Admin-only notes...")}
-              >{@form[:internal_notes].value}</textarea>
+              />
             </div>
           </div>
         </div>

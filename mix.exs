@@ -10,12 +10,25 @@ defmodule PhoenixKitBilling.MixProject do
       version: @version,
       elixir: "~> 1.18",
       elixirc_paths: elixirc_paths(Mix.env()),
-      # Needed for compat/billing.ex which redefines PhoenixKit.Modules.Billing.
-      # Remove when core is fully migrated to PhoenixKitBilling namespace.
+      # `compat/billing.ex` intentionally redefines the core
+      # `PhoenixKit.Modules.Billing` namespace during the transition to the
+      # `PhoenixKitBilling` namespace, which triggers a module-redefinition
+      # warning that `--warnings-as-errors` would otherwise fail on.
+      # Removal condition: drop this once core no longer ships the old
+      # `PhoenixKit.Modules.Billing` namespace (then delete compat/billing.ex too).
       elixirc_options: [ignore_module_conflict: true],
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
+      test_ignore_filters: [~r"/support/"],
+      test_coverage: [
+        ignore_modules: [
+          ~r/^PhoenixKitBilling\.Test\./,
+          PhoenixKitBilling.DataCase,
+          PhoenixKitBilling.LiveCase,
+          PhoenixKitBilling.ActivityLogAssertions
+        ]
+      ],
 
       # Hex
       description: "Billing module for PhoenixKit — payments, subscriptions, invoices",
@@ -35,6 +48,10 @@ defmodule PhoenixKitBilling.MixProject do
     [extra_applications: [:logger, :gettext]]
   end
 
+  def cli do
+    [preferred_envs: ["test.setup": :test, "test.reset": :test]]
+  end
+
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
@@ -46,6 +63,13 @@ defmodule PhoenixKitBilling.MixProject do
         "compile --force --warnings-as-errors",
         "deps.unlock --check-unused",
         "quality.ci"
+      ],
+      "test.setup": [
+        "ecto.create --quiet -r PhoenixKitBilling.Test.Repo"
+      ],
+      "test.reset": [
+        "ecto.drop --quiet -r PhoenixKitBilling.Test.Repo",
+        "test.setup"
       ]
     ]
   end
@@ -87,7 +111,11 @@ defmodule PhoenixKitBilling.MixProject do
 
       # Code quality.
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+
+      # `Phoenix.LiveViewTest` parses HTML via `lazy_html` for `element/2`,
+      # `render(view) =~ "..."`, etc. Test-only.
+      {:lazy_html, ">= 0.1.0", only: :test}
     ]
   end
 

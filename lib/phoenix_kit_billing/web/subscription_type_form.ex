@@ -8,11 +8,15 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
   import PhoenixKitWeb.Components.Core.AdminPageHeader
   alias PhoenixKit.Utils.Routes
   import PhoenixKitWeb.Components.Core.Icon
+  import PhoenixKitWeb.Components.Core.Input
+  import PhoenixKitWeb.Components.Core.Select
+  import PhoenixKitWeb.Components.Core.Textarea
   import PhoenixKitBilling.Web.Components.CurrencyDisplay
 
   alias PhoenixKit.Settings
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
+  alias PhoenixKitBilling.Activity
   alias PhoenixKitBilling.SubscriptionType
 
   @impl true
@@ -99,7 +103,20 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
       end
 
     case result do
-      {:ok, _type} ->
+      {:ok, type} ->
+        action =
+          if socket.assigns.mode == :new,
+            do: "billing.subscription_type_created",
+            else: "billing.subscription_type_updated"
+
+        Activity.log(action,
+          actor_uuid: Activity.actor_uuid(socket),
+          actor_role: Activity.actor_role(socket),
+          resource_type: "subscription_type",
+          resource_uuid: type.uuid,
+          metadata: %{"active" => type.active}
+        )
+
         {:noreply,
          socket
          |> put_flash(:info, type_saved_message(socket.assigns.mode))
@@ -170,17 +187,17 @@ defmodule PhoenixKitBilling.Web.SubscriptionTypeForm do
 
   def interval_phrase(other, n), do: "#{n} #{other}(s)"
 
-  def error_to_string([]), do: ""
+  # Form params arrive as strings on validate; ngettext requires an integer
+  # count. Falls back to 1 for blank/invalid input.
+  @doc false
+  def normalize_count(n) when is_integer(n) and n > 0, do: n
 
-  def error_to_string(errors) when is_list(errors) do
-    Enum.map_join(errors, ", ", fn
-      {msg, opts} ->
-        Enum.reduce(opts, msg, fn {key, value}, acc ->
-          String.replace(acc, "%{#{key}}", to_string(value))
-        end)
-
-      msg when is_binary(msg) ->
-        msg
-    end)
+  def normalize_count(n) when is_binary(n) do
+    case Integer.parse(n) do
+      {int, _} when int > 0 -> int
+      _ -> 1
+    end
   end
+
+  def normalize_count(_), do: 1
 end

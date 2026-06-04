@@ -251,20 +251,91 @@ gh release create 0.1.1 \
 
 ## Testing
 
-### Structure
+### Harness
 
-```
-test/
-├── test_helper.exs                          # ExUnit setup
-└── phoenix_kit_billing_test.exs             # Unit tests (behaviour compliance)
-```
+The module ships a full test harness (added 2026-06-04):
+
+- **`PhoenixKitBilling.DataCase`** (`test/support/data_case.ex`) — DB-backed
+  case template with the Ecto SQL sandbox; use for schema, changeset, and
+  context tests.
+- **`PhoenixKitBilling.LiveCase`** (`test/support/live_case.ex`) — LiveView
+  case template wired to the test `Endpoint` + `Router`; use for admin LV
+  smoke / interaction tests.
+- **Test `Endpoint` + `Router`** under `test/support/` host the module's
+  LiveViews in isolation (no parent app required).
+- Schema setup runs core's versioned migrations via
+  `PhoenixKit.Migration.ensure_current/2` in `test_helper.exs` — no
+  module-owned DDL.
+- Test-only deps: `lazy_html` (HTML assertions). A `.dialyzer_ignore.exs`
+  filters known third-party warnings.
 
 ### Running tests
 
 ```bash
-mix test                                        # All tests
-mix test test/phoenix_kit_billing_test.exs      # Unit tests only
+createdb phoenix_kit_billing_test   # one-time: create the test database
+mix test                            # all tests (177 tests; 3 skipped — see below)
+mix test test/phoenix_kit_billing/schemas        # a directory
+mix test test/phoenix_kit_billing_test.exs:42    # a single test
 ```
+
+The 3 skipped tests are `@tag :skip` pending a **core** fix: on a fresh
+`PhoenixKit.Migration.ensure_current/2` build, `phoenix_kit_subscriptions`
+lacks the `subscription_type_uuid` column (core V65 renames a column that
+V33 never created), so `Subscription` inserts and the Subscriptions LV
+raise `undefined_column`. See the "Deferred from the 2026-06-04 quality
+sweep" section below.
+
+## Host-Integration Callouts
+
+⚠️ **Webhook signature verification requires the host to wire
+`PhoenixKitBilling.Plugs.CacheBodyReader` into `Plug.Parsers`.** Provider
+webhooks (Stripe/PayPal/Razorpay) verify the signature against the **raw**
+request body, so the host endpoint must pass
+`body_reader: {PhoenixKitBilling.Plugs.CacheBodyReader, :read_body, []}`
+to `Plug.Parsers`. This is wired automatically by
+`mix phoenix_kit_billing.install`. **Without it, webhooks return `400`
+with `:no_raw_body` before any processing happens** — the raw body has
+already been consumed by the default parser and the signature check can't
+run.
+
+## Deferred from the 2026-06-04 quality sweep
+
+The Phase 1 / Phase 2 sweep on 2026-06-04 fixed the PR-review backlog,
+added the test harness above, and then completed most of the items that
+were initially deferred.
+
+**Completed in the sweep:**
+- **(a) Module-wide activity logging** — `PhoenixKitBilling.Activity`
+  LV-layer wrapper logged on every admin mutation; PII-safe; covered by
+  `test/phoenix_kit_billing/activity_logging_test.exs`.
+- **(b) `Errors` module** — `PhoenixKitBilling.Errors.message/1` maps the
+  module's atom errors to gettext-backed strings;
+  `test/phoenix_kit_billing/errors_test.exs` pins each.
+- **(d, partial) Subscription-admin items** — `update_subscription/2` now
+  filters to a non-lifecycle field allowlist; `extend_subscription`
+  derives the period from the subscription type (was hardcoded 30 days);
+  status actions update in place instead of redirecting. (Row-click was
+  already consistent across the list LVs.)
+
+**Still remaining (genuinely out of scope for now):**
+- **(c) Component migration tail.** The subscription-type, billing-profile,
+  and order forms were migrated to core `<.input>/<.select>/<.textarea>`.
+  Still raw by design/risk: the order form's customer/billing-profile
+  dynamic selects and per-row line-item inputs (custom `phx-` handling,
+  no changeset backing), checkbox/radio groups with bespoke daisyUI
+  layouts, and filter/action selects on the list pages.
+- **(d, remaining)** edit-save ignoring payment-method changes; no
+  compat-module drift tests. See
+  `dev_docs/pull_requests/2026/3-fix-billing-ui/FOLLOW_UP.md`.
+- **(e) ⚠️ CORE bug to surface to Max — `subscription_type_uuid`
+  missing column.** On a fresh `PhoenixKit.Migration.ensure_current/2`
+  build, `phoenix_kit_subscriptions` is missing the
+  `subscription_type_uuid` column: **core migration V65 renames a column
+  that V33 never created.** Subscription inserts and the Subscriptions
+  LiveView both raise `undefined_column`. Three tests are `@tag :skip`
+  pending the core fix — they will pass once core ships the corrected
+  migration. This is a **core `phoenix_kit` defect**, not a billing-module
+  bug; flagged here for Max to schedule the core fix + pin bump.
 
 ## Pull Requests
 

@@ -24,6 +24,8 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
   alias PhoenixKit.Users.Auth
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
+  alias PhoenixKitBilling.Activity
+  alias PhoenixKitBilling.SubscriptionType
 
   @impl true
   def mount(_params, _session, socket) do
@@ -189,6 +191,10 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
     else
       case Billing.change_subscription_type(subscription, new_type_uuid) do
         {:ok, updated} ->
+          log_subscription(socket, "billing.subscription_type_changed", updated, %{
+            "subscription_type_uuid" => updated.subscription_type_uuid
+          })
+
           {:noreply,
            socket
            |> put_flash(:info, gettext("Subscription updated successfully"))
@@ -232,6 +238,10 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
 
         case Billing.create_subscription(user.uuid, attrs) do
           {:ok, subscription} ->
+            log_subscription(socket, "billing.subscription_created", subscription, %{
+              "subscription_type_uuid" => subscription.subscription_type_uuid
+            })
+
             {:noreply,
              socket
              |> put_flash(:info, gettext("Subscription created successfully"))
@@ -257,13 +267,13 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
   @impl true
   def handle_event("pause_subscription", _params, socket) do
     case Billing.pause_subscription(socket.assigns.subscription) do
-      {:ok, _} ->
+      {:ok, updated} ->
+        log_subscription(socket, "billing.subscription_paused", updated)
+
         {:noreply,
          socket
-         |> put_flash(:info, gettext("Subscription paused"))
-         |> push_navigate(
-           to: Routes.path("/admin/billing/subscriptions/#{socket.assigns.subscription.uuid}")
-         )}
+         |> reassign_subscription(updated)
+         |> put_flash(:info, gettext("Subscription paused"))}
 
       {:error, reason} ->
         {:noreply,
@@ -274,13 +284,13 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
   @impl true
   def handle_event("resume_subscription", _params, socket) do
     case Billing.resume_subscription(socket.assigns.subscription) do
-      {:ok, _} ->
+      {:ok, updated} ->
+        log_subscription(socket, "billing.subscription_resumed", updated)
+
         {:noreply,
          socket
-         |> put_flash(:info, gettext("Subscription resumed"))
-         |> push_navigate(
-           to: Routes.path("/admin/billing/subscriptions/#{socket.assigns.subscription.uuid}")
-         )}
+         |> reassign_subscription(updated)
+         |> put_flash(:info, gettext("Subscription resumed"))}
 
       {:error, reason} ->
         {:noreply,
@@ -291,13 +301,15 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
   @impl true
   def handle_event("cancel_subscription", _params, socket) do
     case Billing.cancel_subscription(socket.assigns.subscription) do
-      {:ok, _} ->
+      {:ok, updated} ->
+        log_subscription(socket, "billing.subscription_cancelled", updated, %{
+          "immediately" => false
+        })
+
         {:noreply,
          socket
-         |> put_flash(:info, gettext("Subscription will be cancelled at period end"))
-         |> push_navigate(
-           to: Routes.path("/admin/billing/subscriptions/#{socket.assigns.subscription.uuid}")
-         )}
+         |> reassign_subscription(updated)
+         |> put_flash(:info, gettext("Subscription will be cancelled at period end"))}
 
       {:error, reason} ->
         {:noreply,
@@ -308,14 +320,20 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
   @impl true
   def handle_event("extend_subscription", _params, socket) do
     sub = socket.assigns.subscription
-    new_end = DateTime.add(sub.current_period_end, 30, :day)
+    days = extension_days(sub)
+    new_end = DateTime.add(sub.current_period_end, days, :day)
 
     case Billing.update_subscription(sub, %{current_period_end: new_end}) do
-      {:ok, _} ->
+      {:ok, updated} ->
+        log_subscription(socket, "billing.subscription_extended", updated)
+
         {:noreply,
          socket
-         |> put_flash(:info, gettext("Subscription extended by 30 days"))
-         |> push_navigate(to: Routes.path("/admin/billing/subscriptions/#{sub.uuid}"))}
+         |> reassign_subscription(updated)
+         |> put_flash(
+           :info,
+           gettext("Subscription extended by %{days} days", days: days)
+         )}
 
       {:error, reason} ->
         {:noreply,
@@ -324,6 +342,45 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
   end
 
   # Private helpers
+
+  # Default extension when the subscription's billing period can't be
+  # derived (e.g. its type association isn't loaded).
+  @default_extension_days 30
+
+  # Re-assigns the updated subscription onto the socket while preserving
+  # the preloaded associations the form template relies on. The dedicated
+  # status functions return a bare struct, so we re-merge associations
+  # from the currently-assigned record rather than re-querying.
+  defp reassign_subscription(socket, %{} = updated) do
+    current = socket.assigns.subscription
+
+    merged = %{
+      updated
+      | subscription_type: Map.get(current, :subscription_type),
+        payment_method: Map.get(current, :payment_method),
+        user: Map.get(current, :user)
+    }
+
+    assign(socket, :subscription, merged)
+  end
+
+  # Extends by the subscription type's actual billing period when known,
+  # falling back to a sane 30-day default.
+  defp extension_days(%{subscription_type: %SubscriptionType{} = type}) do
+    SubscriptionType.billing_period_days(type)
+  end
+
+  defp extension_days(_subscription), do: @default_extension_days
+
+  defp log_subscription(socket, action, subscription, extra \\ %{}) do
+    Activity.log(action,
+      actor_uuid: Activity.actor_uuid(socket),
+      actor_role: Activity.actor_role(socket),
+      resource_type: "subscription",
+      resource_uuid: subscription.uuid,
+      metadata: Map.merge(%{"status" => subscription.status}, extra)
+    )
+  end
 
   defp search_users(query) do
     # Use paginated search with small page size

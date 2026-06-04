@@ -1,0 +1,85 @@
+defmodule PhoenixKitBilling.Web.ListingLvsTest do
+  @moduledoc """
+  LiveView smoke tests for the main billing list pages mounted by the
+  test router: Orders, Invoices, Currencies, Subscriptions.
+
+  Each LV's `mount/3` checks `Billing.enabled?()` and redirects to
+  `/admin` when the module is disabled, so we set `billing_enabled=true`
+  globally — which forces `async: false`.
+  """
+
+  use PhoenixKitBilling.LiveCase, async: false
+
+  alias PhoenixKit.Settings
+  alias PhoenixKitBilling, as: Billing
+
+  setup %{conn: conn} do
+    Settings.update_setting("billing_enabled", "true")
+    scope = fake_scope()
+    conn = put_test_scope(conn, scope)
+    {:ok, conn: conn, user: scope.user}
+  end
+
+  describe "Orders" do
+    test "mounts and shows the empty state", %{conn: conn} do
+      {:ok, _view, html} = live(conn, "/en/admin/billing/orders")
+      assert html =~ "Orders"
+      assert html =~ "No orders found"
+    end
+
+    test "renders a seeded order", %{conn: conn, user: user} do
+      {:ok, order} =
+        Billing.create_order(user.uuid, %{
+          "total" => Decimal.new("99.00"),
+          "currency" => "EUR",
+          "billing_snapshot" => %{"email" => "g@example.com"}
+        })
+
+      {:ok, _view, html} = live(conn, "/en/admin/billing/orders")
+      assert html =~ order.order_number
+    end
+  end
+
+  describe "Invoices" do
+    test "mounts and shows the empty state", %{conn: conn} do
+      {:ok, _view, html} = live(conn, "/en/admin/billing/invoices")
+      assert html =~ "Invoices"
+      assert html =~ "No invoices found"
+    end
+
+    test "renders a seeded invoice", %{conn: conn, user: user} do
+      {:ok, invoice} =
+        Billing.create_invoice(user.uuid, %{total: Decimal.new("50.00"), currency: "EUR"})
+
+      {:ok, _view, html} = live(conn, "/en/admin/billing/invoices")
+      assert html =~ invoice.invoice_number
+    end
+  end
+
+  describe "Currencies" do
+    test "mounts and lists the seeded currencies", %{conn: conn} do
+      {:ok, _view, html} = live(conn, "/en/admin/billing/currencies")
+      assert html =~ "Currencies"
+      # EUR is seeded by core migration V31.
+      assert html =~ "EUR"
+    end
+  end
+
+  describe "Subscriptions" do
+    # SKIPPED: the Subscriptions LV's `mount` -> `list_subscriptions/1` issues
+    # a SELECT that includes `subscription_type_uuid`, a column the
+    # `phoenix_kit_subscriptions` table on this test DB does not have (see the
+    # detailed note in test/phoenix_kit_billing/integration/context_test.exs —
+    # core's versioned migrations never ADD that column on a from-scratch
+    # build). The LV therefore raises `Postgrex.Error (undefined_column)`
+    # before it can render. Re-enable once core ships the column.
+    @tag :skip
+    test "mounts and shows the empty state (BLOCKED: missing subscription_type_uuid column)", %{
+      conn: conn
+    } do
+      {:ok, _view, html} = live(conn, "/en/admin/billing/subscriptions")
+      assert html =~ "Subscriptions"
+      assert html =~ "No subscriptions found"
+    end
+  end
+end

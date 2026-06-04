@@ -11,7 +11,6 @@ defmodule PhoenixKitBilling.Web.InvoicePrint do
   alias PhoenixKit.Utils.Routes
   alias PhoenixKitBilling, as: Billing
   alias PhoenixKitBilling.Transaction
-  alias PhoenixKitWeb.Live.Settings.Organization
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
@@ -25,7 +24,7 @@ defmodule PhoenixKitBilling.Web.InvoicePrint do
 
         invoice ->
           project_title = Settings.get_project_title()
-          company_info = get_company_info()
+          company_info = Billing.get_company_info()
 
           # Calculate refund info from transactions
           refund_info = calculate_refund_info(invoice.transactions)
@@ -51,20 +50,6 @@ defmodule PhoenixKitBilling.Web.InvoicePrint do
   @impl true
   def handle_params(_params, _url, socket) do
     {:noreply, socket}
-  end
-
-  defp get_company_info do
-    company = Organization.get_company_info()
-    bank = Organization.get_bank_details()
-
-    %{
-      name: company["name"] || "",
-      address: PhoenixKitBilling.format_company_address(company),
-      vat: company["vat_number"] || "",
-      bank_name: bank["bank_name"] || "",
-      bank_iban: bank["iban"] || "",
-      bank_swift: bank["swift"] || ""
-    }
   end
 
   defp calculate_refund_info(transactions) when is_list(transactions) do
