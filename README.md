@@ -120,6 +120,20 @@ Providers are configured in admin settings. The system uses hosted checkout — 
 
 Webhooks are handled automatically at `/webhooks/billing/:provider`.
 
+> **Host setup — raw body reader.** Webhook signature verification needs
+> the **raw** request body, so your endpoint must wire
+> `PhoenixKitBilling.Plugs.CacheBodyReader` into `Plug.Parsers`:
+>
+> ```elixir
+> plug Plug.Parsers,
+>   parsers: [:urlencoded, :multipart, :json],
+>   body_reader: {PhoenixKitBilling.Plugs.CacheBodyReader, :read_body, []},
+>   json_decoder: Phoenix.json_library()
+> ```
+>
+> `mix phoenix_kit_billing.install` does this for you. **Without it,
+> webhooks return `400` with `:no_raw_body`** before processing.
+
 ### Real-Time Events
 
 Subscribe to billing events in your LiveViews:
@@ -241,6 +255,20 @@ mix precommit      # Compile + format + credo + dialyzer
 mix quality        # Format + credo + dialyzer
 ```
 
+### Testing
+
+The module ships its own test harness — a `DataCase`/`LiveCase`, a test
+`Endpoint` + `Router`, and core's versioned migrations run via
+`PhoenixKit.Migration.ensure_current/2` (no parent app required):
+
+```bash
+createdb phoenix_kit_billing_test   # one-time: create the test database
+mix test                            # run the suite
+```
+
+Use `PhoenixKitBilling.DataCase` for schema/context tests and
+`PhoenixKitBilling.LiveCase` for admin LiveView tests.
+
 ## Troubleshooting
 
 ### Billing not appearing in admin
@@ -249,6 +277,11 @@ mix quality        # Format + credo + dialyzer
 - Check that `enabled?/0` is not returning `false` (requires database access)
 
 ### Webhooks not processing
+- If webhooks return `400` with `:no_raw_body`, the host endpoint is
+  missing the raw body reader — wire
+  `PhoenixKitBilling.Plugs.CacheBodyReader` into `Plug.Parsers`
+  (`body_reader:`) as shown under "Payment Providers" above, or re-run
+  `mix phoenix_kit_billing.install`
 - Verify webhook secrets are configured in provider settings
 - Check that webhook URLs are registered with the provider (e.g., `https://yourdomain.com/webhooks/billing/stripe`)
 - Review `phoenix_kit_webhook_events` table for received events
