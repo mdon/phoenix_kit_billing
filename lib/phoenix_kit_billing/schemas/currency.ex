@@ -67,7 +67,7 @@ defmodule PhoenixKitBilling.Currency do
     |> validate_length(:symbol, min: 1, max: 5)
     |> validate_number(:decimal_places, greater_than_or_equal_to: 0, less_than_or_equal_to: 4)
     |> validate_number(:exchange_rate, greater_than: 0)
-    |> unique_constraint(:code)
+    |> unique_constraint(:code, name: :phoenix_kit_currencies_code_uidx)
     |> upcase_code()
   end
 

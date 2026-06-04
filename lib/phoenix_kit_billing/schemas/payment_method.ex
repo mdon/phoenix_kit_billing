@@ -88,7 +88,7 @@ defmodule PhoenixKitBilling.PaymentMethod do
     |> validate_number(:exp_year, greater_than_or_equal_to: 2020)
     |> foreign_key_constraint(:user_uuid)
     |> unique_constraint([:provider, :provider_payment_method_id],
-      name: :phoenix_kit_payment_methods_provider_pm_id_index
+      name: :phoenix_kit_payment_methods_provider_id_uidx
     )
   end
 
