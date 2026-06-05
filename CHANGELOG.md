@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.5.0] - 2026-06-05
+
+### Security
+- **Payment-method ownership is now enforced in the context.** `create_subscription/2` and `update_subscription/2` reject a `payment_method_uuid` that isn't one of the subscription user's own *active* methods (`{:error, :payment_method_not_usable}`), instead of relying on the changeset's foreign-key check alone (which only proves the row exists). Previously the guard lived only in the admin `SubscriptionForm`, so any other caller could attach another user's or an inactive/removed payment method. The form retains a fast UX pre-check.
+
+### Fixed
+- **Subscription edit-save dropped payment-method changes.** Edit mode only ran `change_subscription_type/2`, and the payment-method selector was hidden behind `@live_action != :edit` so the field couldn't be changed at all. The selector now renders in edit mode and a changed `payment_method_uuid` is persisted via `update_subscription/2` (type changes still route through `change_subscription_type/2` so its broadcast fires).
+- **`list_payment_methods/2` silently ignored the `status:` option.** Callers passing `status: "active"` worked only by the `active_only` default; `status:` was never inspected. It now honours an explicit `status:` (exact-status filter) with `active_only` (default `true`) as the fallback.
+- **Invoice-less transaction rows** were `cursor-pointer` and navigated to a broken `/invoices/` URL; rows are now clickable only when an invoice exists.
+
+### Changed
+- `format_company_address/1` made pure — dropped the dead `company_info \\ nil` impure default (the argument is now required); the compat delegate's arity matches.
+- `permission_metadata` billing icon `💰` → `hero-banknotes` to match the billing tabs.
+- DRY'd the 13 `Tab.new!` calls behind a private `billing_tab!/1` helper.
+
+### Tests
+- Added `compat_delegate_test` (asserts every `compat/*.ex` delegate is `function_exported?` on its target at the same arity), `list_payment_methods/2` scoping and `status:`-filtering tests, and context-level payment-method guard reject-path tests (these short-circuit before any insert, so they run without the core `subscription_type_uuid` skip).
+
 ## [0.4.0] - 2026-06-04
 
 ### Added
