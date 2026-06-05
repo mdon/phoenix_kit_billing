@@ -377,6 +377,55 @@ defmodule PhoenixKitBilling.Integration.ContextTest do
     end
   end
 
+  describe "list_payment_methods/2 scoping (payment-method guard)" do
+    # Pins the property the SubscriptionForm edit-save guard relies on to
+    # reject a crafted/stale payment_method_uuid: the list is scoped to the
+    # user and to active methods only. (Subscription persistence is blocked
+    # by the core column gap, so the guard's user-scoping is pinned here at
+    # the context level, where it actually lives.)
+    test "returns only the given user's active methods" do
+      user_a = fixture_user()
+      user_b = fixture_user()
+
+      {:ok, pm_a} =
+        Billing.create_payment_method(%{
+          provider: "manual",
+          provider_payment_method_id: "pm_#{uniq()}",
+          user_uuid: user_a.uuid,
+          type: "card",
+          status: "active"
+        })
+
+      {:ok, _pm_a_removed} =
+        Billing.create_payment_method(%{
+          provider: "manual",
+          provider_payment_method_id: "pm_#{uniq()}",
+          user_uuid: user_a.uuid,
+          type: "card",
+          status: "removed"
+        })
+
+      {:ok, pm_b} =
+        Billing.create_payment_method(%{
+          provider: "manual",
+          provider_payment_method_id: "pm_#{uniq()}",
+          user_uuid: user_b.uuid,
+          type: "card",
+          status: "active"
+        })
+
+      uuids =
+        user_a.uuid
+        |> Billing.list_payment_methods(status: "active")
+        |> Enum.map(& &1.uuid)
+
+      assert pm_a.uuid in uuids
+      # never another user's method, and never a non-active one
+      refute pm_b.uuid in uuids
+      assert length(uuids) == 1
+    end
+  end
+
   # ── helpers ──────────────────────────────────────────────────────
 
   defp create_basic_order(user) do

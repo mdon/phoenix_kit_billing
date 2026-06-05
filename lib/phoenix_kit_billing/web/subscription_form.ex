@@ -371,7 +371,12 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
   # broadcast fires; the payment method goes through
   # `update_subscription/2` (the only other editable field on the form).
   defp save_subscription_edits(socket, subscription, changes) do
-    with {:ok, sub} <- maybe_change_type(subscription, changes),
+    # Validate the payment method BEFORE any write: this both rejects a
+    # method that isn't the subscription user's own active one (a crafted
+    # /stale client event could submit any UUID) and keeps the type change
+    # from committing when the payment-method change would fail.
+    with :ok <- validate_payment_method_change(subscription, changes),
+         {:ok, sub} <- maybe_change_type(subscription, changes),
          {:ok, sub} <- maybe_change_payment_method(sub, changes) do
       log_subscription(socket, "billing.subscription_updated", sub, %{
         "subscription_type_uuid" => sub.subscription_type_uuid,
@@ -400,10 +405,31 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
   defp maybe_change_type(subscription, _changes), do: {:ok, subscription}
 
   defp maybe_change_payment_method(subscription, %{pm_changed?: true, new_pm_uuid: new_pm_uuid}) do
-    Billing.update_subscription(subscription, %{payment_method_uuid: new_pm_uuid})
+    Billing.update_subscription(subscription, %{payment_method_uuid: normalize_uuid(new_pm_uuid)})
   end
 
   defp maybe_change_payment_method(subscription, _changes), do: {:ok, subscription}
+
+  # Guard the payment-method change: the selector only renders the
+  # subscription user's own active methods, but the submitted UUID comes
+  # from a client event and update_subscription/2 only FK-checks it. Reject
+  # anything that isn't one of this user's active methods so a crafted/stale
+  # event can't attach another user's (or a removed/inactive) payment token.
+  defp validate_payment_method_change(subscription, %{pm_changed?: true, new_pm_uuid: new_pm_uuid}) do
+    validate_payment_method(subscription, normalize_uuid(new_pm_uuid))
+  end
+
+  defp validate_payment_method_change(_subscription, _changes), do: :ok
+
+  # Clearing the payment method (nil) is always allowed.
+  defp validate_payment_method(_subscription, nil), do: :ok
+
+  defp validate_payment_method(subscription, pm_uuid) do
+    subscription.user_uuid
+    |> Billing.list_payment_methods(status: "active")
+    |> Enum.any?(fn pm -> to_string(pm.uuid) == pm_uuid end)
+    |> if(do: :ok, else: {:error, :payment_method_not_usable})
+  end
 
   # Normalizes a payment-method UUID (which may be nil or a binary) to a
   # comparable form so "no payment method" and a cleared selection match.
