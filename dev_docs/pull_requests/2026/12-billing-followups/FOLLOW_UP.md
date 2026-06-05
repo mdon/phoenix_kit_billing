@@ -32,32 +32,18 @@ were addressed in this PR.
   `@tag :skip` behind the core `subscription_type_uuid` column gap — see
   core PR #583.)
 
-## Post-merge review (2026-06-05, Claude)
+## Post-merge review (2026-06-05, Claude) — fixed in commit 356a195
 
-A follow-up review of the merged PR surfaced two issues in the same area and
-fixed them:
+See [CLAUDE_REVIEW.md](CLAUDE_REVIEW.md) for the full write-up. Two adjacent
+bugs were discovered and fixed:
 
-- **BUG — `list_payment_methods/2` silently ignored the `status:` option.**
-  Every caller (the new edit-save guard, the form, and the new scoping test)
-  passes `status: "active"`, but the function only read `:active_only`
-  (default `true`). It worked *by accident* — `status:` was a dead option, and
-  `list_payment_methods(u, status: "removed")` would still have returned active
-  methods. `lib/phoenix_kit_billing.ex` now honours an explicit `status:`
-  (exact-status filter) and keeps `active_only` as the backward-compatible
-  fallback.
+- **BUG — `list_payment_methods/2` ignored the `status:` option** (read only
+  `:active_only`; worked by the default). Now honours an explicit `status:`.
+- **SECURITY — create mode lacked the edit-mode payment-method guard.**
+  `validate_payment_method/2` now keys on `user_uuid` and runs in both paths.
 
-- **SECURITY (symmetry) — create mode was still unguarded.** The edit-save
-  guard rejected a crafted/stale `payment_method_uuid`, but the identical
-  client-event vector existed in *create* mode (`create_subscription/2` only
-  FK-checks the UUID). `validate_payment_method/2` was refactored to key on
-  `user_uuid` and the same pre-write guard now runs in the create branch;
-  create-mode `payment_method_uuid` also flows through `normalize_uuid/1`.
-
-### Tests
-
-- Tightened the `list_payment_methods/2` scoping test to pattern-match
-  contents+count, and added a test that pins `status:` filtering (queries
-  `"removed"` directly) so the option can't silently regress again.
+Tests: tightened the scoping test to pattern-match contents+count; added a
+`status:`-filtering test so the option can't silently regress.
 
 ## Open
 
