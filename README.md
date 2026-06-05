@@ -134,6 +134,39 @@ Webhooks are handled automatically at `/webhooks/billing/:provider`.
 > `mix phoenix_kit_billing.install` does this for you. **Without it,
 > webhooks return `400` with `:no_raw_body`** before processing.
 
+### Testing Stripe locally
+
+1. **Configure test keys** at `/admin/settings/billing/providers` (Stripe
+   card): paste your `sk_test_…` / `pk_test_…`, tick **Enabled**, Save. The UI
+   writes the `billing_stripe_secret_key` / `billing_stripe_publishable_key` /
+   `billing_stripe_webhook_secret` settings; "Active Providers: Stripe" then
+   confirms `available?/0` is true.
+
+2. **Forward webhooks to localhost** with the Stripe CLI (no `stripe login`
+   needed — pass the key directly):
+
+   ```bash
+   brew install stripe/stripe-cli/stripe   # once
+   stripe listen --api-key sk_test_… \
+     --forward-to http://localhost:4000/phoenix_kit/webhooks/billing/stripe
+   ```
+
+   It prints `Your webhook signing secret is whsec_…`. Paste **that** value
+   into the **Webhook Secret** field on the providers page and Save — it's what
+   the controller verifies against (not the dashboard endpoint's secret).
+   Adjust the `/phoenix_kit` prefix to your host's mount.
+
+3. **Fire a test event:**
+
+   ```bash
+   stripe trigger checkout.session.completed --api-key sk_test_…
+   ```
+
+   Success = a `[200]` in the `stripe listen` output, a
+   `phoenix_kit_webhook_events` row with `processed=true`, and a
+   `Webhook processed successfully` log line. A `400` with `:no_raw_body`
+   means the host hasn't wired `CacheBodyReader` (see above).
+
 ### Real-Time Events
 
 Subscribe to billing events in your LiveViews:
