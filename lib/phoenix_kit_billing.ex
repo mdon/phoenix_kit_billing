@@ -129,13 +129,17 @@ defmodule PhoenixKitBilling do
     %{
       key: "billing",
       label: gettext("Billing"),
-      icon: "💰",
+      icon: "hero-banknotes",
       description: gettext("Orders, invoices, billing profiles and multi-currency support")
     }
   end
 
   @doc """
   Returns stats for the module card on the admin Modules page.
+
+  Runs `get_config/0`, which issues three `count` queries (orders,
+  invoices, currencies). This is invoked once per render of the admin
+  Modules card, so the cost is bounded; it is not cached.
   """
   def module_stats do
     config = get_config()
@@ -150,7 +154,7 @@ defmodule PhoenixKitBilling do
   @impl PhoenixKit.Module
   def admin_tabs do
     [
-      Tab.new!(
+      billing_tab!(
         id: :admin_billing,
         label: "Billing",
         icon: "hero-banknotes",
@@ -162,11 +166,9 @@ defmodule PhoenixKitBilling do
         group: :admin_modules,
         subtab_display: :when_active,
         highlight_with_subtabs: false,
-        live_view: {PhoenixKitBilling.Web.Index, :index},
-        gettext_backend: PhoenixKitBilling.Gettext,
-        gettext_domain: "default"
+        live_view: {PhoenixKitBilling.Web.Index, :index}
       ),
-      Tab.new!(
+      billing_tab!(
         id: :admin_billing_dashboard,
         label: "Dashboard",
         icon: "hero-chart-bar-square",
@@ -176,11 +178,9 @@ defmodule PhoenixKitBilling do
         permission: "billing",
         parent: :admin_billing,
         match: :exact,
-        live_view: {PhoenixKitBilling.Web.Index, :index},
-        gettext_backend: PhoenixKitBilling.Gettext,
-        gettext_domain: "default"
+        live_view: {PhoenixKitBilling.Web.Index, :index}
       ),
-      Tab.new!(
+      billing_tab!(
         id: :admin_billing_orders,
         label: "Orders",
         icon: "hero-shopping-bag",
@@ -189,11 +189,9 @@ defmodule PhoenixKitBilling do
         level: :admin,
         permission: "billing",
         parent: :admin_billing,
-        live_view: {PhoenixKitBilling.Web.Orders, :index},
-        gettext_backend: PhoenixKitBilling.Gettext,
-        gettext_domain: "default"
+        live_view: {PhoenixKitBilling.Web.Orders, :index}
       ),
-      Tab.new!(
+      billing_tab!(
         id: :admin_billing_invoices,
         label: "Invoices",
         icon: "hero-document-text",
@@ -202,11 +200,9 @@ defmodule PhoenixKitBilling do
         level: :admin,
         permission: "billing",
         parent: :admin_billing,
-        live_view: {PhoenixKitBilling.Web.Invoices, :index},
-        gettext_backend: PhoenixKitBilling.Gettext,
-        gettext_domain: "default"
+        live_view: {PhoenixKitBilling.Web.Invoices, :index}
       ),
-      Tab.new!(
+      billing_tab!(
         id: :admin_billing_transactions,
         label: "Transactions",
         icon: "hero-arrows-right-left",
@@ -215,11 +211,9 @@ defmodule PhoenixKitBilling do
         level: :admin,
         permission: "billing",
         parent: :admin_billing,
-        live_view: {PhoenixKitBilling.Web.Transactions, :index},
-        gettext_backend: PhoenixKitBilling.Gettext,
-        gettext_domain: "default"
+        live_view: {PhoenixKitBilling.Web.Transactions, :index}
       ),
-      Tab.new!(
+      billing_tab!(
         id: :admin_billing_subscriptions,
         label: "Subscriptions",
         icon: "hero-arrow-path",
@@ -228,11 +222,9 @@ defmodule PhoenixKitBilling do
         level: :admin,
         permission: "billing",
         parent: :admin_billing,
-        live_view: {PhoenixKitBilling.Web.Subscriptions, :index},
-        gettext_backend: PhoenixKitBilling.Gettext,
-        gettext_domain: "default"
+        live_view: {PhoenixKitBilling.Web.Subscriptions, :index}
       ),
-      Tab.new!(
+      billing_tab!(
         id: :admin_billing_subscription_types,
         label: "Subscription Types",
         icon: "hero-rectangle-stack",
@@ -241,11 +233,9 @@ defmodule PhoenixKitBilling do
         level: :admin,
         permission: "billing",
         parent: :admin_billing,
-        live_view: {PhoenixKitBilling.Web.SubscriptionTypes, :index},
-        gettext_backend: PhoenixKitBilling.Gettext,
-        gettext_domain: "default"
+        live_view: {PhoenixKitBilling.Web.SubscriptionTypes, :index}
       ),
-      Tab.new!(
+      billing_tab!(
         id: :admin_billing_profiles,
         label: "Billing Profiles",
         icon: "hero-identification",
@@ -254,11 +244,9 @@ defmodule PhoenixKitBilling do
         level: :admin,
         permission: "billing",
         parent: :admin_billing,
-        live_view: {PhoenixKitBilling.Web.BillingProfiles, :index},
-        gettext_backend: PhoenixKitBilling.Gettext,
-        gettext_domain: "default"
+        live_view: {PhoenixKitBilling.Web.BillingProfiles, :index}
       ),
-      Tab.new!(
+      billing_tab!(
         id: :admin_billing_currencies,
         label: "Currencies",
         icon: "hero-currency-dollar",
@@ -267,11 +255,9 @@ defmodule PhoenixKitBilling do
         level: :admin,
         permission: "billing",
         parent: :admin_billing,
-        live_view: {PhoenixKitBilling.Web.Currencies, :index},
-        gettext_backend: PhoenixKitBilling.Gettext,
-        gettext_domain: "default"
+        live_view: {PhoenixKitBilling.Web.Currencies, :index}
       ),
-      Tab.new!(
+      billing_tab!(
         id: :admin_billing_providers,
         label: "Payment Providers",
         icon: "hero-credit-card",
@@ -280,9 +266,7 @@ defmodule PhoenixKitBilling do
         level: :admin,
         permission: "billing",
         parent: :admin_billing,
-        live_view: {PhoenixKitBilling.Web.ProviderSettings, :index},
-        gettext_backend: PhoenixKitBilling.Gettext,
-        gettext_domain: "default"
+        live_view: {PhoenixKitBilling.Web.ProviderSettings, :index}
       )
     ]
   end
@@ -290,7 +274,7 @@ defmodule PhoenixKitBilling do
   @impl PhoenixKit.Module
   def settings_tabs do
     [
-      Tab.new!(
+      billing_tab!(
         id: :admin_settings_billing,
         label: "Billing",
         icon: "hero-banknotes",
@@ -300,9 +284,7 @@ defmodule PhoenixKitBilling do
         parent: :admin_settings,
         permission: "billing",
         match: :exact,
-        live_view: {PhoenixKitBilling.Web.Settings, :index},
-        gettext_backend: PhoenixKitBilling.Gettext,
-        gettext_domain: "default"
+        live_view: {PhoenixKitBilling.Web.Settings, :index}
       )
     ]
   end
@@ -310,29 +292,35 @@ defmodule PhoenixKitBilling do
   @impl PhoenixKit.Module
   def user_dashboard_tabs do
     [
-      Tab.new!(
+      billing_tab!(
         id: :dashboard_orders,
         label: "My Orders",
         icon: "hero-shopping-bag",
         path: "orders",
         priority: 200,
         match: :prefix,
-        group: :main,
-        gettext_backend: PhoenixKitBilling.Gettext,
-        gettext_domain: "default"
+        group: :main
       ),
-      Tab.new!(
+      billing_tab!(
         id: :dashboard_billing_profiles,
         label: "Billing Profiles",
         icon: "hero-identification",
         path: "billing-profiles",
         priority: 850,
         match: :prefix,
-        group: :account,
-        gettext_backend: PhoenixKitBilling.Gettext,
-        gettext_domain: "default"
+        group: :account
       )
     ]
+  end
+
+  # Builds a `Tab` with this module's gettext backend/domain defaults
+  # merged in, so every tab's label resolves through the billing
+  # catalogue without repeating the wiring at each call site. Explicit
+  # values in `attrs` win over the defaults.
+  defp billing_tab!(attrs) do
+    [gettext_backend: PhoenixKitBilling.Gettext, gettext_domain: "default"]
+    |> Keyword.merge(attrs)
+    |> Tab.new!()
   end
 
   @impl PhoenixKit.Module
@@ -3448,11 +3436,12 @@ defmodule PhoenixKitBilling do
   end
 
   @doc """
-  Formats company address from a company_info map for document printing.
-  """
-  def format_company_address(company_info \\ nil) do
-    company_info = company_info || Organization.get_company_info()
+  Formats company address from a `company_info` map for document printing.
 
+  The map is required (callers pass the result of
+  `Organization.get_company_info/0`), keeping this function pure.
+  """
+  def format_company_address(company_info) when is_map(company_info) do
     country_name =
       case CountryData.get_country_name(company_info["country"] || "") do
         nil -> company_info["country"] || ""

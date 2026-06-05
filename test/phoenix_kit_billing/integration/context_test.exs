@@ -337,6 +337,93 @@ defmodule PhoenixKitBilling.Integration.ContextTest do
       assert {:ok, cancelled} = Billing.cancel_subscription(resumed, immediately: true)
       assert cancelled.status == "cancelled"
     end
+
+    @tag :skip
+    test "edit-save persists a changed payment method (BLOCKED: missing column)" do
+      # Mirrors the SubscriptionForm edit-save path: when an admin changes
+      # the payment method (and optionally the type) in edit mode, the new
+      # `payment_method_uuid` must persist via `update_subscription/2`
+      # (the form routes payment-method changes through it). Guards PR #3
+      # review #10 (edit-save previously ignored payment-method changes).
+      user = fixture_user()
+
+      {:ok, type} =
+        Billing.create_subscription_type(%{
+          name: "Pro",
+          slug: "pro-#{uniq()}",
+          price: Decimal.new("29.99")
+        })
+
+      {:ok, pm} =
+        Billing.create_payment_method(%{
+          provider: "manual",
+          provider_payment_method_id: "pm_#{uniq()}",
+          user_uuid: user.uuid,
+          type: "card",
+          brand: "visa",
+          last4: "4242"
+        })
+
+      {:ok, sub} = Billing.create_subscription(user.uuid, %{subscription_type_uuid: type.uuid})
+      assert is_nil(sub.payment_method_uuid)
+
+      assert {:ok, updated} =
+               Billing.update_subscription(sub, %{payment_method_uuid: pm.uuid})
+
+      assert updated.payment_method_uuid == pm.uuid
+
+      reloaded = Billing.get_subscription(sub.uuid)
+      assert reloaded.payment_method_uuid == pm.uuid
+    end
+  end
+
+  describe "list_payment_methods/2 scoping (payment-method guard)" do
+    # Pins the property the SubscriptionForm edit-save guard relies on to
+    # reject a crafted/stale payment_method_uuid: the list is scoped to the
+    # user and to active methods only. (Subscription persistence is blocked
+    # by the core column gap, so the guard's user-scoping is pinned here at
+    # the context level, where it actually lives.)
+    test "returns only the given user's active methods" do
+      user_a = fixture_user()
+      user_b = fixture_user()
+
+      {:ok, pm_a} =
+        Billing.create_payment_method(%{
+          provider: "manual",
+          provider_payment_method_id: "pm_#{uniq()}",
+          user_uuid: user_a.uuid,
+          type: "card",
+          status: "active"
+        })
+
+      {:ok, _pm_a_removed} =
+        Billing.create_payment_method(%{
+          provider: "manual",
+          provider_payment_method_id: "pm_#{uniq()}",
+          user_uuid: user_a.uuid,
+          type: "card",
+          status: "removed"
+        })
+
+      {:ok, pm_b} =
+        Billing.create_payment_method(%{
+          provider: "manual",
+          provider_payment_method_id: "pm_#{uniq()}",
+          user_uuid: user_b.uuid,
+          type: "card",
+          status: "active"
+        })
+
+      uuids =
+        user_a.uuid
+        |> Billing.list_payment_methods(status: "active")
+        |> Enum.map(& &1.uuid)
+
+      assert pm_a.uuid in uuids
+      # never another user's method, and never a non-active one
+      refute pm_b.uuid in uuids
+      assert length(uuids) == 1
+    end
   end
 
   # ── helpers ──────────────────────────────────────────────────────

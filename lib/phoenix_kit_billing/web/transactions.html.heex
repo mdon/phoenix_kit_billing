@@ -120,8 +120,8 @@
               <.table_default_body>
                 <%= for transaction <- @transactions do %>
                   <.table_default_row
-                    class="hover cursor-pointer"
-                    phx-click="view_invoice"
+                    class={if transaction.invoice_uuid, do: "hover cursor-pointer", else: ""}
+                    phx-click={if transaction.invoice_uuid, do: "view_invoice"}
                     phx-value-uuid={transaction.invoice_uuid}
                   >
                     <.table_default_cell class="font-mono text-sm">

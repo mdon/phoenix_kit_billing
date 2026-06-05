@@ -287,8 +287,8 @@
           </div>
         <% end %>
 
-        <%!-- Payment Method (if user selected, create mode) --%>
-        <%= if @live_action != :edit && @selected_user && length(@payment_methods) > 0 do %>
+        <%!-- Payment Method (if user selected) --%>
+        <%= if @selected_user && length(@payment_methods) > 0 do %>
           <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
               <h2 class="card-title">

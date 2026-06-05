@@ -158,6 +158,6 @@ defmodule PhoenixKit.Modules.Billing do
   defdelegate create_setup_session(user_uuid, provider, opts \\ []), to: PhoenixKitBilling
 
   # Utilities
-  defdelegate format_company_address(company_info \\ nil), to: PhoenixKitBilling
+  defdelegate format_company_address(company_info), to: PhoenixKitBilling
   defdelegate module_stats(), to: PhoenixKitBilling
 end

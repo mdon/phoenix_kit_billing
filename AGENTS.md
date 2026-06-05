@@ -298,6 +298,12 @@ with `:no_raw_body` before any processing happens** — the raw body has
 already been consumed by the default parser and the signature check can't
 run.
 
+To exercise the Stripe webhook path on **localhost** (configure test keys via
+`/admin/settings/billing/providers`, forward with the Stripe CLI
+`stripe listen --api-key … --forward-to …/webhooks/billing/stripe`, set the
+printed `whsec_…` as the Webhook Secret, then `stripe trigger`), see the
+**"Testing Stripe locally"** section in `README.md`.
+
 ## Deferred from the 2026-06-04 quality sweep
 
 The Phase 1 / Phase 2 sweep on 2026-06-04 fixed the PR-review backlog,

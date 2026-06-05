@@ -183,32 +183,25 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
   def handle_event("save", _params, %{assigns: %{live_action: :edit}} = socket) do
     subscription = socket.assigns.subscription
     new_type_uuid = socket.assigns.selected_subscription_type_uuid
+    new_pm_uuid = socket.assigns.selected_payment_method_uuid
 
-    if to_string(subscription.subscription_type_uuid) == new_type_uuid do
+    type_changed? = to_string(subscription.subscription_type_uuid) != new_type_uuid
+
+    pm_changed? =
+      normalize_uuid(subscription.payment_method_uuid) != normalize_uuid(new_pm_uuid)
+
+    if not type_changed? and not pm_changed? do
       {:noreply,
        socket
        |> put_flash(:info, gettext("No changes to save"))
        |> push_navigate(to: Routes.path("/admin/billing/subscriptions/#{subscription.uuid}"))}
     else
-      case Billing.change_subscription_type(subscription, new_type_uuid) do
-        {:ok, updated} ->
-          log_subscription(socket, "billing.subscription_type_changed", updated, %{
-            "subscription_type_uuid" => updated.subscription_type_uuid
-          })
-
-          {:noreply,
-           socket
-           |> put_flash(:info, gettext("Subscription updated successfully"))
-           |> push_navigate(to: Routes.path("/admin/billing/subscriptions/#{updated.uuid}"))}
-
-        {:error, reason} ->
-          {:noreply,
-           assign(
-             socket,
-             :error,
-             gettext("Failed to update subscription: %{reason}", reason: Errors.message(reason))
-           )}
-      end
+      save_subscription_edits(socket, subscription, %{
+        type_changed?: type_changed?,
+        new_type_uuid: new_type_uuid,
+        pm_changed?: pm_changed?,
+        new_pm_uuid: new_pm_uuid
+      })
     end
   end
 
@@ -372,6 +365,77 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
   end
 
   # Private helpers
+
+  # Persists the editable fields that changed in edit mode. The
+  # subscription type goes through `change_subscription_type/2` so its
+  # broadcast fires; the payment method goes through
+  # `update_subscription/2` (the only other editable field on the form).
+  defp save_subscription_edits(socket, subscription, changes) do
+    # Validate the payment method BEFORE any write: this both rejects a
+    # method that isn't the subscription user's own active one (a crafted
+    # /stale client event could submit any UUID) and keeps the type change
+    # from committing when the payment-method change would fail.
+    with :ok <- validate_payment_method_change(subscription, changes),
+         {:ok, sub} <- maybe_change_type(subscription, changes),
+         {:ok, sub} <- maybe_change_payment_method(sub, changes) do
+      log_subscription(socket, "billing.subscription_updated", sub, %{
+        "subscription_type_uuid" => sub.subscription_type_uuid,
+        "payment_method_uuid" => sub.payment_method_uuid
+      })
+
+      {:noreply,
+       socket
+       |> put_flash(:info, gettext("Subscription updated successfully"))
+       |> push_navigate(to: Routes.path("/admin/billing/subscriptions/#{sub.uuid}"))}
+    else
+      {:error, reason} ->
+        {:noreply,
+         assign(
+           socket,
+           :error,
+           gettext("Failed to update subscription: %{reason}", reason: Errors.message(reason))
+         )}
+    end
+  end
+
+  defp maybe_change_type(subscription, %{type_changed?: true, new_type_uuid: new_type_uuid}) do
+    Billing.change_subscription_type(subscription, new_type_uuid)
+  end
+
+  defp maybe_change_type(subscription, _changes), do: {:ok, subscription}
+
+  defp maybe_change_payment_method(subscription, %{pm_changed?: true, new_pm_uuid: new_pm_uuid}) do
+    Billing.update_subscription(subscription, %{payment_method_uuid: normalize_uuid(new_pm_uuid)})
+  end
+
+  defp maybe_change_payment_method(subscription, _changes), do: {:ok, subscription}
+
+  # Guard the payment-method change: the selector only renders the
+  # subscription user's own active methods, but the submitted UUID comes
+  # from a client event and update_subscription/2 only FK-checks it. Reject
+  # anything that isn't one of this user's active methods so a crafted/stale
+  # event can't attach another user's (or a removed/inactive) payment token.
+  defp validate_payment_method_change(subscription, %{pm_changed?: true, new_pm_uuid: new_pm_uuid}) do
+    validate_payment_method(subscription, normalize_uuid(new_pm_uuid))
+  end
+
+  defp validate_payment_method_change(_subscription, _changes), do: :ok
+
+  # Clearing the payment method (nil) is always allowed.
+  defp validate_payment_method(_subscription, nil), do: :ok
+
+  defp validate_payment_method(subscription, pm_uuid) do
+    subscription.user_uuid
+    |> Billing.list_payment_methods(status: "active")
+    |> Enum.any?(fn pm -> to_string(pm.uuid) == pm_uuid end)
+    |> if(do: :ok, else: {:error, :payment_method_not_usable})
+  end
+
+  # Normalizes a payment-method UUID (which may be nil or a binary) to a
+  # comparable form so "no payment method" and a cleared selection match.
+  defp normalize_uuid(nil), do: nil
+  defp normalize_uuid(""), do: nil
+  defp normalize_uuid(value), do: to_string(value)
 
   # Default extension when the subscription's billing period can't be
   # derived (e.g. its type association isn't loaded).

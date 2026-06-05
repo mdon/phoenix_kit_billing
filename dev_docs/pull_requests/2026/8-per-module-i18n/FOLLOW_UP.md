@@ -50,11 +50,19 @@ non-blocking DRY / test-breadth improvements safer in a focused PR.
   (untranslated label) is guarded; extending the wiring assertion to all
   three functions is a small test addition deferred alongside the
   `billing_tab!/1` helper it naturally pairs with.
-- **Track the 23-file LiveView body-string migration** (IMPROVEMENT —
-  LOW, follow-up #4) — the LiveView body strings still route through
-  `PhoenixKitWeb.Gettext`. The PR deliberately scoped this out; it's a
-  large translation surface (100+ msgids) and a separate effort.
-  Surfaced for Max as its own issue, not done here.
+- ~~**Track the 23-file LiveView body-string migration** (IMPROVEMENT —
+  LOW, follow-up #4)~~ — **CORRECTION (2026-06-05): this is already done.**
+  Re-checked against current code: 20 of the web LVs already
+  `use Gettext, backend: PhoenixKitBilling.Gettext`, and billing's et/ru
+  catalogues are ~fully populated (582/582). The original note was stale.
+  The only files still on `PhoenixKitWeb.Gettext` are the 4 **print views**
+  (`*_print.ex`), and those render **hardcoded English** (zero `gettext`
+  calls) — i.e. full print-view i18n is a *separate, never-started feature*,
+  not a backend-routing migration. Two real items surfaced for Max:
+  (a) print views are not internationalised at all; (b) `default.pot` is
+  **stale** — `mix gettext.extract` wants ~65 msgids (mostly from
+  `errors.ex`) and a blind `mix gettext.merge` fuzzy-corrupts ~5 `en`
+  entries, so it needs a careful extract + native et/ru pass.
 - **`gettext` as a runtime application** (IMPROVEMENT — LOW) — benign;
   core already boots `:gettext`. No action.
 - **mix.lock dep bumps incl. `decimal` 2.x → 3.x** (IMPROVEMENT —
@@ -79,6 +87,8 @@ the core `subscription_type_uuid` column gap documented in the module
 
 ## Open
 
-None. (Deferred items above are surfaced for Max as a focused follow-up
-PR — DRY the 13 tab calls + extend the wiring assertion + the 23-file
-LiveView i18n migration.)
+None. The `billing_tab!/1` DRY helper + wider wiring assertion were done in
+PR #12. The "23-file body-string migration" was a stale note — the LV body
+strings already route through the module backend (see correction above).
+Remaining (surfaced for Max, separate efforts): print-view i18n (hardcoded
+English) and a careful `default.pot` refresh + native translation pass.
