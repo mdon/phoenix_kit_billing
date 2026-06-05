@@ -405,7 +405,8 @@ defmodule PhoenixKitBilling.Integration.ContextTest do
           status: "removed"
         })
 
-      {:ok, pm_b} =
+      # user_b's active method exists but must never appear in user_a's list.
+      {:ok, _pm_b} =
         Billing.create_payment_method(%{
           provider: "manual",
           provider_payment_method_id: "pm_#{uniq()}",
@@ -416,11 +417,11 @@ defmodule PhoenixKitBilling.Integration.ContextTest do
 
       methods = Billing.list_payment_methods(user_a.uuid, status: "active")
 
-      # scoped to user_a's active method only: never another user's, never a
-      # non-active one. (Pattern-match pins both the count and the contents.)
+      # Scoped to user_a's single active method: the exact-list pattern-match
+      # pins count == 1, and pinning that one to pm_a rules out user_b's method
+      # and the "removed" one in a single assertion.
       assert [%{uuid: only_uuid}] = methods
       assert only_uuid == pm_a.uuid
-      refute pm_b.uuid == only_uuid
     end
 
     test "status: filters by the exact status (not just the active_only default)" do
@@ -446,6 +447,52 @@ defmodule PhoenixKitBilling.Integration.ContextTest do
 
       assert [%{uuid: removed_uuid}] = Billing.list_payment_methods(user.uuid, status: "removed")
       assert removed_uuid == removed.uuid
+    end
+  end
+
+  describe "create_subscription/2 payment-method guard (context enforcement)" do
+    # The ownership/active guard lives in the context, not only in the
+    # SubscriptionForm LiveView, so every caller is covered. These pin the
+    # reject path, which short-circuits before any subscription insert — so
+    # they don't hit the core subscription_type_uuid column gap that blocks
+    # the happy-path subscription tests.
+    test "rejects a payment method belonging to another user" do
+      user = fixture_user()
+      other = fixture_user()
+
+      {:ok, foreign} =
+        Billing.create_payment_method(%{
+          provider: "manual",
+          provider_payment_method_id: "pm_#{uniq()}",
+          user_uuid: other.uuid,
+          type: "card",
+          status: "active"
+        })
+
+      assert {:error, :payment_method_not_usable} =
+               Billing.create_subscription(user.uuid, %{
+                 subscription_type_uuid: Ecto.UUID.generate(),
+                 payment_method_uuid: foreign.uuid
+               })
+    end
+
+    test "rejects the user's own non-active (removed) payment method" do
+      user = fixture_user()
+
+      {:ok, removed} =
+        Billing.create_payment_method(%{
+          provider: "manual",
+          provider_payment_method_id: "pm_#{uniq()}",
+          user_uuid: user.uuid,
+          type: "card",
+          status: "removed"
+        })
+
+      assert {:error, :payment_method_not_usable} =
+               Billing.create_subscription(user.uuid, %{
+                 subscription_type_uuid: Ecto.UUID.generate(),
+                 payment_method_uuid: removed.uuid
+               })
     end
   end
 

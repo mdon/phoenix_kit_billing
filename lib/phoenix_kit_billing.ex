@@ -2858,7 +2858,8 @@ defmodule PhoenixKitBilling do
       attrs[:subscription_type_uuid] || attrs["subscription_type_uuid"] ||
         attrs[:plan_uuid] || attrs["plan_uuid"]
 
-    with {:ok, type} <- get_subscription_type(type_uuid) do
+    with :ok <- ensure_payment_method_usable(user_uuid, attrs),
+         {:ok, type} <- get_subscription_type(type_uuid) do
       trial_days = attrs[:trial_days] || type.trial_days || 0
       now = UtilsDate.utc_now()
 
@@ -2990,9 +2991,32 @@ defmodule PhoenixKitBilling do
   so their broadcasts and bookkeeping always fire.
   """
   def update_subscription(%Subscription{} = subscription, attrs) do
-    subscription
-    |> Subscription.changeset(safe_subscription_attrs(attrs))
-    |> repo().update()
+    with :ok <- ensure_payment_method_usable(subscription.user_uuid, attrs) do
+      subscription
+      |> Subscription.changeset(safe_subscription_attrs(attrs))
+      |> repo().update()
+    end
+  end
+
+  # Rejects a payment_method_uuid that isn't one of the user's own active
+  # methods. Enforced here in the context — not only in the SubscriptionForm
+  # LiveView — so every caller of create_subscription/2 and
+  # update_subscription/2 is covered (the changeset only FK-checks the UUID,
+  # which proves existence, not ownership). A nil/absent/blank payment method
+  # is allowed; the field is optional.
+  defp ensure_payment_method_usable(user_uuid, attrs) do
+    case attrs[:payment_method_uuid] || attrs["payment_method_uuid"] do
+      blank when blank in [nil, ""] ->
+        :ok
+
+      pm_uuid ->
+        pm_uuid = to_string(pm_uuid)
+
+        user_uuid
+        |> list_payment_methods(status: "active")
+        |> Enum.any?(fn pm -> to_string(pm.uuid) == pm_uuid end)
+        |> if(do: :ok, else: {:error, :payment_method_not_usable})
+    end
   end
 
   defp safe_subscription_attrs(attrs) do

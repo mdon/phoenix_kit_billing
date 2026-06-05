@@ -215,6 +215,8 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
       trial_days: trial_days
     } = socket.assigns
 
+    pm_uuid = normalize_uuid(pm_uuid)
+
     cond do
       is_nil(user) ->
         {:noreply, assign(socket, :error, gettext("Please select a customer"))}
@@ -222,17 +224,17 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
       is_nil(type_uuid) ->
         {:noreply, assign(socket, :error, gettext("Please select a subscription type"))}
 
-      # Same guard as edit mode: the selector only renders the user's own
-      # active methods, but selected_payment_method_uuid comes from a client
-      # event and create_subscription/2 only FK-checks it. Reject a
-      # crafted/stale UUID before any write.
-      match?({:error, _}, validate_payment_method(user.uuid, normalize_uuid(pm_uuid))) ->
+      # Fast UX pre-check (create_subscription/2 enforces this too): the
+      # selector only renders the user's own active methods, but
+      # selected_payment_method_uuid comes from a client event. Reject a
+      # crafted/stale UUID up front with a clear message.
+      match?({:error, _}, validate_payment_method(user.uuid, pm_uuid)) ->
         {:noreply, assign(socket, :error, gettext("Selected payment method is not available"))}
 
       true ->
         attrs = %{
           subscription_type_uuid: type_uuid,
-          payment_method_uuid: normalize_uuid(pm_uuid),
+          payment_method_uuid: pm_uuid,
           trial_days:
             if(enable_trial && trial_days != "", do: String.to_integer(trial_days), else: 0)
         }

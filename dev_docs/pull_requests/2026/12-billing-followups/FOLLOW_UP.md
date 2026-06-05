@@ -45,6 +45,29 @@ bugs were discovered and fixed:
 Tests: tightened the scoping test to pattern-match contents+count; added a
 `status:`-filtering test so the option can't silently regress.
 
+## High-effort review (2026-06-05, Claude) — `/code-review high`
+
+A high-effort multi-angle pass over the post-merge fixes found no correctness
+bugs in the refactor and surfaced one altitude finding + two nitpicks, all
+fixed:
+
+- **Ownership guard moved into the context.** The payment-method
+  ownership/active check lived only in `SubscriptionForm`; the public
+  `create_subscription/2` and `update_subscription/2` only FK-checked the UUID,
+  so the invariant was bypassable by any non-form caller (latent — no current
+  exploit path). Added `ensure_payment_method_usable/2` as the first step of
+  both context functions → single non-bypassable enforcement point. Form guards
+  retained as a UX/fail-fast layer. New reject-path context tests don't need the
+  `subscription_type_uuid` skip (the guard short-circuits before any insert).
+- **Nitpick:** `normalize_uuid` was computed twice on the create-mode happy
+  path → bound once.
+- **Nitpick:** redundant `refute` in the scoping test → dropped.
+
+**For other agents:** new callers of `create_subscription/2` /
+`update_subscription/2` no longer need to validate payment-method ownership
+themselves — the context rejects a foreign/inactive UUID with
+`{:error, :payment_method_not_usable}`.
+
 ## Open
 
 - **Non-atomic type + payment-method save (minor).** Edit-save validates
