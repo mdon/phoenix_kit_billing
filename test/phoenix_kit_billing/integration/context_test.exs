@@ -414,15 +414,38 @@ defmodule PhoenixKitBilling.Integration.ContextTest do
           status: "active"
         })
 
-      uuids =
-        user_a.uuid
-        |> Billing.list_payment_methods(status: "active")
-        |> Enum.map(& &1.uuid)
+      methods = Billing.list_payment_methods(user_a.uuid, status: "active")
 
-      assert pm_a.uuid in uuids
-      # never another user's method, and never a non-active one
-      refute pm_b.uuid in uuids
-      assert length(uuids) == 1
+      # scoped to user_a's active method only: never another user's, never a
+      # non-active one. (Pattern-match pins both the count and the contents.)
+      assert [%{uuid: only_uuid}] = methods
+      assert only_uuid == pm_a.uuid
+      refute pm_b.uuid == only_uuid
+    end
+
+    test "status: filters by the exact status (not just the active_only default)" do
+      user = fixture_user()
+
+      {:ok, _active} =
+        Billing.create_payment_method(%{
+          provider: "manual",
+          provider_payment_method_id: "pm_#{uniq()}",
+          user_uuid: user.uuid,
+          type: "card",
+          status: "active"
+        })
+
+      {:ok, removed} =
+        Billing.create_payment_method(%{
+          provider: "manual",
+          provider_payment_method_id: "pm_#{uniq()}",
+          user_uuid: user.uuid,
+          type: "card",
+          status: "removed"
+        })
+
+      assert [%{uuid: removed_uuid}] = Billing.list_payment_methods(user.uuid, status: "removed")
+      assert removed_uuid == removed.uuid
     end
   end
 

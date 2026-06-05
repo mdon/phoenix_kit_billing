@@ -3160,22 +3160,25 @@ defmodule PhoenixKitBilling do
   Lists saved payment methods for a user.
   """
   def list_payment_methods(user_uuid, opts \\ []) do
-    active_only = Keyword.get(opts, :active_only, true)
-
     query =
       from(pm in PaymentMethod,
         where: pm.user_uuid == ^user_uuid,
         order_by: [desc: pm.is_default, desc: pm.inserted_at]
       )
 
-    query =
-      if active_only do
-        from(pm in query, where: pm.status == "active")
-      else
-        query
-      end
+    query
+    |> filter_payment_methods_by_status(opts)
+    |> repo().all()
+  end
 
-    repo().all(query)
+  # An explicit `status:` filters to that exact status; otherwise
+  # `active_only` (default `true`) keeps the historical active-only scoping.
+  defp filter_payment_methods_by_status(query, opts) do
+    cond do
+      status = opts[:status] -> from(pm in query, where: pm.status == ^status)
+      Keyword.get(opts, :active_only, true) -> from(pm in query, where: pm.status == "active")
+      true -> query
+    end
   end
 
   @doc """

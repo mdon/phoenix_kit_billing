@@ -222,10 +222,17 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
       is_nil(type_uuid) ->
         {:noreply, assign(socket, :error, gettext("Please select a subscription type"))}
 
+      # Same guard as edit mode: the selector only renders the user's own
+      # active methods, but selected_payment_method_uuid comes from a client
+      # event and create_subscription/2 only FK-checks it. Reject a
+      # crafted/stale UUID before any write.
+      match?({:error, _}, validate_payment_method(user.uuid, normalize_uuid(pm_uuid))) ->
+        {:noreply, assign(socket, :error, gettext("Selected payment method is not available"))}
+
       true ->
         attrs = %{
           subscription_type_uuid: type_uuid,
-          payment_method_uuid: pm_uuid,
+          payment_method_uuid: normalize_uuid(pm_uuid),
           trial_days:
             if(enable_trial && trial_days != "", do: String.to_integer(trial_days), else: 0)
         }
@@ -416,16 +423,16 @@ defmodule PhoenixKitBilling.Web.SubscriptionForm do
   # anything that isn't one of this user's active methods so a crafted/stale
   # event can't attach another user's (or a removed/inactive) payment token.
   defp validate_payment_method_change(subscription, %{pm_changed?: true, new_pm_uuid: new_pm_uuid}) do
-    validate_payment_method(subscription, normalize_uuid(new_pm_uuid))
+    validate_payment_method(subscription.user_uuid, normalize_uuid(new_pm_uuid))
   end
 
   defp validate_payment_method_change(_subscription, _changes), do: :ok
 
   # Clearing the payment method (nil) is always allowed.
-  defp validate_payment_method(_subscription, nil), do: :ok
+  defp validate_payment_method(_user_uuid, nil), do: :ok
 
-  defp validate_payment_method(subscription, pm_uuid) do
-    subscription.user_uuid
+  defp validate_payment_method(user_uuid, pm_uuid) do
+    user_uuid
     |> Billing.list_payment_methods(status: "active")
     |> Enum.any?(fn pm -> to_string(pm.uuid) == pm_uuid end)
     |> if(do: :ok, else: {:error, :payment_method_not_usable})
