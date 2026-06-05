@@ -337,6 +337,44 @@ defmodule PhoenixKitBilling.Integration.ContextTest do
       assert {:ok, cancelled} = Billing.cancel_subscription(resumed, immediately: true)
       assert cancelled.status == "cancelled"
     end
+
+    @tag :skip
+    test "edit-save persists a changed payment method (BLOCKED: missing column)" do
+      # Mirrors the SubscriptionForm edit-save path: when an admin changes
+      # the payment method (and optionally the type) in edit mode, the new
+      # `payment_method_uuid` must persist via `update_subscription/2`
+      # (the form routes payment-method changes through it). Guards PR #3
+      # review #10 (edit-save previously ignored payment-method changes).
+      user = fixture_user()
+
+      {:ok, type} =
+        Billing.create_subscription_type(%{
+          name: "Pro",
+          slug: "pro-#{uniq()}",
+          price: Decimal.new("29.99")
+        })
+
+      {:ok, pm} =
+        Billing.create_payment_method(%{
+          provider: "manual",
+          provider_payment_method_id: "pm_#{uniq()}",
+          user_uuid: user.uuid,
+          type: "card",
+          brand: "visa",
+          last4: "4242"
+        })
+
+      {:ok, sub} = Billing.create_subscription(user.uuid, %{subscription_type_uuid: type.uuid})
+      assert is_nil(sub.payment_method_uuid)
+
+      assert {:ok, updated} =
+               Billing.update_subscription(sub, %{payment_method_uuid: pm.uuid})
+
+      assert updated.payment_method_uuid == pm.uuid
+
+      reloaded = Billing.get_subscription(sub.uuid)
+      assert reloaded.payment_method_uuid == pm.uuid
+    end
   end
 
   # ── helpers ──────────────────────────────────────────────────────
